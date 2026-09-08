@@ -7408,6 +7408,682 @@ function closeModal() {
   }
 
 })();
+/* ==================================================
+   운영진 시스템 테스트 보정
+   테스트용 최초 운영진 코드 : 1234
+================================================== */
+
+(function(){
+
+  const TEST_ADMIN_CODE = "1234";
+
+
+  /* -----------------------------------------------
+     운영진 데이터 준비
+  ------------------------------------------------ */
+
+  function ensureAdminData(){
+
+    const guild = getGuild();
+
+    if(!guild)
+      return null;
+
+    if(!Array.isArray(guild.admins))
+      guild.admins = [];
+
+    if(typeof guild.ownerInitialized !== "boolean")
+      guild.ownerInitialized = false;
+
+    return guild;
+
+  }
+
+
+  /* -----------------------------------------------
+     테스트용 최초 운영진 자동 설정
+     
+     현재 길드원이 한 명 이상이고
+     최초 운영진이 아직 없으면
+     첫 번째 길드원을 최초 운영진으로 설정
+  ------------------------------------------------ */
+
+  function ensureTestOwner(){
+
+    const guild = ensureAdminData();
+
+    if(!guild)
+      return;
+
+    if(guild.ownerInitialized)
+      return;
+
+    if(!guild.members ||
+       !guild.members.length)
+      return;
+
+
+    const firstMember =
+      guild.members[0];
+
+
+    const alreadyAdmin =
+      guild.admins.some(
+        admin =>
+          admin.memberId === firstMember.id
+      );
+
+
+    if(alreadyAdmin){
+
+      guild.ownerInitialized = true;
+
+      return;
+
+    }
+
+
+    guild.admins.push({
+
+      id:
+        "A_OWNER_TEST",
+
+      memberId:
+        firstMember.id,
+
+      name:
+        firstMember.name,
+
+      role:
+        "owner",
+
+      code:
+        TEST_ADMIN_CODE
+
+    });
+
+
+    firstMember.role =
+      "admin";
+
+
+    guild.ownerInitialized =
+      true;
+
+
+    saveApp();
+
+  }
+
+
+  /* -----------------------------------------------
+     로그인
+  ------------------------------------------------ */
+
+  window.loginAdmin =
+  function(){
+
+    const guild =
+      ensureAdminData();
+
+    if(!guild)
+      return;
+
+
+    const input =
+      document.getElementById(
+        "adminCode"
+      );
+
+
+    const code =
+      String(
+        input?.value || ""
+      ).trim();
+
+
+    if(!/^\d{4}$/.test(code)){
+
+      alert(
+        "운영진 코드를 확인해주세요."
+      );
+
+      return;
+
+    }
+
+
+    const admin =
+      guild.admins.find(
+        item =>
+          String(item.code) === code
+      );
+
+
+    if(!admin){
+
+      alert(
+        "운영진 코드를 확인해주세요."
+      );
+
+      return;
+
+    }
+
+
+    sessionStorage.setItem(
+      "adminGuild",
+      guild.id
+    );
+
+
+    if(admin.role === "owner"){
+
+      sessionStorage.setItem(
+        "ownerGuild",
+        guild.id
+      );
+
+    }
+    else{
+
+      sessionStorage.removeItem(
+        "ownerGuild"
+      );
+
+    }
+
+
+    if(input)
+      input.value = "";
+
+
+    renderAll();
+
+    renderAdminState();
+
+
+    alert(
+      "운영진으로 로그인되었습니다."
+    );
+
+  };
+
+
+  /* -----------------------------------------------
+     로그아웃
+  ------------------------------------------------ */
+
+  window.logoutAdmin =
+  function(){
+
+    sessionStorage.removeItem(
+      "adminGuild"
+    );
+
+    sessionStorage.removeItem(
+      "ownerGuild"
+    );
+
+
+    renderAll();
+
+    renderAdminState();
+
+  };
+
+
+  /* -----------------------------------------------
+     운영진 상태 화면
+  ------------------------------------------------ */
+
+  window.renderAdminState =
+  function(){
+
+    const guild =
+      ensureAdminData();
+
+
+    const loginState =
+      document.getElementById(
+        "loginState"
+      );
+
+
+    const loginBox =
+      document.getElementById(
+        "adminLogin"
+      );
+
+
+    const panel =
+      document.getElementById(
+        "adminPanel"
+      );
+
+
+    if(!loginState)
+      return;
+
+
+    if(
+      guild &&
+      isManager()
+    ){
+
+      loginState.textContent =
+        isOwner()
+          ? "최초 운영진"
+          : "운영진";
+
+
+      loginState.className =
+        "badge green";
+
+
+      if(loginBox)
+        loginBox.classList.add(
+          "hidden"
+        );
+
+
+      if(panel)
+        panel.classList.remove(
+          "hidden"
+        );
+
+    }
+    else{
+
+      loginState.textContent =
+        "읽기 전용";
+
+
+      loginState.className =
+        "badge gray";
+
+
+      if(loginBox)
+        loginBox.classList.remove(
+          "hidden"
+        );
+
+
+      if(panel)
+        panel.classList.add(
+          "hidden"
+        );
+
+    }
+
+  };
+
+
+  /* -----------------------------------------------
+     모달 열기
+  ------------------------------------------------ */
+
+  window.openModal =
+  function(html){
+
+    const modal =
+      document.getElementById(
+        "modal"
+      );
+
+
+    const box =
+      document.getElementById(
+        "modalBox"
+      );
+
+
+    if(!modal || !box)
+      return;
+
+
+    box.innerHTML =
+      html;
+
+
+    modal.classList.remove(
+      "hidden"
+    );
+
+  };
+
+
+  /* -----------------------------------------------
+     모달 닫기
+  ------------------------------------------------ */
+
+  window.closeModal =
+  function(){
+
+    const modal =
+      document.getElementById(
+        "modal"
+      );
+
+
+    if(modal)
+      modal.classList.add(
+        "hidden"
+      );
+
+  };
+
+
+  /* -----------------------------------------------
+     운영진 관리
+  ------------------------------------------------ */
+
+  window.openAdminManager =
+  function(){
+
+    const guild =
+      ensureAdminData();
+
+
+    if(!guild)
+      return;
+
+
+    if(!isOwner()){
+
+      alert(
+        "최초 운영진만 운영진 관리를 사용할 수 있습니다."
+      );
+
+      return;
+
+    }
+
+
+    let html = `
+
+      <h3>👑 운영진 관리</h3>
+
+      <div class="notice success">
+
+        테스트용 최초 운영진 코드가 설정되어 있습니다.
+
+        <br><br>
+
+        최초 운영진 :
+        <b>
+          ${
+            escapeHtml(
+              guild.admins.find(
+                admin =>
+                  admin.role === "owner"
+              )?.name || "-"
+            )
+          }
+        </b>
+
+      </div>
+
+      <button
+        class="green full"
+        onclick="
+          addAdmin();
+          closeModal();
+        "
+      >
+        ➕ 운영진 추가
+      </button>
+
+      <div style="margin-top:15px">
+
+    `;
+
+
+    if(!guild.admins.length){
+
+      html += `
+
+        <div class="notice warning">
+          등록된 운영진이 없습니다.
+        </div>
+
+      `;
+
+    }
+    else{
+
+      guild.admins.forEach(
+        admin => {
+
+          html += `
+
+            <div
+              class="card"
+              style="margin-bottom:8px"
+            >
+
+              <div>
+
+                <b>
+                  ${
+                    escapeHtml(
+                      admin.name
+                    )
+                  }
+                </b>
+
+                <span
+                  class="badge ${
+                    admin.role === "owner"
+                      ? "yellow"
+                      : "green"
+                  }"
+                >
+
+                  ${
+                    admin.role === "owner"
+                      ? "최초 운영진"
+                      : "운영진"
+                  }
+
+                </span>
+
+              </div>
+
+              ${
+                admin.role !== "owner"
+                  ? `
+
+                    <button
+                      class="danger small"
+                      style="margin-top:8px"
+                      onclick="
+                        removeAdmin('${admin.id}');
+                        closeModal();
+                      "
+                    >
+                      권한 제거
+                    </button>
+
+                  `
+                  : ""
+              }
+
+            </div>
+
+          `;
+
+        }
+      );
+
+    }
+
+
+    html += `
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          onclick="closeModal()"
+        >
+          닫기
+        </button>
+
+      </div>
+
+    `;
+
+
+    openModal(html);
+
+  };
+
+
+  /* -----------------------------------------------
+     최초 운영진 설정 함수 보정
+     
+     수동 설정 대신 테스트 단계에서는
+     첫 번째 길드원을 최초 운영진으로 사용
+  ------------------------------------------------ */
+
+  window.initializeOwner =
+  function(){
+
+    const guild =
+      ensureAdminData();
+
+
+    if(!guild)
+      return;
+
+
+    if(guild.ownerInitialized){
+
+      alert(
+        "최초 운영진은 이미 설정되어 있습니다."
+      );
+
+      return;
+
+    }
+
+
+    if(
+      !guild.members ||
+      !guild.members.length
+    ){
+
+      alert(
+        "먼저 길드원을 한 명 등록해주세요."
+      );
+
+      return;
+
+    }
+
+
+    const member =
+      guild.members[0];
+
+
+    guild.admins.push({
+
+      id:
+        "A_OWNER_" + Date.now(),
+
+      memberId:
+        member.id,
+
+      name:
+        member.name,
+
+      role:
+        "owner",
+
+      code:
+        TEST_ADMIN_CODE
+
+    });
+
+
+    member.role =
+      "admin";
+
+
+    guild.ownerInitialized =
+      true;
+
+
+    saveApp();
+
+
+    sessionStorage.setItem(
+      "adminGuild",
+      guild.id
+    );
+
+
+    sessionStorage.setItem(
+      "ownerGuild",
+      guild.id
+    );
+
+
+    renderAll();
+
+    renderAdminState();
+
+
+    alert(
+      `${member.name} 님이 최초 운영진으로 등록되었습니다.`
+    );
+
+  };
+
+
+  /* -----------------------------------------------
+     기존 화면의 로그인 버튼 연결
+  ------------------------------------------------ */
+
+  window.adminLogin =
+  function(){
+
+    loginAdmin();
+
+  };
+
+
+  window.adminLogout =
+  function(){
+
+    logoutAdmin();
+
+  };
+
+
+  /* -----------------------------------------------
+     앱 시작 시 테스트용 운영진 확인
+  ------------------------------------------------ */
+
+  try{
+
+    ensureTestOwner();
+
+    renderAdminState();
+
+  }
+  catch(error){
+
+    console.warn(
+      "운영진 초기화 오류:",
+      error
+    );
+
+  }
+
+})();
 </script>
 
 </body>
