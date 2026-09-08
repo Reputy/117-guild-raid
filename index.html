@@ -8084,6 +8084,313 @@ function closeModal() {
   }
 
 })();
+/* ==================================================
+   최초 운영진 부트스트랩 보정
+   길드원이 0명이어도 1234로 최초 진입 가능
+================================================== */
+
+(function(){
+
+  const BOOTSTRAP_CODE = "1234";
+
+
+  window.loginAdmin =
+  function(){
+
+    const guild =
+      getGuild();
+
+    if(!guild)
+      return;
+
+
+    const input =
+      document.getElementById(
+        "adminCode"
+      );
+
+
+    const code =
+      String(
+        input?.value || ""
+      ).trim();
+
+
+    /*
+     * 최초 설정 전이고 길드원이 아직 없다면
+     * 테스트용 1234로 운영진 진입 허용
+     */
+    if(
+      code === BOOTSTRAP_CODE &&
+      !guild.ownerInitialized &&
+      (!guild.members ||
+       guild.members.length === 0)
+    ){
+
+      sessionStorage.setItem(
+        "adminGuild",
+        guild.id
+      );
+
+      sessionStorage.setItem(
+        "ownerGuild",
+        guild.id
+      );
+
+      sessionStorage.setItem(
+        "bootstrapOwner",
+        guild.id
+      );
+
+
+      if(input)
+        input.value = "";
+
+
+      renderAll();
+
+      renderAdminState();
+
+
+      alert(
+        "최초 운영진 테스트 권한으로 로그인되었습니다.\n\n길드원을 먼저 등록해주세요."
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * 일반 운영진 로그인
+     */
+    const admin =
+      (guild.admins || [])
+        .find(
+          item =>
+            String(item.code) === code
+        );
+
+
+    if(!admin){
+
+      alert(
+        "운영진 코드를 확인해주세요."
+      );
+
+      return;
+
+    }
+
+
+    sessionStorage.setItem(
+      "adminGuild",
+      guild.id
+    );
+
+
+    if(
+      admin.role === "owner"
+    ){
+
+      sessionStorage.setItem(
+        "ownerGuild",
+        guild.id
+      );
+
+    }
+    else{
+
+      sessionStorage.removeItem(
+        "ownerGuild"
+      );
+
+    }
+
+
+    sessionStorage.removeItem(
+      "bootstrapOwner"
+    );
+
+
+    if(input)
+      input.value = "";
+
+
+    renderAll();
+
+    renderAdminState();
+
+
+    alert(
+      "운영진으로 로그인되었습니다."
+    );
+
+  };
+
+
+  /*
+   * 최초 부트스트랩 상태에서는
+   * 운영진 권한으로 길드원 추가 가능
+   */
+  const originalIsManager =
+    window.isManager;
+
+
+  window.isManager =
+  function(){
+
+    const guild =
+      getGuild();
+
+    if(!guild)
+      return false;
+
+
+    if(
+      sessionStorage.getItem(
+        "bootstrapOwner"
+      ) === guild.id
+    ){
+
+      return true;
+
+    }
+
+
+    return originalIsManager
+      ? originalIsManager()
+      : false;
+
+  };
+
+
+  /*
+   * 첫 길드원이 등록되면
+   * 자동으로 최초 운영진으로 확정
+   */
+  const originalAddMember =
+    window.addMember;
+
+
+  window.addMember =
+  function(){
+
+    if(!originalAddMember)
+      return;
+
+
+    originalAddMember();
+
+
+    const guild =
+      getGuild();
+
+
+    if(!guild)
+      return;
+
+
+    if(
+      guild.ownerInitialized
+    )
+      return;
+
+
+    if(
+      !guild.members ||
+      !guild.members.length
+    )
+      return;
+
+
+    const firstMember =
+      guild.members[0];
+
+
+    /*
+     * 이미 최초 운영진이 있으면 종료
+     */
+    if(
+      guild.admins.some(
+        admin =>
+          admin.role === "owner"
+      )
+    ){
+
+      guild.ownerInitialized =
+        true;
+
+      saveApp();
+
+      return;
+
+    }
+
+
+    guild.admins.push({
+
+      id:
+        "A_OWNER_" +
+        Date.now(),
+
+      memberId:
+        firstMember.id,
+
+      name:
+        firstMember.name,
+
+      role:
+        "owner",
+
+      code:
+        BOOTSTRAP_CODE
+
+    });
+
+
+    firstMember.role =
+      "admin";
+
+
+    guild.ownerInitialized =
+      true;
+
+
+    saveApp();
+
+
+    sessionStorage.removeItem(
+      "bootstrapOwner"
+    );
+
+
+    sessionStorage.setItem(
+      "adminGuild",
+      guild.id
+    );
+
+
+    sessionStorage.setItem(
+      "ownerGuild",
+      guild.id
+    );
+
+
+    renderAll();
+
+    renderAdminState();
+
+
+    alert(
+      `${firstMember.name} 님이 최초 운영진으로 등록되었습니다.\n운영진 코드는 1234입니다.`
+    );
+
+  };
+
+
+})();
 </script>
 
 </body>
