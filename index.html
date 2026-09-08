@@ -218,16 +218,7 @@ return "<tr><td><b>"+m[0]+"</b><br><small>"+m[1]+"</small></td><td>"+(total?fmt(
 }).join("");
 }
 
-data.sort((a,b)=>(b.dragon+b.sea)-(a.dragon+a.sea));
 
-box.innerHTML=data.map(x=>{
-let total=x.dragon+x.sea;
-let count=x.dc+x.sc;
-let avg=count?total/count:0;
-
-return "<tr><td><b>"+x.name+"</b></td><td>"+fmt(total)+"</td><td>"+count+"회</td><td>"+fmt(avg)+"</td></tr>";
-}).join("");
-}
 
 render();
 </script>
