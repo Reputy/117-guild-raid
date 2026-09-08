@@ -3,264 +3,297 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>길드 토벌관리</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
- margin:0;
- background:#f0f2ff;
- color:#292d48;
- font-family:Arial,sans-serif;
+  margin:0;
+  background:#f0f2ff;
+  color:#292d48;
+  font-family:Arial,sans-serif;
 }
 
 header{
- background:linear-gradient(135deg,#5868dc,#7655c9);
- color:white;
- padding:25px 18px;
- border-radius:0 0 25px 25px;
+  background:linear-gradient(135deg,#5868dc,#7655c9);
+  color:#fff;
+  padding:24px 18px;
+  border-radius:0 0 24px 24px;
 }
 
-h1{margin:0;font-size:22px}
-header p{margin:8px 0 0;font-size:14px}
-main{padding:15px;max-width:1100px;margin:auto}
+header h1{
+  margin:0;
+  font-size:22px;
+}
+
+header p{
+  margin:8px 0 0;
+  font-size:14px;
+}
+
+main{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
+}
 
 nav{
- display:flex;
- gap:8px;
- margin-bottom:15px;
- overflow-x:auto;
+  display:flex;
+  gap:7px;
+  margin-bottom:15px;
+  overflow-x:auto;
 }
 
 button{
- border:0;
- border-radius:10px;
- padding:10px 14px;
- background:#e2e5ff;
- color:#4d5380;
- cursor:pointer;
- white-space:nowrap;
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  background:#e2e5ff;
+  color:#4d5380;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+button:hover{
+  opacity:.9;
 }
 
 button.on{
- background:#606ddd;
- color:white;
-}
-
-button.danger{
- background:#ffe1e1;
- color:#c33;
+  background:#606ddd;
+  color:#fff;
 }
 
 button.green{
- background:#dff6e7;
- color:#28734b;
+  background:#dff6e7;
+  color:#28734b;
+}
+
+button.danger{
+  background:#ffe1e1;
+  color:#c33;
 }
 
 button.small{
- padding:7px 9px;
- font-size:12px;
+  padding:7px 9px;
+  font-size:12px;
+}
+
+button.full{
+  width:100%;
 }
 
 .card{
- background:white;
- border-radius:18px;
- padding:18px;
- margin-bottom:12px;
- box-shadow:0 3px 12px #ccd0e855;
+  background:#fff;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:12px;
+  box-shadow:0 3px 12px #ccd0e855;
 }
 
 .grid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
 
 .num{
- font-size:22px;
- font-weight:bold;
- margin-top:6px;
+  font-size:22px;
+  font-weight:bold;
+  margin-top:6px;
 }
 
-small{color:#8589a3}
+small{
+  color:#8589a3;
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.section-title h3{
+  margin:0;
+}
+
+.notice{
+  background:#f5f6ff;
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+.notice.warning{
+  background:#fff5d9;
+  color:#8a6500;
+}
+
+.notice.success{
+  background:#e4f8ec;
+  color:#28734b;
+}
+
+.notice.danger{
+  background:#fff0f0;
+  color:#a33;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:11px;
+  border:1px solid #ddd;
+  border-radius:9px;
+  margin:5px 0 10px;
+  background:#fff;
+  color:#292d48;
+}
+
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-top:8px;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+}
 
 table{
- width:100%;
- border-collapse:collapse;
- margin-top:10px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
 }
 
-th,td{
- padding:10px 5px;
- border-bottom:1px solid #eee;
- text-align:right;
- font-size:13px;
+th,
+td{
+  padding:10px 6px;
+  border-bottom:1px solid #eee;
+  text-align:right;
+  font-size:13px;
+  white-space:nowrap;
 }
 
 th:first-child,
 td:first-child{
- text-align:left;
-}
-
-input,select{
- width:100%;
- padding:11px;
- border:1px solid #ddd;
- border-radius:9px;
- margin:5px 0 10px;
- background:white;
-}
-
-textarea{
- width:100%;
- min-height:110px;
- padding:10px;
- border:1px solid #ddd;
- border-radius:9px;
- resize:vertical;
-}
-
-.hidden{display:none}
-.full{width:100%}
-
-.section-title{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:10px;
- margin-bottom:12px;
-}
-
-.section-title h3{margin:0}
-
-.notice{
- background:#f5f6ff;
- border-radius:12px;
- padding:12px;
- font-size:13px;
- margin-bottom:12px;
-}
-
-.notice.warning{
- background:#fff5d9;
- color:#8a6500;
-}
-
-.notice.success{
- background:#e4f8ec;
- color:#28734b;
-}
-
-.notice.danger{
- background:#fff0f0;
- color:#a33;
-}
-
-.actions{
- display:flex;
- gap:5px;
- justify-content:flex-end;
- flex-wrap:wrap;
+  text-align:left;
 }
 
 .badge{
- display:inline-block;
- padding:4px 7px;
- border-radius:8px;
- background:#eef0ff;
- color:#5961bd;
- font-size:11px;
+  display:inline-block;
+  padding:4px 7px;
+  border-radius:8px;
+  background:#eef0ff;
+  color:#5961bd;
+  font-size:11px;
 }
 
 .badge.green{
- background:#dff6e7;
- color:#28734b;
+  background:#dff6e7;
+  color:#28734b;
 }
 
 .badge.red{
- background:#ffe1e1;
- color:#c33;
+  background:#ffe1e1;
+  color:#c33;
 }
 
 .badge.yellow{
- background:#fff0c9;
- color:#8a6500;
+  background:#fff0c9;
+  color:#8a6500;
 }
 
 .badge.gray{
- background:#eee;
- color:#777;
+  background:#eee;
+  color:#777;
 }
 
-.good{
- color:#28734b;
- font-weight:bold;
-}
-
-.mid{
- color:#bd7900;
- font-weight:bold;
-}
-
-.bad{
- color:#c33;
- font-weight:bold;
-}
-
-.table-wrap{
- overflow-x:auto;
+.actions{
+  display:flex;
+  gap:5px;
+  justify-content:flex-end;
+  flex-wrap:wrap;
 }
 
 .modal{
- position:fixed;
- inset:0;
- background:#0008;
- display:flex;
- justify-content:center;
- align-items:center;
- padding:15px;
- z-index:9999;
+  position:fixed;
+  inset:0;
+  background:#0008;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+  z-index:9999;
 }
 
 .modal-box{
- background:white;
- width:100%;
- max-width:500px;
- max-height:90vh;
- overflow:auto;
- border-radius:18px;
- padding:20px;
+  background:#fff;
+  width:100%;
+  max-width:560px;
+  max-height:90vh;
+  overflow:auto;
+  border-radius:18px;
+  padding:20px;
 }
 
 .modal-actions{
- display:flex;
- gap:7px;
- margin-top:10px;
+  display:flex;
+  gap:7px;
+  margin-top:12px;
 }
 
 .modal-actions button{
- flex:1;
+  flex:1;
+}
+
+hr{
+  border:0;
+  border-top:1px solid #eee;
+  margin:15px 0;
+}
+
+.empty{
+  text-align:center;
+  color:#999;
+  padding:20px;
 }
 
 @media(max-width:600px){
 
- table{
-  min-width:650px;
- }
+  .grid{
+    grid-template-columns:1fr 1fr;
+  }
 
- .grid{
-  grid-template-columns:1fr 1fr;
- }
+  .actions{
+    flex-direction:column;
+  }
 
- .actions{
-  flex-direction:column;
- }
+  button{
+    padding:9px 10px;
+  }
 
- button{
-  padding:9px 10px;
- }
-
+  table{
+    min-width:620px;
+  }
 }
 </style>
 </head>
@@ -268,710 +301,899 @@ textarea{
 <body>
 
 <header>
-<h1 id="guildTitle">🏰 117번째우정</h1>
-<p>
-🏆 길드순위 <span id="guildRank">74</span>위
- · 👥 길드원 <span id="headerCount">0</span>명
-</p>
+  <h1 id="guildTitle">🏰 117번째우정</h1>
+
+  <p>
+    🏆 길드순위
+    <span id="guildRank">-</span>위
+    · 👥 길드원
+    <span id="headerCount">0</span>명
+  </p>
 </header>
 
 <main>
 
+<!-- 길드 선택 -->
+
 <div class="card">
 
-<div class="section-title">
-<h3>🏰 길드</h3>
-<button class="small" onclick="openGuildManager()">⚙️ 관리</button>
+  <div class="section-title">
+    <h3>🏰 길드</h3>
+
+    <button
+      class="small"
+      onclick="openGuildManager()">
+      ⚙️ 관리
+    </button>
+  </div>
+
+  <select
+    id="guildSelect"
+    onchange="switchGuild(this.value)">
+  </select>
+
 </div>
 
-<select id="guildSelect" onchange="switchGuild(this.value)"></select>
 
-</div>
-
+<!-- 메뉴 -->
 
 <nav>
 
-<button class="on" onclick="show('home',this)">
-홈
-</button>
+  <button
+    class="on"
+    onclick="showSection('home',this)">
+    홈
+  </button>
 
-<button onclick="show('members',this)">
-길드원
-</button>
+  <button
+    onclick="showSection('members',this)">
+    길드원
+  </button>
 
-<button onclick="show('raid',this)">
-토벌
-</button>
+  <button
+    onclick="showSection('raid',this)">
+    토벌
+  </button>
 
-<button onclick="show('data',this)">
-데이터 관리
-</button>
+  <button
+    onclick="showSection('data',this)">
+    데이터
+  </button>
 
-<button onclick="show('artifact',this)">
-🏺 유물
-</button>
+  <button
+    onclick="showSection('artifact',this)">
+    🏺 유물
+  </button>
 
-<button onclick="show('admin',this)">
-⚙️ 관리
-</button>
+  <button
+    onclick="showSection('admin',this)">
+    ⚙️ 관리
+  </button>
 
 </nav>
 
 
-<!-- 홈 -->
+<!-- =========================
+     홈
+========================= -->
 
 <section id="home">
 
-<div class="grid">
+  <div class="grid">
 
-<div class="card">
-<small>길드 순위</small>
-<div class="num" id="homeRank">🏆 74위</div>
-</div>
+    <div class="card">
+      <small>길드 순위</small>
+      <div
+        class="num"
+        id="homeRank">
+        -
+      </div>
+    </div>
 
-<div class="card">
-<small>통합시즌</small>
-<div class="num" id="homeIntegrated">34시즌</div>
-</div>
+    <div class="card">
+      <small>통합시즌</small>
+      <div
+        class="num"
+        id="homeIntegrated">
+        34시즌
+      </div>
+    </div>
 
-<div class="card">
-<small>길드원</small>
-<div class="num" id="homeCount">0명</div>
-</div>
+    <div class="card">
+      <small>현재 길드원</small>
+      <div
+        class="num"
+        id="homeCount">
+        0명
+      </div>
+    </div>
 
-<div class="card">
-<small>현재 주차</small>
-<div class="num" id="homeSeason">34-1</div>
-</div>
+    <div class="card">
+      <small>현재 시즌</small>
+      <div
+        class="num"
+        id="homeSeason">
+        34-1
+      </div>
+    </div>
 
-</div>
-
-
-<div id="anniversaryBox"></div>
-
-
-<div class="card">
-
-<div class="section-title">
-<h3>🎯 내부딜컷 / 목표딜컷</h3>
-
-<button class="small"
-onclick="editCuts()">
-수정
-</button>
-
-</div>
-
-<div class="table-wrap">
-
-<table>
-
-<thead>
-<tr>
-<th>보스</th>
-<th>내부컷</th>
-<th>목표컷</th>
-</tr>
-</thead>
-
-<tbody id="cutList"></tbody>
-
-</table>
-
-</div>
-
-</div>
+  </div>
 
 
-<div class="card">
+  <div
+    id="homeNotice">
+  </div>
 
-<h3>⚔️ 통합시즌 로테이션</h3>
 
-<div class="table-wrap">
+  <div class="card">
 
-<table>
+    <div class="section-title">
+      <h3>🎯 보스 딜컷</h3>
 
-<thead>
-<tr>
-<th>시즌</th>
-<th>보스 1</th>
-<th>보스 2</th>
-</tr>
-</thead>
+      <button
+        class="small"
+        onclick="openCutManager()">
+        수정
+      </button>
+    </div>
 
-<tbody>
+    <div class="table-wrap">
 
-<tr>
-<td>34-1</td>
-<td>기계신</td>
-<td>감초바다</td>
-</tr>
+      <table>
 
-<tr>
-<td>34-2</td>
-<td>기계신</td>
-<td>대천사</td>
-</tr>
+        <thead>
+          <tr>
+            <th>보스</th>
+            <th>내부컷</th>
+            <th>목표컷</th>
+          </tr>
+        </thead>
 
-<tr>
-<td>34-3</td>
-<td>대천사</td>
-<td>감초바다</td>
-</tr>
+        <tbody id="cutList">
+        </tbody>
 
-<tr>
-<td>34-4</td>
-<td>기계신</td>
-<td>감초바다</td>
-</tr>
+      </table>
 
-</tbody>
+    </div>
 
-</table>
+  </div>
 
-</div>
 
-</div>
+  <div class="card">
+
+    <div class="section-title">
+      <h3>⚔️ 통합시즌 보스표</h3>
+
+      <button
+        class="small"
+        onclick="openBossTableManager()">
+        관리
+      </button>
+    </div>
+
+    <div
+      id="bossRotation">
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- 길드원 -->
+<!-- =========================
+     길드원
+========================= -->
 
-<section id="members" class="hidden">
+<section
+  id="members"
+  class="hidden">
 
-<div class="card">
+  <div class="card">
 
-<div class="section-title">
+    <div class="section-title">
 
-<h3>👥 현재 길드원</h3>
+      <h3>👥 현재 길드원</h3>
 
-<button onclick="addMember()">
-➕ 길드원 추가
-</button>
+      <button
+        onclick="openMemberForm()">
+        ➕ 길드원 추가
+      </button>
 
-</div>
+    </div>
 
-<div class="notice">
-가입일 기준으로 정렬됩니다.
-현재 길드원은 최대 30명입니다.
-</div>
+    <div class="notice">
+      가입일이 있는 길드원은 가입일 기준으로 정렬됩니다.
+      가입일이 없는 사람은 임시등록 상태로 표시됩니다.
+    </div>
 
-<div id="firstOwnerNotice"></div>
+    <div id="ownerNotice">
+    </div>
 
-<div class="table-wrap">
+    <div class="table-wrap">
 
-<table>
+      <table>
 
-<thead>
+        <thead>
+          <tr>
+            <th>닉네임</th>
+            <th>가입날짜</th>
+            <th>구분</th>
+            <th>관리</th>
+          </tr>
+        </thead>
 
-<tr>
-<th>길드원</th>
-<th>가입날짜</th>
-<th>구분</th>
-<th>관리</th>
-</tr>
+        <tbody id="memberList">
+        </tbody>
 
-</thead>
+      </table>
 
-<tbody id="memberList"></tbody>
+    </div>
 
-</table>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="section-title">
-
-<h3>📁 탈퇴자</h3>
-
-<span id="retiredCount"
-class="badge gray">
-0명
-</span>
-
-</div>
-
-<div class="table-wrap">
-
-<table>
-
-<thead>
-
-<tr>
-<th>닉네임</th>
-<th>가입일</th>
-<th>탈퇴일</th>
-<th>관리</th>
-</tr>
-
-</thead>
-
-<tbody id="retiredList"></tbody>
-
-</table>
-
-</div>
-
-</div>
+  </div>
 
 
-<div class="card">
+  <div class="card">
 
-<div class="section-title">
+    <div class="section-title">
 
-<h3>🟡 임시등록</h3>
+      <h3>📁 탈퇴자</h3>
 
-<span id="temporaryCount"
-class="badge yellow">
-0명
-</span>
+      <span
+        id="retiredCount"
+        class="badge gray">
+        0명
+      </span>
 
-</div>
+    </div>
 
-<div class="notice">
-과거 토벌 데이터에는 존재하지만
-현재 길드원과 일치하지 않는 닉네임입니다.
-</div>
+    <div class="table-wrap">
 
-<div class="table-wrap">
+      <table>
 
-<table>
+        <thead>
+          <tr>
+            <th>닉네임</th>
+            <th>가입일</th>
+            <th>탈퇴일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
 
-<thead>
+        <tbody id="retiredList">
+        </tbody>
 
-<tr>
-<th>닉네임</th>
-<th>발견일</th>
-<th>관리</th>
-</tr>
+      </table>
 
-</thead>
+    </div>
 
-<tbody id="temporaryList"></tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</section>
+  </div>
 
 
-<!-- 토벌 -->
+  <div class="card">
 
-<section id="raid" class="hidden">
+    <div class="section-title">
 
-<div class="card">
+      <h3>🟡 임시등록</h3>
 
-<div class="section-title">
-<h3>⚔️ 토벌 기록</h3>
-</div>
+      <span
+        id="temporaryCount"
+        class="badge yellow">
+        0명
+      </span>
 
-<label>시즌</label>
+    </div>
 
-<select id="raidSeason"
-onchange="changeSeason()">
-</select>
+    <div class="notice warning">
+      과거 데이터에서 발견되었지만 현재 길드원 또는
+      닉네임 변경 이력과 일치하지 않는 사람입니다.
+    </div>
 
-<div id="raidArea"></div>
+    <div class="table-wrap">
 
-</div>
+      <table>
+
+        <thead>
+          <tr>
+            <th>닉네임</th>
+            <th>발견일</th>
+            <th>사유</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+
+        <tbody id="temporaryList">
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- 데이터 -->
+<!-- =========================
+     토벌
+========================= -->
 
-<section id="data" class="hidden">
+<section
+  id="raid"
+  class="hidden">
 
-<div class="card">
+  <div class="card">
 
-<h3>⚙️ 토벌 데이터 입력</h3>
+    <div class="section-title">
+      <h3>⚔️ 토벌 기록</h3>
+    </div>
 
-<p>
-현재 시즌:
-<b id="seasonName">34-1</b>
-</p>
+    <label>시즌</label>
 
-<label>길드원</label>
+    <select
+      id="raidSeason"
+      onchange="renderRaid()">
+    </select>
 
-<select id="name"
-onchange="loadSelectedRaid()">
-</select>
+    <div id="raidArea">
+    </div>
 
-<div id="bossInputs"></div>
-
-<button class="on full"
-onclick="saveRaid()">
-💾 토벌 기록 저장
-</button>
-
-</div>
-
-
-<div class="card">
-
-<h3>📷 과거 데이터 / Discord</h3>
-
-<div class="notice">
-Discord 사진에서 가져온 데이터의 닉네임을
-현재 길드원 및 닉네임 변경 이력과 비교하여
-불일치 데이터를 임시등록으로 분류할 수 있습니다.
-</div>
-
-<button class="full"
-onclick="openImport()">
-📥 데이터 가져오기
-</button>
-
-</div>
+  </div>
 
 </section>
 
 
-<!-- 유물 -->
+<!-- =========================
+     데이터 입력
+========================= -->
 
-<section id="artifact" class="hidden">
+<section
+  id="data"
+  class="hidden">
 
-<div class="card">
+  <div class="card">
 
-<div class="section-title">
+    <h3>⚔️ 토벌 데이터 입력</h3>
 
-<h3>🏺 유물점수</h3>
+    <div class="notice">
+      토벌딜은 실제 데미지 숫자로 저장되며,
+      화면에서는 억 단위로 표시됩니다.
+    </div>
 
-<button onclick="addArtifact()">
-➕ 추가
-</button>
+    <label>시즌</label>
 
-</div>
+    <select
+      id="dataSeason"
+      onchange="loadRaidForm()">
+    </select>
 
-<div class="notice">
-유물점수는 통합시즌 단위로 관리합니다.
-</div>
 
-<label>통합시즌</label>
+    <label>길드원</label>
 
-<select id="artifactSeason"
-onchange="renderArtifacts()">
-</select>
+    <select
+      id="dataMember"
+      onchange="loadRaidForm()">
+    </select>
 
-<div class="table-wrap">
 
-<table>
+    <div id="raidForm">
+    </div>
 
-<thead>
+  </div>
 
-<tr>
-<th>닉네임</th>
-<th>통합시즌</th>
-<th>유물점수 누계</th>
-<th>시즌점수</th>
-<th>관리</th>
-</tr>
 
-</thead>
+  <div class="card">
 
-<tbody id="artifactList"></tbody>
+    <h3>📥 과거 데이터 가져오기</h3>
 
-</table>
+    <div class="notice">
+      과거 토벌 데이터의 닉네임을 현재 길드원 및
+      닉네임 변경 이력과 비교합니다.
+      일치하지 않는 닉네임은 임시등록으로 표시할 수 있습니다.
+    </div>
 
-</div>
+    <button
+      class="full"
+      onclick="openImportManager()">
+      📥 과거 데이터 입력
+    </button>
 
-</div>
+  </div>
 
 </section>
 
 
-<!-- 관리 -->
+<!-- =========================
+     유물
+========================= -->
 
-<section id="admin" class="hidden">
+<section
+  id="artifact"
+  class="hidden">
 
-<div class="card">
+  <div class="card">
 
-<div class="section-title">
+    <div class="section-title">
 
-<h3>⚙️ 운영진 관리</h3>
+      <h3>🏺 유물점수</h3>
 
-<span id="loginState"
-class="badge gray">
-읽기 전용
-</span>
+      <button
+        onclick="openArtifactForm()">
+        ➕ 입력
+      </button>
 
-</div>
+    </div>
 
-<div id="adminLogin">
+    <div class="notice">
+      유물점수는 통합시즌 단위로 관리합니다.
+      닉네임 변경 시 회원 ID를 기준으로 기존 기록을 유지합니다.
+    </div>
 
-<div class="notice">
-운영진만 수정 기능을 사용할 수 있습니다.
-</div>
+    <div class="table-wrap">
 
-<label>4자리 운영진 코드</label>
+      <table>
 
-<input
-id="adminCode"
-type="password"
-inputmode="numeric"
-maxlength="4"
-placeholder="숫자 4자리">
+        <thead>
+          <tr>
+            <th>닉네임</th>
+            <th>통합시즌</th>
+            <th>유물점수 누계</th>
+            <th>시즌점수</th>
+            <th>관리</th>
+          </tr>
+        </thead>
 
-<button
-class="on full"
-onclick="loginAdmin()">
-🔑 로그인
-</button>
+        <tbody id="artifactList">
+        </tbody>
 
-</div>
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
 
 
-<div id="adminPanel"
-class="hidden">
+<!-- =========================
+     관리
+========================= -->
 
-<div class="notice success">
-운영진 권한으로 로그인되었습니다.
-</div>
+<section
+  id="admin"
+  class="hidden">
 
-<button
-class="full"
-onclick="openAdminManager()">
-👑 운영진 관리
-</button>
+  <div class="card">
 
-<br>
+    <div class="section-title">
 
-<button
-class="full"
-onclick="openGuildManager()">
-🏰 길드 관리
-</button>
+      <h3>⚙️ 운영진 관리</h3>
 
-<br>
+      <span
+        id="loginState"
+        class="badge gray">
+        읽기 전용
+      </span>
 
-<button
-class="full"
-onclick="openDiscordSettings()">
-💬 Discord 설정
-</button>
+    </div>
 
-<br>
 
-<button
-class="danger full"
-onclick="logoutAdmin()">
-로그아웃
-</button>
+    <div id="adminLogin">
 
-</div>
+      <div class="notice">
+        운영진 권한이 필요한 기능입니다.
+      </div>
 
-</div>
+      <label>운영진 코드</label>
+
+      <input
+        id="adminCode"
+        type="password"
+        inputmode="numeric"
+        maxlength="4"
+        placeholder="코드 입력">
+
+      <button
+        class="on full"
+        onclick="loginAdmin()">
+        🔑 로그인
+      </button>
+
+    </div>
+
+
+    <div
+      id="adminPanel"
+      class="hidden">
+
+      <div class="notice success">
+        운영진 권한으로 로그인되었습니다.
+      </div>
+
+      <button
+        class="full"
+        onclick="openAdminManager()">
+        👑 운영진 관리
+      </button>
+
+      <br>
+
+      <button
+        class="full"
+        onclick="openGuildManager()">
+        🏰 길드 관리
+      </button>
+
+      <br>
+
+      <button
+        class="full"
+        onclick="openDiscordSettings()">
+        💬 Discord 설정
+      </button>
+
+      <br>
+
+      <button
+        class="danger full"
+        onclick="logoutAdmin()">
+        로그아웃
+      </button>
+
+    </div>
+
+  </div>
 
 </section>
 
 </main>
 
 
-<div id="modal" class="modal hidden">
+<!-- 모달 -->
 
-<div class="modal-box"
-id="modalBox">
-</div>
+<div
+  id="modal"
+  class="modal hidden">
+
+  <div
+    id="modalBox"
+    class="modal-box">
+  </div>
 
 </div>
 
 
 <script>
-/* ==================================================
-   길드 토벌 관리 시스템
-   기본 데이터 / 저장 구조
-================================================== */
 
-const STORAGE_KEY = "guild_raid_manager_v4";
+/* =========================================================
+   기본 설정
+========================================================= */
 
-const BOSS_LIST = [
-  "드래곤",
+const STORAGE_KEY =
+  "guild_raid_manager_v5";
+
+
+const CURRENT_VERSION = 5;
+
+
+/* =========================================================
+   기본 보스 목록
+========================================================= */
+
+const DEFAULT_BOSSES = [
   "기계신",
+  "대천사",
   "감초바다",
-  "대천사"
+  "드래곤"
 ];
 
+
+/* =========================================================
+   기본 딜컷
+   저장값은 실제 데미지 숫자
+========================================================= */
+
 const DEFAULT_CUTS = {
-  "드래곤": {
-    inside: 200,
-    target: 270
+
+  "기계신":{
+    inside:22000000000,
+    target:27000000000
   },
-  "기계신": {
-    inside: 220,
-    target: 270
+
+  "대천사":{
+    inside:null,
+    target:null
   },
-  "감초바다": {
-    inside: 230,
-    target: 340
+
+  "감초바다":{
+    inside:23000000000,
+    target:34000000000
   },
-  "대천사": {
-    inside: null,
-    target: null
+
+  "드래곤":{
+    inside:20000000000,
+    target:27000000000
   }
+
 };
 
 
-/* -------------------------------
-   숫자 표시
--------------------------------- */
+/* =========================================================
+   HTML 안전 처리
+========================================================= */
 
-function fmt(n) {
-
-  n = Number(n) || 0;
-
-  if (n >= 1000000000000)
-    return (n / 1e12).toFixed(2) + "T";
-
-  if (n >= 1000000000)
-    return (n / 1e9).toFixed(2) + "B";
-
-  if (n >= 1000000)
-    return (n / 1e6).toFixed(2) + "M";
-
-  return n.toLocaleString();
-}
-
-
-/* -------------------------------
-   억 단위 표시
--------------------------------- */
-
-function fmtEok(n) {
-
-  n = Number(n) || 0;
-
-  if (!n)
-    return "-";
-
-  return (n / 100000000).toFixed(2) + "억";
-}
-
-
-/* -------------------------------
-   HTML 문자 안전 처리
--------------------------------- */
-
-function escapeHtml(value) {
+function escapeHtml(value){
 
   return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-
-/* -------------------------------
-   날짜
--------------------------------- */
-
-function today() {
-
-  return new Date()
-    .toISOString()
-    .slice(0, 10);
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
 
-/* -------------------------------
-   기본 길드 데이터
--------------------------------- */
+/* =========================================================
+   숫자 포맷
+   토벌딜은 억 단위
+========================================================= */
+
+function formatDamage(value){
+
+  const n =
+    Number(value);
+
+  if(
+    !Number.isFinite(n) ||
+    n <= 0
+  ){
+    return "-";
+  }
+
+  const eok =
+    n / 100000000;
+
+  return (
+    Math.round(eok)
+      .toLocaleString()
+    + "억"
+  );
+
+}
+
+
+/* =========================================================
+   입력용 숫자 정리
+========================================================= */
+
+function parseDamage(value){
+
+  if(
+    value === null ||
+    value === undefined ||
+    value === ""
+  ){
+    return 0;
+  }
+
+  let text =
+    String(value)
+      .trim()
+      .replace(/,/g,"");
+
+  /*
+   * 사용자가 300억처럼 입력해도 처리
+   */
+
+  if(
+    /억$/i.test(text)
+  ){
+
+    text =
+      text
+        .replace(/억$/i,"")
+        .trim();
+
+    const number =
+      Number(text);
+
+    if(
+      Number.isFinite(number)
+    ){
+      return number *
+        100000000;
+    }
+
+  }
+
+  const n =
+    Number(text);
+
+  return Number.isFinite(n)
+    ? n
+    : 0;
+
+}
+
+
+/* =========================================================
+   일반 숫자 표시
+========================================================= */
+
+function formatNumber(value){
+
+  const n =
+    Number(value) || 0;
+
+  return n.toLocaleString();
+
+}
+
+
+/* =========================================================
+   오늘 날짜
+========================================================= */
+
+function today(){
+
+  const d =
+    new Date();
+
+  const y =
+    d.getFullYear();
+
+  const m =
+    String(
+      d.getMonth()+1
+    ).padStart(2,"0");
+
+  const day =
+    String(
+      d.getDate()
+    ).padStart(2,"0");
+
+  return `${y}-${m}-${day}`;
+
+}
+
+
+/* =========================================================
+   ID 생성
+========================================================= */
+
+function makeId(prefix){
+
+  return (
+    prefix +
+    "_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2,7)
+  );
+
+}
+
+
+/* =========================================================
+   빈 길드 생성
+========================================================= */
 
 function createGuild(
   id,
   name
-) {
+){
 
   return {
 
-    id: id,
+    id:id,
 
-    name: name,
+    name:name,
 
-    rank: 0,
+    rank:0,
 
-    integratedSeason: 34,
+    integratedSeason:34,
 
-    currentSeason: "34-1",
+    currentSeason:"34-1",
 
 
     /*
      * 현재 길드원
      */
-    members: [],
+    members:[],
 
 
     /*
-     * 탈퇴한 길드원
+     * 탈퇴자
      */
-    retired: [],
+    retired:[],
 
 
     /*
-     * 과거 데이터에서 발견됐지만
-     * 현재 길드원과 일치하지 않는 사람
+     * 과거 데이터에서 발견된 미확인 닉네임
      */
-    temporary: [],
+    temporary:[],
 
 
     /*
      * 토벌 데이터
-     *
-     * season
-     *   └ memberId
-     *       └ boss
-     *           ├ damage
-     *           └ count
-     */
-    raid: {},
+
+       raid[시즌][회원ID][보스] = {
+         damage: 숫자,
+         count: 공격횟수
+       }
+    */
+    raid:{},
 
 
     /*
      * 유물 데이터
-     */
-    artifacts: {},
+
+       artifacts[회원ID] = {
+         total: 누계,
+         season:{
+           34: 점수
+         }
+       }
+    */
+    artifacts:{},
 
 
     /*
-     * 보스별 내부/목표 딜컷
+     * 딜컷
      */
     cuts:
       JSON.parse(
-        JSON.stringify(DEFAULT_CUTS)
+        JSON.stringify(
+          DEFAULT_CUTS
+        )
       ),
 
 
     /*
      * 시즌별 보스표
-     *
-     * 예:
-     *
-     * "34-1": [
-     *   "기계신",
-     *   "감초바다"
-     * ]
-     */
-    bossTable: {
 
-      bosses: [
-        ...BOSS_LIST
+       seasons:{
+         "34-1":[
+           "기계신",
+           "감초바다"
+         ]
+       }
+    */
+    bossTable:{
+
+      bosses:[
+        ...DEFAULT_BOSSES
       ],
 
-      seasons: {},
+      seasons:{
 
-      source: "manual",
+        "34-1":[
+          "기계신",
+          "감초바다"
+        ],
 
-      updated: null
+        "34-2":[
+          "기계신",
+          "대천사"
+        ],
+
+        "34-3":[
+          "대천사",
+          "감초바다"
+        ],
+
+        "34-4":[
+          "기계신",
+          "감초바다"
+        ]
+
+      },
+
+      source:"manual",
+
+      updated:null
 
     },
 
@@ -979,27 +1201,27 @@ function createGuild(
     /*
      * 운영진
      */
-    admins: [],
+    admins:[],
 
 
     /*
-     * 사용자 권한
+     * 다른 사용자의 길드 접근권한
      */
-    users: [],
+    users:[],
 
 
     /*
-     * Discord 연결 정보
+     * Discord 설정
      */
-    discord: {
+    discord:{
 
-      connected: false,
+      connected:false,
 
-      serverId: "",
+      serverId:"",
 
-      channelId: "",
+      channelId:"",
 
-      channelName: ""
+      channelName:""
 
     },
 
@@ -1007,89 +1229,147 @@ function createGuild(
     /*
      * 최초 운영진 설정 여부
      */
-    ownerInitialized: false
+    ownerInitialized:false
 
   };
 
 }
 
 
-/* -------------------------------
-   앱 전체 데이터
--------------------------------- */
+/* =========================================================
+   앱 데이터 불러오기
+========================================================= */
 
-let app =
-  JSON.parse(
-    localStorage.getItem(
-      STORAGE_KEY
-    ) || "null"
-   );
-if (!app) {
+function loadApp(){
 
-  app = {
+  let saved = null;
 
-    version: 4,
+  try{
 
-    guilds: {},
+    saved =
+      JSON.parse(
+        localStorage.getItem(
+          STORAGE_KEY
+        ) || "null"
+      );
 
-    currentGuild: null
+  }
+  catch(e){
+
+    console.error(e);
+
+    saved = null;
+
+  }
+
+
+  if(
+    saved &&
+    saved.guilds
+  ){
+
+    migrateApp(saved);
+
+    return saved;
+
+  }
+
+
+  /*
+   * 기존 버전 데이터가 있다면
+   * 최대한 가져온다.
+   */
+
+  const app = {
+
+    version:CURRENT_VERSION,
+
+    guilds:{},
+
+    currentGuild:null
 
   };
 
-  const firstGuild =
+
+  const guild =
     createGuild(
       "guild_001",
       "117번째우정"
     );
 
-  const oldMembers =
-    JSON.parse(
-      localStorage.getItem(
-        "members"
-      ) || "null"
-    );
 
-  if (
+  /*
+   * 기존 members 데이터 호환
+   */
+
+  let oldMembers = null;
+
+  try{
+
+    oldMembers =
+      JSON.parse(
+        localStorage.getItem(
+          "members"
+        ) || "null"
+      );
+
+  }
+  catch(e){
+
+    oldMembers = null;
+
+  }
+
+
+  if(
     Array.isArray(oldMembers)
-  ) {
+  ){
 
     oldMembers.forEach(
-      (member, index) => {
+      (item,index)=>{
 
-        if (!member)
+        if(!item)
           return;
 
         const name =
-          typeof member === "string"
-            ? member
-            : member.name;
+          typeof item === "string"
+            ? item
+            : item.name;
 
-        if (!name)
+        if(!name)
           return;
 
-        firstGuild.members.push({
+        /*
+         * 기존 데이터에 가입일이 없으면
+         * 임의로 오늘 날짜를 넣지 않는다.
+         */
+
+        guild.members.push({
 
           id:
+            item.id ||
             "M" +
-            String(index + 1)
-              .padStart(3, "0"),
+            String(index+1)
+              .padStart(3,"0"),
 
-          name: name,
+          name:
+            String(name),
 
           joined:
-            member.joined ||
-            today(),
+            item.joined || "",
 
           role:
-            member.role ||
-            "member",
+            item.role || "member",
 
           history:
             Array.isArray(
-              member.history
+              item.history
             )
-              ? member.history
-              : []
+              ? item.history
+              : [],
+
+          temporaryJoined:
+            !item.joined
 
         });
 
@@ -1097,37 +1377,190 @@ if (!app) {
     );
 
   }
+
+
   app.guilds[
-    firstGuild.id
-  ] = firstGuild;
+    guild.id
+  ] = guild;
 
   app.currentGuild =
-    firstGuild.id;
+    guild.id;
 
-  saveApp();
+
+  saveApp(app);
+
+  return app;
 
 }
 
 
-/* -------------------------------
-   앱 저장
--------------------------------- */
+/* =========================================================
+   데이터 마이그레이션
+========================================================= */
 
-function saveApp() {
+function migrateApp(data){
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(app)
+  data.version =
+    CURRENT_VERSION;
+
+
+  Object.values(
+    data.guilds || {}
+  ).forEach(
+    guild=>{
+
+      if(!Array.isArray(guild.members))
+        guild.members=[];
+
+      if(!Array.isArray(guild.retired))
+        guild.retired=[];
+
+      if(!Array.isArray(guild.temporary))
+        guild.temporary=[];
+
+      if(!guild.raid)
+        guild.raid={};
+
+      if(!guild.artifacts)
+        guild.artifacts={};
+
+      if(!guild.cuts)
+        guild.cuts={};
+
+      Object.keys(
+        DEFAULT_CUTS
+      ).forEach(
+        boss=>{
+
+          if(!guild.cuts[boss]){
+
+            guild.cuts[boss]=
+              JSON.parse(
+                JSON.stringify(
+                  DEFAULT_CUTS[boss]
+                )
+              );
+
+          }
+
+        }
+      );
+
+
+      if(!guild.bossTable){
+
+        guild.bossTable={
+          bosses:[
+            ...DEFAULT_BOSSES
+          ],
+          seasons:{},
+          source:"manual",
+          updated:null
+        };
+
+      }
+
+
+      if(!Array.isArray(
+        guild.bossTable.bosses
+      )){
+
+        guild.bossTable.bosses=[
+          ...DEFAULT_BOSSES
+        ];
+
+      }
+
+
+      if(!guild.bossTable.seasons){
+
+        guild.bossTable.seasons={};
+
+      }
+
+
+      if(!Array.isArray(guild.admins))
+        guild.admins=[];
+
+      if(!Array.isArray(guild.users))
+        guild.users=[];
+
+
+      if(!guild.discord){
+
+        guild.discord={
+
+          connected:false,
+
+          serverId:"",
+
+          channelId:"",
+
+          channelName:""
+
+        };
+
+      }
+
+
+      if(
+        typeof guild.ownerInitialized !==
+        "boolean"
+      ){
+
+        guild.ownerInitialized =
+          guild.admins.some(
+            a=>a.role==="owner"
+          );
+
+      }
+
+    }
   );
 
 }
 
 
-/* -------------------------------
-   현재 길드
--------------------------------- */
+/* =========================================================
+   전역 앱
+========================================================= */
 
-function getGuild() {
+let app =
+  loadApp();
+
+
+/* =========================================================
+   저장
+========================================================= */
+
+function saveApp(){
+
+  try{
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(app)
+    );
+
+  }
+  catch(e){
+
+    console.error(e);
+
+    alert(
+      "데이터 저장에 실패했습니다."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   현재 길드
+========================================================= */
+
+function getGuild(){
 
   return app.guilds[
     app.currentGuild
@@ -1136,174 +1569,317 @@ function getGuild() {
 }
 
 
-/* -------------------------------
-   회원 ID 생성
--------------------------------- */
+/* =========================================================
+   회원 찾기
+========================================================= */
 
-function createMemberId() {
+function findMemberById(id){
+
+  const guild =
+    getGuild();
+
+  return (
+    guild.members || []
+  ).find(
+    member =>
+      member.id === id
+  ) || null;
+
+}
+
+
+/* =========================================================
+   현재 회원 이름 찾기
+========================================================= */
+
+function findMemberByName(name){
+
+  const guild =
+    getGuild();
+
+  return (
+    guild.members || []
+  ).find(
+    member =>
+      member.name === name
+  ) || null;
+
+}
+
+
+/* =========================================================
+   닉네임 변경 이력 검색
+========================================================= */
+
+function findMemberByHistory(name){
+
+  const guild =
+    getGuild();
+
+  for(
+    const member of
+    guild.members || []
+  ){
+
+    if(
+      (member.history || [])
+        .some(
+          item =>
+            item.name === name
+        )
+    ){
+
+      return member;
+
+    }
+
+  }
+
+
+  /*
+   * 탈퇴자도 이력 검색
+   */
+
+  for(
+    const member of
+    guild.retired || []
+  ){
+
+    if(
+      (member.history || [])
+        .some(
+          item =>
+            item.name === name
+        )
+    ){
+
+      return member;
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =========================================================
+   회원 ID 생성
+========================================================= */
+
+function createMemberId(){
 
   const guild =
     getGuild();
 
   const all = [
+
     ...(guild.members || []),
-    ...(guild.retired || []),
-    ...(guild.temporary || [])
+
+    ...(guild.retired || [])
+
   ];
+
 
   let max = 0;
 
-  all.forEach(member => {
 
-    const match =
-      String(member.id || "")
+  all.forEach(
+    member=>{
+
+      const match =
+        String(
+          member.id || ""
+        )
         .match(/(\d+)$/);
 
-    if (match) {
+      if(match){
 
-      max =
-        Math.max(
-          max,
-          Number(match[1])
-        );
+        max =
+          Math.max(
+            max,
+            Number(match[1])
+          );
+
+      }
 
     }
+  );
 
-  });
-
-  return "M" +
-    String(max + 1)
-      .padStart(3, "0");
-
-}
-
-
-/* -------------------------------
-   회원 ID로 찾기
--------------------------------- */
-
-function findMemberById(id) {
 
   return (
-    getGuild().members || []
-  ).find(
-    member =>
-      member.id === id
+    "M" +
+    String(max+1)
+      .padStart(4,"0")
   );
 
 }
 
 
-/* -------------------------------
-   닉네임으로 찾기
--------------------------------- */
+/* =========================================================
+   권한
+========================================================= */
 
-function findMemberByName(name) {
-
-  return (
-    getGuild().members || []
-  ).find(
-    member =>
-      member.name === name
-  );
-
-}
-/* ==================================================
-   길드원 추가
-================================================== */
-
-function addMember() {
-
-  if (!isManager()) {
-
-    alert(
-      "운영진만 수정할 수 있습니다."
-    );
-
-    return;
-  }
-
-
-  const nameInput =
-    document.getElementById("memberName");
-
-  const dateInput =
-    document.getElementById("memberJoined");
-
-
-  if (!nameInput)
-    return;
-
-
-  const name =
-    nameInput.value.trim();
-
-  const joined =
-    dateInput
-      ? dateInput.value
-      : today();
-
-
-  if (!name) {
-
-    alert(
-      "닉네임을 입력해주세요."
-    );
-
-    return;
-  }
-
+function isManager(){
 
   const guild =
     getGuild();
 
+  return (
+    sessionStorage.getItem(
+      "adminGuild"
+    ) === guild.id
+  );
 
-  const exists =
-    guild.members.some(
-      member =>
-        member.name === name
+}
+
+
+function isOwner(){
+
+  const guild =
+    getGuild();
+
+  return (
+    sessionStorage.getItem(
+      "ownerGuild"
+    ) === guild.id
+  );
+
+}
+
+
+/* =========================================================
+   화면 전환
+========================================================= */
+
+function showSection(
+  sectionId,
+  button
+){
+
+  document
+    .querySelectorAll(
+      "main > section"
+    )
+    .forEach(
+      section =>
+        section.classList.add(
+          "hidden"
+        )
     );
 
 
-  if (exists) {
-
-    alert(
-      "이미 등록된 길드원입니다."
+  const section =
+    document.getElementById(
+      sectionId
     );
 
-    return;
+
+  if(section){
+
+    section.classList.remove(
+      "hidden"
+    );
+
   }
 
 
-  guild.members.push({
+  document
+    .querySelectorAll(
+      "nav button"
+    )
+    .forEach(
+      btn =>
+        btn.classList.remove(
+          "on"
+        )
+    );
 
-    id:
-      createMemberId(),
 
-    name:
-      name,
+  if(button)
+    button.classList.add("on");
 
-    joined:
-      joined || today(),
 
-    role:
-      "member",
+  renderAll();
 
-    history:
-      []
+}
 
-  });
+
+/* =========================================================
+   길드 선택
+========================================================= */
+
+function renderGuildSelect(){
+
+  const select =
+    document.getElementById(
+      "guildSelect"
+    );
+
+  if(!select)
+    return;
+
+
+  const guilds =
+    Object.values(
+      app.guilds || {}
+    );
+
+
+  select.innerHTML =
+    guilds
+      .map(
+        guild=>`
+
+          <option
+            value="${escapeHtml(guild.id)}"
+            ${
+              guild.id ===
+              app.currentGuild
+                ? "selected"
+                : ""
+            }>
+            ${escapeHtml(
+              guild.name
+            )}
+          </option>
+
+        `
+      )
+      .join("");
+
+}
+
+
+/* =========================================================
+   길드 변경
+========================================================= */
+
+function switchGuild(id){
+
+  if(
+    !app.guilds[id]
+  )
+    return;
+
+
+  app.currentGuild =
+    id;
 
 
   /*
-   * 가입순으로 정렬
+   * 다른 길드로 이동하면
+   * 이전 길드의 세션 권한을 그대로 쓰지 않는다.
    */
-  guild.members.sort(
-    (a, b) =>
-      String(a.joined)
-        .localeCompare(
-          String(b.joined)
-        )
+
+  sessionStorage.removeItem(
+    "adminGuild"
+  );
+
+  sessionStorage.removeItem(
+    "ownerGuild"
   );
 
 
@@ -1311,11 +1887,98 @@ function addMember() {
 
   renderAll();
 
+}
 
-  nameInput.value = "";
 
-  if (dateInput)
-    dateInput.value = "";
+/* =========================================================
+   회원 추가
+========================================================= */
+
+function saveMember(){
+
+  if(!isManager()){
+
+    alert(
+      "운영진만 수정할 수 있습니다."
+    );
+
+    return;
+
+  }
+
+
+  const name =
+    document
+      .getElementById(
+        "newMemberName"
+      )
+      .value
+      .trim();
+
+
+  const joined =
+    document
+      .getElementById(
+        "newMemberJoined"
+      )
+      .value;
+
+
+  if(!name){
+
+    alert(
+      "닉네임을 입력해주세요."
+    );
+
+    return;
+
+  }
+
+
+  const guild =
+    getGuild();
+
+
+  if(
+    guild.members.some(
+      m=>m.name===name
+    )
+  ){
+
+    alert(
+      "이미 현재 길드원으로 등록되어 있습니다."
+    );
+
+    return;
+
+  }
+
+
+  guild.members.push({
+
+    id:createMemberId(),
+
+    name:name,
+
+    joined:joined || "",
+
+    role:"member",
+
+    history:[],
+
+    temporaryJoined:
+      !joined
+
+  });
+
+
+  sortMembers();
+
+  saveApp();
+
+  closeModal();
+
+  renderAll();
 
 
   alert(
@@ -1325,84 +1988,255 @@ function addMember() {
 }
 
 
-/* ==================================================
-   길드원 닉네임 변경
-================================================== */
+/* =========================================================
+   회원 정렬
+   가입일 있는 사람 먼저
+   가입일이 없는 사람은 뒤
+========================================================= */
 
-function renameMember(
-  memberId
-) {
+function sortMembers(){
 
-  if (!isManager()) {
+  const guild =
+    getGuild();
+
+  guild.members.sort(
+    (a,b)=>{
+
+      const aDate =
+        a.joined || "";
+
+      const bDate =
+        b.joined || "";
+
+
+      if(!aDate && !bDate)
+        return a.name
+          .localeCompare(
+            b.name,
+            "ko"
+          );
+
+
+      if(!aDate)
+        return 1;
+
+
+      if(!bDate)
+        return -1;
+
+
+      const compare =
+        aDate.localeCompare(
+          bDate
+        );
+
+
+      if(compare !== 0)
+        return compare;
+
+
+      return a.name
+        .localeCompare(
+          b.name,
+          "ko"
+        );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   회원 추가 창
+========================================================= */
+
+function openMemberForm(){
+
+  if(!isManager()){
 
     alert(
       "운영진만 수정할 수 있습니다."
     );
 
     return;
+
+  }
+
+
+  openModal(`
+
+    <h3>➕ 길드원 추가</h3>
+
+    <label>닉네임</label>
+
+    <input
+      id="newMemberName"
+      placeholder="닉네임">
+
+
+    <label>가입날짜</label>
+
+    <input
+      id="newMemberJoined"
+      type="date">
+
+
+    <div class="notice">
+      가입날짜를 모르는 과거 길드원은
+      비워두면 임시 가입 상태로 등록됩니다.
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        onclick="closeModal()">
+        취소
+      </button>
+
+      <button
+        class="on"
+        onclick="saveMember()">
+        저장
+      </button>
+
+    </div>
+
+  `);
+
+}
+
+
+/* =========================================================
+   회원 닉네임 변경
+========================================================= */
+
+function renameMember(id){
+
+  if(!isManager()){
+
+    alert(
+      "운영진만 수정할 수 있습니다."
+    );
+
+    return;
+
   }
 
 
   const member =
-    findMemberById(
-      memberId
-    );
+    findMemberById(id);
 
 
-  if (!member)
+  if(!member)
     return;
 
 
-  const newName =
-    prompt(
-      "새 닉네임을 입력해주세요.",
-      member.name
-    );
+  openModal(`
+
+    <h3>✏️ 닉네임 변경</h3>
+
+    <div class="notice">
+      이전 닉네임은 자동으로 이력에 저장됩니다.
+      과거 토벌 데이터와 연결할 때 사용됩니다.
+    </div>
+
+    <label>현재 닉네임</label>
+
+    <input
+      id="renameInput"
+      value="${escapeHtml(
+        member.name
+      )}">
+
+    <div class="modal-actions">
+
+      <button
+        onclick="closeModal()">
+        취소
+      </button>
+
+      <button
+        class="on"
+        onclick="saveRename('${escapeHtml(id)}')">
+        변경
+      </button>
+
+    </div>
+
+  `);
+
+}
 
 
-  if (
-    newName === null
-  )
+/* =========================================================
+   닉네임 변경 저장
+========================================================= */
+
+function saveRename(id){
+
+  const member =
+    findMemberById(id);
+
+  if(!member)
     return;
+
+
+  const input =
+    document.getElementById(
+      "renameInput"
+    );
 
 
   const name =
-    newName.trim();
+    input.value.trim();
 
 
-  if (!name)
+  if(!name){
+
+    alert(
+      "닉네임을 입력해주세요."
+    );
+
     return;
 
+  }
 
-  if (
+
+  if(
     name !== member.name &&
     findMemberByName(name)
-  ) {
+  ){
 
     alert(
       "이미 사용 중인 닉네임입니다."
     );
 
     return;
+
   }
 
 
-  /*
-   * 이전 닉네임을 이력에 저장
-   */
-  if (
+  if(
     name !== member.name
-  ) {
+  ){
+
+    if(!Array.isArray(
+      member.history
+    )){
+      member.history=[];
+    }
+
 
     member.history.push({
 
-      name:
-        member.name,
+      name:member.name,
 
-      changed:
-        today()
+      changed:today()
 
     });
+
 
     member.name =
       name;
@@ -1412,26 +2246,27 @@ function renameMember(
 
   saveApp();
 
+  closeModal();
+
   renderAll();
 
 }
 
 
-/* ==================================================
-   길드원 삭제
-================================================== */
+/* =========================================================
+   회원 탈퇴
+========================================================= */
 
-function deleteMember(
-  memberId
-) {
+function retireMember(id){
 
-  if (!isManager()) {
+  if(!isManager()){
 
     alert(
       "운영진만 수정할 수 있습니다."
     );
 
     return;
+
   }
 
 
@@ -1441,12 +2276,11 @@ function deleteMember(
 
   const index =
     guild.members.findIndex(
-      member =>
-        member.id === memberId
+      m=>m.id===id
     );
 
 
-  if (index < 0)
+  if(index < 0)
     return;
 
 
@@ -1454,21 +2288,16 @@ function deleteMember(
     guild.members[index];
 
 
-  if (
+  if(
     !confirm(
-      `${member.name} 님을 삭제할까요?`
+      `${member.name} 님을 탈퇴자로 이동할까요?`
     )
   )
     return;
 
 
-  /*
-   * 완전 삭제하지 않고
-   * 탈퇴자로 이동
-   */
   member.retiredAt =
     today();
-
 
   member.role =
     "retired";
@@ -1489,29 +2318,23 @@ function deleteMember(
 
   renderAll();
 
-
-  alert(
-    "탈퇴자로 이동되었습니다."
-  );
-
 }
 
 
-/* ==================================================
+/* =========================================================
    탈퇴자 복귀
-================================================== */
+========================================================= */
 
-function restoreMember(
-  memberId
-) {
+function restoreMember(id){
 
-  if (!isManager()) {
+  if(!isManager()){
 
     alert(
       "운영진만 수정할 수 있습니다."
     );
 
     return;
+
   }
 
 
@@ -1521,12 +2344,11 @@ function restoreMember(
 
   const index =
     guild.retired.findIndex(
-      member =>
-        member.id === memberId
+      m=>m.id===id
     );
 
 
-  if (index < 0)
+  if(index < 0)
     return;
 
 
@@ -1536,7 +2358,6 @@ function restoreMember(
 
   member.role =
     "member";
-
 
   member.retiredAt =
     "";
@@ -1553,17 +2374,7 @@ function restoreMember(
   );
 
 
-  /*
-   * 가입순
-   */
-  guild.members.sort(
-    (a, b) =>
-      String(a.joined)
-        .localeCompare(
-          String(b.joined)
-        )
-  );
-
+  sortMembers();
 
   saveApp();
 
@@ -1572,161 +2383,149 @@ function restoreMember(
 }
 
 
-/* ==================================================
-   탈퇴자 영구 삭제
-================================================== */
-
-function permanentlyDeleteRetired(
-  memberId
-) {
-
-  if (!isOwner()) {
-
-    alert(
-      "최초 운영진만 사용할 수 있습니다."
-    );
-
-    return;
-  }
-
-
-  const guild =
-    getGuild();
-
-
-  const index =
-    guild.retired.findIndex(
-      member =>
-        member.id === memberId
-    );
-
-
-  if (index < 0)
-    return;
-
-
-  const member =
-    guild.retired[index];
-
-
-  if (
-    !confirm(
-      `${member.name} 님의 탈퇴자 기록을 완전히 삭제할까요?`
-    )
-  )
-    return;
-
-
-  guild.retired.splice(
-    index,
-    1
-  );
-
-
-  saveApp();
-
-  renderAll();
-
-}
-/* ==================================================
-   임시등록
-================================================== */
+/* =========================================================
+   임시등록 추가
+========================================================= */
 
 function addTemporaryMember(
   name,
-  reason = "과거 데이터"
-) {
+  reason="과거 데이터"
+){
 
   const guild =
     getGuild();
 
 
-  if (!name)
-    return;
-
-
   name =
-    String(name).trim();
+    String(name || "")
+      .trim();
 
 
-  if (!name)
-    return;
+  if(!name)
+    return null;
 
 
   /*
-   * 현재 길드원인지 확인
+   * 현재 회원이면 임시등록하지 않음
    */
-  if (
+
+  if(
     guild.members.some(
-      member =>
-        member.name === name
+      m=>m.name===name
     )
-  )
-    return;
+  ){
+
+    return {
+      type:"current",
+      member:
+        findMemberByName(name)
+    };
+
+  }
 
 
   /*
-   * 닉네임 변경 이력인지 확인
+   * 닉네임 변경 이력이면
+   * 기존 회원으로 인식
    */
-  if (
-    findMemberByHistory(name)
-  )
-    return;
+
+  const history =
+    findMemberByHistory(name);
+
+
+  if(history){
+
+    return {
+      type:"renamed",
+      member:history
+    };
+
+  }
 
 
   /*
-   * 이미 임시등록되어 있는지 확인
+   * 탈퇴자 확인
    */
-  if (
-    guild.temporary.some(
-      member =>
-        member.name === name
-    )
-  )
-    return;
+
+  const retired =
+    guild.retired.find(
+      m=>m.name===name
+    );
 
 
-  guild.temporary.push({
+  if(retired){
 
-    id:
-      "T" +
-      Date.now(),
+    return {
+      type:"retired",
+      member:retired
+    };
 
-    name:
-      name,
+  }
 
-    found:
-      today(),
 
-    reason:
-      reason,
+  /*
+   * 기존 임시등록 확인
+   */
 
-    history:
-      []
+  const existing =
+    guild.temporary.find(
+      m=>m.name===name
+    );
 
-  });
+
+  if(existing){
+
+    return {
+      type:"temporary",
+      member:existing
+    };
+
+  }
+
+
+  const temp = {
+
+    id:makeId("T"),
+
+    name:name,
+
+    found:today(),
+
+    reason:reason
+
+  };
+
+
+  guild.temporary.push(
+    temp
+  );
 
 
   saveApp();
 
+
+  return {
+    type:"new",
+    member:temp
+  };
+
 }
 
 
-/* ==================================================
-   임시등록 → 정식 길드원
-================================================== */
+/* =========================================================
+   임시등록 → 현재 길드원
+========================================================= */
 
-function promoteTemporary(
-  temporaryId
-) {
+function promoteTemporary(id){
 
-  if (!isManager()) {
+  if(!isManager()){
 
     alert(
       "운영진만 수정할 수 있습니다."
     );
 
     return;
+
   }
 
 
@@ -1736,12 +2535,11 @@ function promoteTemporary(
 
   const index =
     guild.temporary.findIndex(
-      member =>
-        member.id === temporaryId
+      m=>m.id===id
     );
 
 
-  if (index < 0)
+  if(index < 0)
     return;
 
 
@@ -1749,122 +2547,172 @@ function promoteTemporary(
     guild.temporary[index];
 
 
-  const newName =
-    prompt(
-      "길드원으로 등록할 닉네임을 입력해주세요.",
-      temp.name
+  openModal(`
+
+    <h3>🟡 임시등록 처리</h3>
+
+    <div class="notice warning">
+      가입날짜를 모르는 상태로 정식 길드원에 등록합니다.
+    </div>
+
+    <label>닉네임</label>
+
+    <input
+      id="promoteName"
+      value="${escapeHtml(
+        temp.name
+      )}">
+
+
+    <label>가입날짜</label>
+
+    <input
+      id="promoteJoined"
+      type="date">
+
+
+    <div class="modal-actions">
+
+      <button
+        onclick="closeModal()">
+        취소
+      </button>
+
+      <button
+        class="on"
+        onclick="savePromotion('${escapeHtml(id)}')">
+        등록
+      </button>
+
+    </div>
+
+  `);
+
+}
+
+
+/* =========================================================
+   임시등록 승격 저장
+========================================================= */
+
+function savePromotion(id){
+
+  const guild =
+    getGuild();
+
+
+  const index =
+    guild.temporary.findIndex(
+      m=>m.id===id
     );
 
 
-  if (newName === null)
+  if(index < 0)
     return;
+
+
+  const temp =
+    guild.temporary[index];
 
 
   const name =
-    newName.trim();
+    document
+      .getElementById(
+        "promoteName"
+      )
+      .value
+      .trim();
 
 
-  if (!name)
-    return;
+  const joined =
+    document
+      .getElementById(
+        "promoteJoined"
+      )
+      .value;
 
 
-  if (
-    guild.members.some(
-      member =>
-        member.name === name
-    )
-  ) {
+  if(!name){
 
     alert(
-      "이미 현재 길드원으로 등록되어 있습니다."
+      "닉네임을 입력해주세요."
     );
 
     return;
+
+  }
+
+
+  if(
+    guild.members.some(
+      m=>m.name===name
+    )
+  ){
+
+    alert(
+      "이미 현재 길드원입니다."
+    );
+
+    return;
+
   }
 
 
   guild.members.push({
 
-    id:
-      createMemberId(),
+    id:createMemberId(),
 
-    name:
-      name,
+    name:name,
 
-    joined:
-      "",
+    joined:joined || "",
 
-    role:
-      "member",
+    role:"member",
 
     history:
-      temp.name !== name
+      name !== temp.name
         ? [{
-            name:
-              temp.name,
-
-            changed:
-              today()
+            name:temp.name,
+            changed:today()
           }]
-        : []
+        : [],
+
+    temporaryJoined:
+      !joined
 
   });
 
 
-  /*
-   * 임시등록에서는 제거
-   */
   guild.temporary.splice(
     index,
     1
   );
 
 
-  /*
-   * 가입일이 없는 경우
-   * 임시등록 상태로 시작했음을 기록
-   */
-  if (
-    !guild.members[
-      guild.members.length - 1
-    ].joined
-  ) {
-
-    guild.members[
-      guild.members.length - 1
-    ].temporaryJoined =
-      true;
-
-  }
-
+  sortMembers();
 
   saveApp();
 
+  closeModal();
+
   renderAll();
-
-
-  alert(
-    "길드원으로 등록되었습니다."
-  );
 
 }
 
 
-/* ==================================================
+/* =========================================================
    임시등록 삭제
-================================================== */
+========================================================= */
 
-function deleteTemporary(
-  temporaryId
-) {
+function deleteTemporary(id){
 
-  if (!isManager()) {
+  if(!isManager()){
 
     alert(
       "운영진만 수정할 수 있습니다."
     );
 
     return;
+
   }
 
 
@@ -1874,22 +2722,17 @@ function deleteTemporary(
 
   const index =
     guild.temporary.findIndex(
-      member =>
-        member.id === temporaryId
+      m=>m.id===id
     );
 
 
-  if (index < 0)
+  if(index < 0)
     return;
 
 
-  const member =
-    guild.temporary[index];
-
-
-  if (
+  if(
     !confirm(
-      `${member.name} 님의 임시등록을 삭제할까요?`
+      `${guild.temporary[index].name} 님의 임시등록을 삭제할까요?`
     )
   )
     return;
@@ -1908,1769 +2751,487 @@ function deleteTemporary(
 }
 
 
-/* ==================================================
-   닉네임 후보 확인
-================================================== */
+/* =========================================================
+   모달 열기
+========================================================= */
 
-function findNameCandidate(
-  name
-) {
+function openModal(html){
 
-  const guild =
-    getGuild();
-
-
-  /*
-   * 현재 닉네임
-   */
-  const current =
-    guild.members.find(
-      member =>
-        member.name === name
+  const modal =
+    document.getElementById(
+      "modal"
     );
-
-
-  if (current) {
-
-    return {
-
-      type:
-        "current",
-
-      member:
-        current
-
-    };
-
-  }
-
-
-  /*
-   * 과거 닉네임
-   */
-  const history =
-    findMemberByHistory(name);
-
-
-  if (history) {
-
-    return {
-
-      type:
-        "renamed",
-
-      member:
-        history
-
-    };
-
-  }
-
-
-  /*
-   * 탈퇴자
-   */
-  const retired =
-    guild.retired.find(
-      member =>
-        member.name === name
-    );
-
-
-  if (retired) {
-
-    return {
-
-      type:
-        "retired",
-
-      member:
-        retired
-
-    };
-
-  }
-
-
-  /*
-   * 임시등록
-   */
-  const temporary =
-    guild.temporary.find(
-      member =>
-        member.name === name
-    );
-
-
-  if (temporary) {
-
-    return {
-
-      type:
-        "temporary",
-
-      member:
-        temporary
-
-    };
-
-  }
-
-
-  return null;
-
-}
-
-
-/* ==================================================
-   새로운 닉네임 발견
-================================================== */
-
-function checkUnknownNickname(
-  name,
-  source = "사진"
-) {
-
-  name =
-    String(name || "")
-      .trim();
-
-
-  if (!name)
-    return null;
-
-
-  const result =
-    findNameCandidate(name);
-
-
-  if (result)
-    return result;
-
-
-  /*
-   * 아무 기록에도 없는 닉네임
-   */
-  addTemporaryMember(
-    name,
-    source
-  );
-
-
-  return {
-
-    type:
-      "new",
-
-    name:
-      name
-
-  };
-
-}
-
-
-/* ==================================================
-   여러 닉네임 검사
-================================================== */
-
-function checkNicknameList(
-  names,
-  source = "사진"
-) {
-
-  const result = {
-
-    matched: [],
-
-    renamed: [],
-
-    retired: [],
-
-    temporary: [],
-
-    unknown: []
-
-  };
-
-
-  if (
-    !Array.isArray(names)
-  )
-    return result;
-
-
-  names.forEach(
-    rawName => {
-
-      const name =
-        String(rawName || "")
-          .trim();
-
-
-      if (!name)
-        return;
-
-
-      const found =
-        findNameCandidate(
-          name
-        );
-
-
-      if (!found) {
-
-        addTemporaryMember(
-          name,
-          source
-        );
-
-        result.unknown.push(
-          name
-        );
-
-        return;
-
-      }
-
-
-      if (
-        found.type ===
-        "current"
-      ) {
-
-        result.matched.push(
-          found.member
-        );
-
-      }
-      else if (
-        found.type ===
-        "renamed"
-      ) {
-
-        result.renamed.push(
-          found.member
-        );
-
-      }
-      else if (
-        found.type ===
-        "retired"
-      ) {
-
-        result.retired.push(
-          found.member
-        );
-
-      }
-      else if (
-        found.type ===
-        "temporary"
-      ) {
-
-        result.temporary.push(
-          found.member
-        );
-
-      }
-
-    }
-  );
-
-
-  return result;
-
-}
-/* ==================================================
-   ⑤ 운영진 권한
-================================================== */
-
-
-/* -------------------------------
-   운영진 코드 형식 확인
--------------------------------- */
-
-function validAdminCode(code) {
-
-  return /^\d{4}$/.test(
-    String(code || "")
-  );
-
-}
-
-
-/* -------------------------------
-   운영진 로그인
--------------------------------- */
-
-function adminLogin() {
-
-  const guild =
-    getGuild();
-
-  const code =
-    prompt(
-      "운영진 비밀번호를 입력해주세요."
-    );
-
-  if (code === null)
-    return;
-
-  if (!validAdminCode(code)) {
-
-    alert(
-      "비밀번호가 올바르지 않습니다."
-    );
-
-    return;
-  }
-
-  const admin =
-    guild.admins.find(
-      item =>
-        item.code ===
-        String(code).trim()
-    );
-
-  if (!admin) {
-
-    alert(
-      "비밀번호가 올바르지 않습니다."
-    );
-
-    return;
-  }
-
-  sessionStorage.setItem(
-    "adminGuild",
-    guild.id
-  );
-
-  if (
-    admin.role === "owner"
-  ) {
-
-    sessionStorage.setItem(
-      "ownerGuild",
-      guild.id
-    );
-
-  }
-
-  renderAll();
-
-  alert(
-    "운영진 권한으로 로그인되었습니다."
-  );
-
-}
-
-
-/* -------------------------------
-   운영진 로그아웃
--------------------------------- */
-
-function adminLogout() {
-
-  sessionStorage.removeItem(
-    "adminGuild"
-  );
-
-  sessionStorage.removeItem(
-    "ownerGuild"
-  );
-
-  renderAll();
-
-}
-
-
-/* -------------------------------
-   운영진 여부
--------------------------------- */
-
-function isManager() {
-
-  const guild =
-    getGuild();
-
-  return (
-    sessionStorage.getItem(
-      "adminGuild"
-    ) === guild.id
-  );
-
-}
-
-
-/* -------------------------------
-   최초 운영진 여부
--------------------------------- */
-
-function isOwner() {
-
-  const guild =
-    getGuild();
-
-  return (
-    sessionStorage.getItem(
-      "ownerGuild"
-    ) === guild.id
-  );
-
-}
-
-
-/* ==================================================
-   최초 운영진 설정
-================================================== */
-
-function initializeOwner() {
-
-  const guild =
-    getGuild();
-
-  if (
-    guild.ownerInitialized
-  ) {
-
-    alert(
-      "최초 운영진은 이미 설정되어 있습니다."
-    );
-
-    return;
-  }
-
-  if (
-    !guild.members.length
-  ) {
-
-    alert(
-      "먼저 길드원을 등록해주세요."
-    );
-
-    return;
-  }
-
-  const list =
-    guild.members
-      .map(
-        (member, index) =>
-          `${index + 1}. ${member.name}`
-      )
-      .join("\n");
-
-  const selected =
-    prompt(
-      "최초 운영진으로 지정할 길드원의 번호를 입력해주세요.\n\n" +
-      list
-    );
-
-  if (
-    selected === null
-  )
-    return;
-
-  const index =
-    Number(selected) - 1;
-
-  if (
-    index < 0 ||
-    index >= guild.members.length
-  ) {
-
-    alert(
-      "올바른 번호를 입력해주세요."
-    );
-
-    return;
-  }
-
-  const member =
-    guild.members[index];
-
-  const code =
-    prompt(
-      `${member.name} 님의 운영진 비밀번호를 설정해주세요.`
-    );
-
-  if (
-    code === null
-  )
-    return;
-
-  const cleanCode =
-    String(code).trim();
-
-  if (
-    !validAdminCode(cleanCode)
-  ) {
-
-    alert(
-      "비밀번호를 다시 설정해주세요."
-    );
-
-    return;
-  }
-
-  guild.admins.push({
-
-    id:
-      "A" + Date.now(),
-
-    memberId:
-      member.id,
-
-    name:
-      member.name,
-
-    role:
-      "owner",
-
-    code:
-      cleanCode
-
-  });
-
-  member.role =
-    "admin";
-
-  guild.ownerInitialized =
-    true;
-
-  saveApp();
-
-  sessionStorage.setItem(
-    "adminGuild",
-    guild.id
-  );
-
-  sessionStorage.setItem(
-    "ownerGuild",
-    guild.id
-  );
-
-  renderAll();
-
-  alert(
-    `${member.name} 님이 최초 운영진으로 설정되었습니다.`
-  );
-
-}
-
-
-/* ==================================================
-   운영진 추가
-================================================== */
-
-function addAdmin() {
-
-  if (!isOwner()) {
-
-    alert(
-      "최초 운영진만 운영진을 추가할 수 있습니다."
-    );
-
-    return;
-  }
-
-  const guild =
-    getGuild();
-
-  const list =
-    guild.members
-      .map(
-        (member, index) =>
-          `${index + 1}. ${member.name}`
-      )
-      .join("\n");
-
-  const selected =
-    prompt(
-      "운영진으로 추가할 길드원의 번호를 입력해주세요.\n\n" +
-      list
-    );
-
-  if (
-    selected === null
-  )
-    return;
-
-  const index =
-    Number(selected) - 1;
-
-  if (
-    index < 0 ||
-    index >= guild.members.length
-  ) {
-
-    alert(
-      "올바른 번호를 입력해주세요."
-    );
-
-    return;
-  }
-
-  const member =
-    guild.members[index];
-
-  if (
-    guild.admins.some(
-      admin =>
-        admin.memberId ===
-        member.id
-    )
-  ) {
-
-    alert(
-      "이미 운영진입니다."
-    );
-
-    return;
-  }
-
-  const code =
-    prompt(
-      `${member.name} 님의 운영진 비밀번호를 설정해주세요.`
-    );
-
-  if (
-    code === null
-  )
-    return;
-
-  const cleanCode =
-    String(code).trim();
-
-  if (
-    !validAdminCode(cleanCode)
-  ) {
-
-    alert(
-      "비밀번호를 다시 설정해주세요."
-    );
-
-    return;
-  }
-
-  guild.admins.push({
-
-    id:
-      "A" + Date.now(),
-
-    memberId:
-      member.id,
-
-    name:
-      member.name,
-
-    role:
-      "admin",
-
-    code:
-      cleanCode
-
-  });
-
-  member.role =
-    "admin";
-
-  saveApp();
-
-  renderAll();
-
-  alert(
-    `${member.name} 님이 운영진으로 추가되었습니다.`
-  );
-
-}
-
-
-/* ==================================================
-   운영진 권한 제거
-================================================== */
-
-function removeAdmin(
-  adminId
-) {
-
-  if (!isOwner()) {
-
-    alert(
-      "최초 운영진만 권한을 변경할 수 있습니다."
-    );
-
-    return;
-  }
-
-  const guild =
-    getGuild();
-
-  const index =
-    guild.admins.findIndex(
-      admin =>
-        admin.id === adminId
-    );
-
-  if (index < 0)
-    return;
-
-  const admin =
-    guild.admins[index];
-
-  if (
-    admin.role === "owner"
-  ) {
-
-    alert(
-      "최초 운영진의 권한은 제거할 수 없습니다."
-    );
-
-    return;
-  }
-
-  if (
-    !confirm(
-      `${admin.name} 님의 운영진 권한을 제거할까요?`
-    )
-  )
-    return;
-
-  const member =
-    findMemberById(
-      admin.memberId
-    );
-
-  if (member)
-    member.role =
-      "member";
-
-  guild.admins.splice(
-    index,
-    1
-  );
-
-  saveApp();
-
-  renderAll();
-
-}
-/* ==================================================
-   ⑥ 보스별 딜컷 관리
-================================================== */
-
-
-/* -------------------------------
-   딜컷 가져오기
--------------------------------- */
-
-function getBossCut(
-  boss,
-  type
-) {
-
-  const guild =
-    getGuild();
-
-  if (
-    !guild.cuts ||
-    !guild.cuts[boss]
-  )
-    return null;
-
-  return (
-    guild.cuts[boss][type]
-  );
-
-}
-
-
-/* -------------------------------
-   딜컷 변경
--------------------------------- */
-
-function setBossCut(
-  boss,
-  type,
-  value
-) {
-
-  if (!isManager()) {
-
-    alert(
-      "운영진만 수정할 수 있습니다."
-    );
-
-    return false;
-  }
-
-
-  if (
-    !BOSS_LIST.includes(boss)
-  )
-    return false;
-
-
-  if (
-    !guildCutsReady()
-  )
-    return false;
-
-
-  /*
-   * 빈 값은 미정
-   */
-  if (
-    value === "" ||
-    value === null ||
-    value === undefined
-  ) {
-
-    getGuild()
-      .cuts[boss][type] =
-      null;
-
-  }
-  else {
-
-    const number =
-      Number(value);
-
-    if (
-      !Number.isFinite(number) ||
-      number < 0
-    ) {
-
-      alert(
-        "올바른 값을 입력해주세요."
-      );
-
-      return false;
-    }
-
-    getGuild()
-      .cuts[boss][type] =
-      number;
-
-  }
-
-
-  saveApp();
-
-  renderAll();
-
-  return true;
-
-}
-
-
-/* -------------------------------
-   딜컷 데이터 확인
--------------------------------- */
-
-function guildCutsReady() {
-
-  const guild =
-    getGuild();
-
-  if (!guild.cuts) {
-
-    guild.cuts =
-      JSON.parse(
-        JSON.stringify(
-          DEFAULT_CUTS
-        )
-      );
-
-  }
-
-
-  BOSS_LIST.forEach(
-    boss => {
-
-      if (
-        !guild.cuts[boss]
-      ) {
-
-        guild.cuts[boss] = {
-
-          inside:
-            DEFAULT_CUTS[boss]
-              .inside,
-
-          target:
-            DEFAULT_CUTS[boss]
-              .target
-
-        };
-
-      }
-
-    }
-  );
-
-
-  return true;
-
-}
-
-
-/* ==================================================
-   딜컷 수정
-================================================== */
-
-function editBossCut(
-  boss,
-  type
-) {
-
-  if (!isManager()) {
-
-    alert(
-      "운영진만 수정할 수 있습니다."
-    );
-
-    return;
-  }
-
-
-  const current =
-    getBossCut(
-      boss,
-      type
-    );
-
-
-  const title =
-    type === "inside"
-      ? "내부 딜컷"
-      : "목표 딜컷";
-
-
-  const value =
-    prompt(
-      `${boss} ${title}을 입력해주세요.\n\n` +
-      "억 단위로 입력합니다.\n" +
-      "비워두면 미정으로 설정됩니다.",
-      current === null ||
-      current === undefined
-        ? ""
-        : current
-    );
-
-
-  if (
-    value === null
-  )
-    return;
-
-
-  setBossCut(
-    boss,
-    type,
-    value.trim()
-  );
-
-}
-
-
-/* ==================================================
-   딜컷 전체 화면
-================================================== */
-
-function renderBossCuts() {
 
   const box =
     document.getElementById(
-      "bossCuts"
+      "modalBox"
     );
-
-
-  if (!box)
-    return;
-
-
-  guildCutsReady();
-
-
-  let html = `
-
-    <div class="cut-header">
-      <h3>보스별 딜컷</h3>
-
-      <p class="muted">
-        각 보스의 평균 딜 기준입니다.
-      </p>
-    </div>
-
-    <div class="cut-grid">
-  `;
-
-
-  BOSS_LIST.forEach(
-    boss => {
-
-      const inside =
-        getBossCut(
-          boss,
-          "inside"
-        );
-
-      const target =
-        getBossCut(
-          boss,
-          "target"
-        );
-
-
-      html += `
-
-        <div class="cut-card">
-
-          <div class="cut-boss">
-            ${escapeHtml(boss)}
-          </div>
-
-          <div class="cut-row">
-
-            <span>
-              내부 딜컷
-            </span>
-
-            <strong>
-              ${
-                inside === null
-                  ? "미정"
-                  : fmtEok(
-                      inside *
-                      100000000
-                    )
-              }
-            </strong>
-
-          </div>
-
-          <div class="cut-row">
-
-            <span>
-              목표 딜컷
-            </span>
-
-            <strong>
-              ${
-                target === null
-                  ? "미정"
-                  : fmtEok(
-                      target *
-                      100000000
-                    )
-              }
-            </strong>
-
-          </div>
-
-          ${
-            isManager()
-              ? `
-                <div class="cut-buttons">
-
-                  <button
-                    type="button"
-                    onclick="editBossCut(
-                      '${boss}',
-                      'inside'
-                    )"
-                  >
-                    내부 수정
-                  </button>
-
-                  <button
-                    type="button"
-                    onclick="editBossCut(
-                      '${boss}',
-                      'target'
-                    )"
-                  >
-                    목표 수정
-                  </button>
-
-                </div>
-              `
-              : ""
-          }
-
-        </div>
-
-      `;
-
-    }
-  );
-
-
-  html += `
-
-    </div>
-
-  `;
 
 
   box.innerHTML =
     html;
 
-}
 
-
-/* ==================================================
-   딜컷 미달 판정
-================================================== */
-
-function getDamageStatus(
-  boss,
-  average
-) {
-
-  const inside =
-    getBossCut(
-      boss,
-      "inside"
-    );
-
-  const target =
-    getBossCut(
-      boss,
-      "target"
-    );
-
-
-  if (
-    inside === null &&
-    target === null
-  ) {
-
-    return {
-      type: "unknown",
-      text: "기준 미정"
-    };
-
-  }
-
-
-  if (
-    inside !== null &&
-    average < inside
-  ) {
-
-    return {
-      type: "below-inside",
-      text: "내부 딜컷 미달"
-    };
-
-  }
-
-
-  if (
-    target !== null &&
-    average < target
-  ) {
-
-    return {
-      type: "below-target",
-      text: "목표 딜컷 미달"
-    };
-
-  }
-
-
-  return {
-    type: "pass",
-    text: "달성"
-  };
-
-}
-
-
-/* ==================================================
-   길드원 보스별 딜컷 판정
-================================================== */
-
-function getMemberBossStatus(
-  season,
-  memberId,
-  boss
-) {
-
-  const average =
-    getBossAverage(
-      season,
-      memberId,
-      boss
-    );
-
-
-  const status =
-    getDamageStatus(
-      boss,
-      average
-    );
-
-
-  return {
-
-    average:
-      average,
-
-    status:
-      status
-
-  };
-
-}
-/* ==================================================
-   ⑦ 유물점수 관리
-================================================== */
-
-
-/* -------------------------------
-   유물 데이터 초기화
--------------------------------- */
-
-function ensureArtifactData() {
-
-  const guild =
-    getGuild();
-
-  if (!guild.artifacts)
-    guild.artifacts = {};
-
-}
-
-
-/* -------------------------------
-   회원의 유물 데이터
--------------------------------- */
-
-function getArtifact(
-  memberId
-) {
-
-  ensureArtifactData();
-
-  const guild =
-    getGuild();
-
-
-  if (
-    !guild.artifacts[memberId]
-  ) {
-
-    guild.artifacts[memberId] = {
-
-      total: 0,
-
-      season: {}
-
-    };
-
-  }
-
-
-  return guild.artifacts[
-    memberId
-  ];
-
-}
-
-
-/* -------------------------------
-   유물점수 저장
--------------------------------- */
-
-function saveArtifact() {
-
-  if (!isManager()) {
-
-    alert(
-      "운영진만 수정할 수 있습니다."
-    );
-
-    return;
-  }
-
-
-  const memberId =
-    document.getElementById(
-      "artifactMember"
-    )?.value;
-
-
-  if (!memberId) {
-
-    alert(
-      "길드원을 선택해주세요."
-    );
-
-    return;
-  }
-
-
-  const totalInput =
-    document.getElementById(
-      "artifactTotal"
-    );
-
-
-  const seasonInput =
-    document.getElementById(
-      "artifactScore"
-    );
-
-
-  const total =
-    Number(
-      totalInput?.value
-    ) || 0;
-
-
-  const seasonScore =
-    Number(
-      seasonInput?.value
-    ) || 0;
-
-
-  const artifact =
-    getArtifact(
-      memberId
-    );
-
-
-  artifact.total =
-    total;
-
-
-  const season =
-    getGuild()
-      .integratedSeason;
-
-
-  artifact.season[
-    season
-  ] =
-    seasonScore;
-
-
-  saveApp();
-
-  renderArtifacts();
-
-
-  if (totalInput)
-    totalInput.value = "";
-
-  if (seasonInput)
-    seasonInput.value = "";
-
-
-  alert(
-    "유물점수가 저장되었습니다."
+  modal.classList.remove(
+    "hidden"
   );
 
 }
 
 
-/* -------------------------------
-   유물점수 수정
--------------------------------- */
+/* =========================================================
+   모달 닫기
+========================================================= */
 
-function editArtifact(
-  memberId
-) {
+function closeModal(){
 
-  if (!isManager()) {
-
-    alert(
-      "운영진만 수정할 수 있습니다."
-    );
-
-    return;
-  }
-
-
-  const member =
-    findMemberById(
-      memberId
-    );
-
-
-  if (!member)
-    return;
-
-
-  const artifact =
-    getArtifact(
-      memberId
-    );
-
-
-  const season =
-    getGuild()
-      .integratedSeason;
-
-
-  const total =
-    prompt(
-      `${member.name} 님의 유물점수 누계를 입력해주세요.`,
-      artifact.total || 0
-    );
-
-
-  if (
-    total === null
-  )
-    return;
-
-
-  const score =
-    prompt(
-      `${member.name} 님의 현재 시즌 점수를 입력해주세요.`,
-      artifact.season[
-        season
-      ] || 0
-    );
-
-
-  if (
-    score === null
-  )
-    return;
-
-
-  artifact.total =
-    Number(total) || 0;
-
-
-  artifact.season[
-    season
-  ] =
-    Number(score) || 0;
-
-
-  saveApp();
-
-  renderArtifacts();
-
-}
-
-
-/* -------------------------------
-   유물점수 삭제
--------------------------------- */
-
-function deleteArtifact(
-  memberId
-) {
-
-  if (!isManager()) {
-
-    alert(
-      "운영진만 수정할 수 있습니다."
-    );
-
-    return;
-  }
-
-
-  const member =
-    findMemberById(
-      memberId
-    );
-
-
-  if (!member)
-    return;
-
-
-  if (
-    !confirm(
-      `${member.name} 님의 유물점수를 삭제할까요?`
+  document
+    .getElementById(
+      "modal"
     )
-  )
-    return;
-
-
-  ensureArtifactData();
-
-
-  delete getGuild()
-    .artifacts[
-      memberId
-    ];
-
-
-  saveApp();
-
-  renderArtifacts();
+    .classList.add(
+      "hidden"
+    );
 
 }
 
 
-/* ==================================================
-   유물점수 화면
-================================================== */
+/* =========================================================
+   회원 화면
+========================================================= */
 
-function renderArtifacts() {
-
-  const box =
-    document.getElementById(
-      "artifactList"
-    );
-
-
-  if (!box)
-    return;
-
-
-  ensureArtifactData();
-
+function renderMembers(){
 
   const guild =
     getGuild();
 
 
-  const season =
-    guild.integratedSeason;
+  const memberList =
+    document.getElementById(
+      "memberList"
+    );
 
 
-  let html = `
-
-    <div class="table-wrap">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>닉네임</th>
-
-            <th>통합시즌</th>
-
-            <th>유물점수 누계</th>
-
-            <th>시즌점수</th>
-
-            ${
-              isManager()
-                ? "<th>관리</th>"
-                : ""
-            }
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-  `;
+  sortMembers();
 
 
-  guild.members
-    .forEach(member => {
+  memberList.innerHTML =
+    guild.members.length
+      ? guild.members
+          .map(
+            member=>`
 
-      const artifact =
-        getArtifact(
-          member.id
-        );
-
-
-      const seasonScore =
-        artifact.season[
-          season
-        ] || 0;
-
-
-      html += `
-
-        <tr>
-
-          <td>
-            ${escapeHtml(
-              member.name
-            )}
-          </td>
-
-          <td>
-            ${season}
-          </td>
-
-          <td>
-            ${fmt(
-              artifact.total
-            )}
-          </td>
-
-          <td>
-            ${fmt(
-              seasonScore
-            )}
-          </td>
-
-          ${
-            isManager()
-              ? `
+              <tr>
 
                 <td>
+                  <strong>
+                    ${escapeHtml(
+                      member.name
+                    )}
+                  </strong>
 
-                  <button
-                    type="button"
-                    onclick="editArtifact(
-                      '${member.id}'
-                    )"
-                  >
-                    수정
-                  </button>
-
-                  <button
-                    type="button"
-                    onclick="deleteArtifact(
-                      '${member.id}'
-                    )"
-                  >
-                    삭제
-                  </button>
+                  ${
+                    member.history?.length
+                      ? `
+                        <br>
+                        <span
+                          class="badge gray">
+                          닉변 ${member.history.length}회
+                        </span>
+                      `
+                      : ""
+                  }
 
                 </td>
 
-              `
-              : ""
-          }
+                <td>
+                  ${
+                    member.joined
+                      ? escapeHtml(
+                          member.joined
+                        )
+                      : "-"
+                  }
+                </td>
 
-        </tr>
+                <td>
 
-      `;
+                  ${
+                    member.temporaryJoined
+                      ? `
+                        <span class="badge yellow">
+                          임시가입
+                        </span>
+                      `
+                      : `
+                        <span class="badge green">
+                          정상
+                        </span>
+                      `
+                  }
 
-    });
+                </td>
+
+                <td>
+
+                  ${
+                    isManager()
+                      ? `
+
+                        <div class="actions">
+
+                          <button
+                            class="small"
+                            onclick="renameMember('${escapeHtml(member.id)}')">
+                            닉변
+                          </button>
+
+                          <button
+                            class="small danger"
+                            onclick="retireMember('${escapeHtml(member.id)}')">
+                            탈퇴
+                          </button>
+
+                        </div>
+
+                      `
+                      : "-"
+                  }
+
+                </td>
+
+              </tr>
+
+            `
+          )
+          .join("")
+      : `
+          <tr>
+            <td
+              colspan="4"
+              class="empty">
+              등록된 길드원이 없습니다.
+            </td>
+          </tr>
+        `;
 
 
-  html += `
+  document.getElementById(
+    "retiredCount"
+  ).textContent =
+    `${guild.retired.length}명`;
 
-        </tbody>
 
-      </table>
+  document.getElementById(
+    "temporaryCount"
+  ).textContent =
+    `${guild.temporary.length}명`;
 
-    </div>
 
-  `;
+  renderRetired();
+
+  renderTemporary();
+
+}
+
+
+/* =========================================================
+   탈퇴자 화면
+========================================================= */
+
+function renderRetired(){
+
+  const guild =
+    getGuild();
+
+
+  const box =
+    document.getElementById(
+      "retiredList"
+    );
 
 
   box.innerHTML =
-    html;
+    guild.retired.length
+      ? guild.retired
+          .map(
+            member=>`
+
+              <tr>
+
+                <td>
+                  ${escapeHtml(
+                    member.name
+                  )}
+                </td>
+
+                <td>
+                  ${
+                    member.joined
+                      ? escapeHtml(
+                          member.joined
+                        )
+                      : "-"
+                  }
+                </td>
+
+                <td>
+                  ${
+                    member.retiredAt
+                      ? escapeHtml(
+                          member.retiredAt
+                        )
+                      : "-"
+                  }
+                </td>
+
+                <td>
+
+                  ${
+                    isManager()
+                      ? `
+
+                        <div class="actions">
+
+                          <button
+                            class="small green"
+                            onclick="restoreMember('${escapeHtml(member.id)}')">
+                            복귀
+                          </button>
+
+                        </div>
+
+                      `
+                      : "-"
+                  }
+
+                </td>
+
+              </tr>
+
+            `
+          )
+          .join("")
+      : `
+          <tr>
+            <td
+              colspan="4"
+              class="empty">
+              탈퇴자가 없습니다.
+            </td>
+          </tr>
+        `;
 
 }
 
 
-/* ==================================================
-   유물 입력 대상
-================================================== */
+/* =========================================================
+   임시등록 화면
+========================================================= */
 
-function renderArtifactMembers() {
+function renderTemporary(){
 
-  const select =
+  const guild =
+    getGuild();
+
+
+  const box =
     document.getElementById(
-      "artifactMember"
+      "temporaryList"
     );
 
 
-  if (!select)
-    return;
+  box.innerHTML =
+    guild.temporary.length
+      ? guild.temporary
+          .map(
+            temp=>`
 
+              <tr>
 
-  select.innerHTML =
+                <td>
+                  ${escapeHtml(
+                    temp.name
+                  )}
+                </td>
 
-    `<option value="">
-      길드원을 선택해주세요
-    </option>` +
+                <td>
+                  ${escapeHtml(
+                    temp.found || "-"
+                  )}
+                </td>
 
-    getGuild()
-      .members
-      .map(member =>
+                <td>
+                  ${escapeHtml(
+                    temp.reason || "-"
+                  )}
+                </td>
 
-        `<option
-          value="${member.id}"
-        >
-          ${escapeHtml(
-            member.name
-          )}
-        </option>`
+                <td>
 
-      )
-      .join("");
+                  ${
+                    isManager()
+                      ? `
+
+                        <div class="actions">
+
+                          <button
+                            class="small green"
+                            onclick="promoteTemporary('${escapeHtml(temp.id)}')">
+                            길드원 등록
+                          </button>
+
+                          <button
+                            class="small danger"
+                            onclick="deleteTemporary('${escapeHtml(temp.id)}')">
+                            삭제
+                          </button>
+
+                        </div>
+
+                      `
+                      : "-"
+                  }
+
+                </td>
+
+              </tr>
+
+            `
+          )
+          .join("")
+      : `
+          <tr>
+            <td
+              colspan="4"
+              class="empty">
+              임시등록된 사람이 없습니다.
+            </td>
+          </tr>
+        `;
 
 }
 
 
-/* ==================================================
-   유물 입력창
-================================================== */
+/* =========================================================
+   홈 헤더
+========================================================= */
 
-function loadArtifactMember() {
+function renderHeader(){
 
-  const memberId =
-    document.getElementById(
-      "artifactMember"
-    )?.value;
+  const guild =
+    getGuild();
 
 
-  const totalInput =
-    document.getElementById(
-      "artifactTotal"
-    );
+  document.getElementById(
+    "guildTitle"
+  ).textContent =
+    "🏰 " + guild.name;
 
 
-  const seasonInput =
-    document.getElementById(
-      "artifactScore"
-    );
+  document.getElementById(
+    "guildRank"
+  ).textContent =
+    guild.rank || "-";
 
 
-  if (!memberId) {
+  document.getElementById(
+    "headerCount"
+  ).textContent =
+    guild.members.length;
 
-    if (totalInput)
-      totalInput.value = "";
 
-    if (seasonInput)
-      seasonInput.value = "";
+  document.getElementById(
+    "homeRank"
+  ).textContent =
+    guild.rank
+      ? `🏆 ${guild.rank}위`
+      : "🏆 -";
 
+
+  document.getElementById(
+    "homeIntegrated"
+  ).textContent =
+    `${guild.integratedSeason}시즌`;
+
+
+  document.getElementById(
+    "homeCount"
+  ).textContent =
+    `${guild.members.length}명`;
+
+
+  document.getElementById(
+    "homeSeason"
+  ).textContent =
+    guild.currentSeason;
+
+}
+
+
+/* =========================================================
+   전체 렌더링
+========================================================= */
+
+function renderAll(){
+
+  const guild =
+    getGuild();
+
+
+  if(!guild)
     return;
+
+
+  renderGuildSelect();
+
+  renderHeader();
+
+  renderMembers();
+
+  renderCuts();
+
+  renderBossRotation();
+
+  renderRaidSeasonSelect();
+
+  renderDataForm();
+
+  renderArtifacts();
+
+  renderAdminState();
+
+
+  const current =
+    document.querySelector(
+      "main > section:not(.hidden)"
+    );
+
+
+  if(
+    current &&
+    current.id === "raid"
+  ){
+
+    renderRaid();
 
   }
 
-
-  const artifact =
-    getArtifact(
-      memberId
-    );
-
-
-  const season =
-    getGuild()
-      .integratedSeason;
-
-
-  if (totalInput)
-    totalInput.value =
-      artifact.total || 0;
-
-
-  if (seasonInput)
-    seasonInput.value =
-      artifact.season[
-        season
-      ] || 0;
-
 }
+
+
+/* =========================================================
+   초기 실행
+========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+    renderAll();
+  }
+);
+
 </script>
 
 </body>
-</html>  
-<!-- backup: 2026-09-08 -->
+</html>
