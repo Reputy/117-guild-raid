@@ -79,7 +79,7 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 
 <div class="card">
 <h3>👥 길드원 기록</h3>
-
+<button onclick="addMember()">➕ 길드원 추가</button>
 <table>
 <thead>
 <tr>
@@ -87,6 +87,7 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 <th>총딜</th>
 <th>횟수</th>
 <th>평균</th>
+<th>관리</th>
 </tr>
 </thead>
 
@@ -130,7 +131,7 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 
 <script>
 let data=JSON.parse(localStorage.getItem("raid")||"[]");
-const members=[
+let members=JSON.parse(localStorage.getItem("members")||"null")||[
 ["리퓨티","2024-01-27"],
 ["밀레니덤","2024-01-27"],
 ["레스타","2024-05-08"],
@@ -155,6 +156,7 @@ const members=[
 ["히히꿀벌","2026-05-17"],
 ["나무미르","2026-07-31"]
 ];
+localStorage.setItem("members",JSON.stringify(members));
 function show(id,b){
 document.querySelectorAll("main section").forEach(x=>x.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
@@ -202,19 +204,48 @@ if(n>=1000000000)return(n/1e9).toFixed(2)+"B";
 if(n>=1000000)return(n/1e6).toFixed(2)+"M";
 return n.toLocaleString();
 }
+function addMember(){
+if(members.length>=30){
+alert("길드원은 최대 30명까지 등록할 수 있습니다.");
+return;
+}
+let name=prompt("길드원 닉네임을 입력하세요.");
+if(!name)return;
+let date=prompt("가입날짜를 입력하세요.\n예: 2026-09-08");
+if(!date)return;
+members.push([name,date]);
+localStorage.setItem("members",JSON.stringify(members));
+render();
+}
 
+function editMember(i){
+let name=prompt("닉네임을 수정하세요.",members[i][0]);
+if(!name)return;
+let date=prompt("가입날짜를 수정하세요.",members[i][1]);
+if(!date)return;
+members[i]=[name,date];
+localStorage.setItem("members",JSON.stringify(members));
+render();
+}
+
+function deleteMember(i){
+if(!confirm(members[i][0]+" 님을 삭제할까요?"))return;
+members.splice(i,1);
+localStorage.setItem("members",JSON.stringify(members));
+render();
+}
 function render(){
 document.getElementById("cnt").textContent=members.length+"명";
 
 let box=document.getElementById("list");
-
-box.innerHTML=members.map(m=>{
+document.querySelector("#members th:last-child").textContent="관리";
+box.innerHTML=members.map((m,i)=>{
 let x=data.find(d=>d.name===m[0]);
 let total=x?x.dragon+x.sea:0;
 let count=x?x.dc+x.sc:0;
 let avg=count?total/count:0;
 
-return "<tr><td><b>"+m[0]+"</b><br><small>"+m[1]+"</small></td><td>"+(total?fmt(total):"-")+"</td><td>"+(count?count+"회":"-")+"</td><td>"+(avg?fmt(avg):"-")+"</td></tr>";
+return "<tr><td><b>"+m[0]+"</b><br><small>"+m[1]+"</small></td><td>"+(total?fmt(total):"-")+"</td><td>"+(count?count+"회":"-")+"</td><td>"+(avg?fmt(avg):"-")+"</td><td><button onclick='editMember("+i+")'>수정</button><button onclick='deleteMember("+i+")'>삭제</button></td></tr>";
 }).join("");
 }
 
