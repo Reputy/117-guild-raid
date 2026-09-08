@@ -3230,7 +3230,429 @@ document.addEventListener(
     renderAll();
   }
 );
+/* ==================================================
+   추가 패치 1
+   토벌 딜 표시 / 기본 데이터 안전장치
+   기존 코드 수정 없이 추가
+================================================== */
 
+(function(){
+
+  /*
+   * 숫자를 토벌 딜 형식으로 표시
+   *
+   * 예:
+   * 30000000000 → 300억
+   * 4000000000  → 40억
+   */
+  window.v5_formatDamage = function(value){
+
+    const n = Number(value);
+
+    if (!Number.isFinite(n) || n <= 0)
+      return "-";
+
+    const eok = n / 100000000;
+
+    if (Number.isInteger(eok))
+      return eok.toLocaleString("ko-KR") + "억";
+
+    return eok
+      .toFixed(2)
+      .replace(/\.?0+$/, "")
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      + "억";
+  };
+
+
+  /*
+   * 사용자가 입력하는 딜을 숫자로 변환
+   *
+   * 300억
+   * 300
+   * 30,000,000,000
+   *
+   * 모두 처리할 수 있도록 준비
+   */
+  window.v5_parseDamage = function(value){
+
+    if (value === null || value === undefined)
+      return 0;
+
+    let text =
+      String(value)
+        .trim()
+        .replace(/,/g, "");
+
+    if (!text)
+      return 0;
+
+
+    /*
+     * 억 단위 입력
+     */
+    if (text.endsWith("억")) {
+
+      text =
+        text
+          .replace(/억/g, "")
+          .trim();
+
+      const eok =
+        Number(text);
+
+      if (!Number.isFinite(eok))
+        return 0;
+
+      return eok * 100000000;
+    }
+
+
+    /*
+     * 숫자 그대로 입력
+     */
+    const number =
+      Number(text);
+
+    if (!Number.isFinite(number))
+      return 0;
+
+    /*
+     * 1억 미만 숫자는 일반 숫자로 처리
+     * 1억 이상은 실제 딜 숫자로 처리
+     */
+    return number;
+  };
+
+
+  /*
+   * 보스 이름 안전하게 가져오기
+   */
+  window.v5_getBossList = function(){
+
+    const guild =
+      typeof getGuild === "function"
+        ? getGuild()
+        : null;
+
+    if (
+      guild &&
+      guild.bossTable &&
+      Array.isArray(guild.bossTable.bosses)
+    ){
+
+      return [
+        ...new Set(
+          guild.bossTable.bosses
+            .filter(Boolean)
+            .map(String)
+        )
+      ];
+
+    }
+
+    if (
+      typeof BOSS_LIST !== "undefined" &&
+      Array.isArray(BOSS_LIST)
+    ){
+
+      return [
+        ...BOSS_LIST
+      ];
+
+    }
+
+    return [];
+  };
+
+
+  /*
+   * 길드 데이터에 필요한 배열이 없을 경우
+   * 자동으로 만들어주는 안전장치
+   */
+  window.v5_ensureGuildData = function(){
+
+    if (
+      typeof getGuild !== "function"
+    )
+      return null;
+
+    const guild =
+      getGuild();
+
+    if (!guild)
+      return null;
+
+
+    if (!Array.isArray(guild.members))
+      guild.members = [];
+
+
+    if (!Array.isArray(guild.retired))
+      guild.retired = [];
+
+
+    if (!Array.isArray(guild.temporary))
+      guild.temporary = [];
+
+
+    if (!guild.raid ||
+        typeof guild.raid !== "object")
+      guild.raid = {};
+
+
+    if (!guild.artifacts ||
+        typeof guild.artifacts !== "object")
+      guild.artifacts = {};
+
+
+    if (!guild.cuts ||
+        typeof guild.cuts !== "object")
+      guild.cuts = {};
+
+
+    if (!guild.bossTable ||
+        typeof guild.bossTable !== "object"){
+
+      guild.bossTable = {
+
+        bosses:
+          typeof BOSS_LIST !== "undefined"
+            ? [...BOSS_LIST]
+            : [],
+
+        seasons: {},
+
+        source: "manual",
+
+        updated: null
+
+      };
+
+    }
+
+
+    if (
+      !Array.isArray(
+        guild.bossTable.bosses
+      )
+    ){
+
+      guild.bossTable.bosses = [];
+
+    }
+
+
+    if (
+      !guild.bossTable.seasons ||
+      typeof guild.bossTable.seasons !== "object"
+    ){
+
+      guild.bossTable.seasons = {};
+
+    }
+
+
+    if (
+      !guild.discord ||
+      typeof guild.discord !== "object"
+    ){
+
+      guild.discord = {
+
+        connected: false,
+
+        serverId: "",
+
+        channelId: "",
+
+        channelName: ""
+
+      };
+
+    }
+
+
+    if (
+      !Array.isArray(guild.admins)
+    ){
+
+      guild.admins = [];
+
+    }
+
+
+    if (
+      !Array.isArray(guild.users)
+    ){
+
+      guild.users = [];
+
+    }
+
+
+    return guild;
+  };
+
+
+  /*
+   * 시즌 데이터 안전장치
+   */
+  window.v5_ensureSeason = function(season){
+
+    const guild =
+      v5_ensureGuildData();
+
+    if (!guild || !season)
+      return [];
+
+
+    if (
+      !Array.isArray(
+        guild.bossTable.seasons[season]
+      )
+    ){
+
+      guild.bossTable.seasons[season] = [];
+
+    }
+
+
+    return guild.bossTable.seasons[season];
+  };
+
+
+  /*
+   * 현재 시즌의 보스 목록
+   *
+   * 사진 인식 기능을 붙일 때도
+   * 이 함수를 사용하도록 할 예정
+   */
+  window.v5_getSeasonBosses = function(season){
+
+    const guild =
+      v5_ensureGuildData();
+
+    if (!guild)
+      return [];
+
+
+    const selectedSeason =
+      season ||
+      guild.currentSeason;
+
+
+    const seasonBosses =
+      guild.bossTable
+        .seasons[
+          selectedSeason
+        ];
+
+
+    if (
+      Array.isArray(seasonBosses)
+    ){
+
+      return [
+        ...new Set(
+          seasonBosses
+            .filter(Boolean)
+            .map(String)
+        )
+      ];
+
+    }
+
+
+    return [];
+  };
+
+
+  /*
+   * 현재 시즌에 보스가 없을 경우
+   * 기본 보스표를 사용
+   */
+  window.v5_getSafeSeasonBosses = function(season){
+
+    const bosses =
+      v5_getSeasonBosses(
+        season
+      );
+
+    if (bosses.length)
+      return bosses;
+
+
+    const guild =
+      v5_ensureGuildData();
+
+    if (!guild)
+      return [];
+
+
+    return [
+      ...new Set(
+        (guild.bossTable.bosses || [])
+          .filter(Boolean)
+          .map(String)
+      )
+    ];
+  };
+
+
+  /*
+   * 딜 표시 테스트용
+   * 실제 화면에는 자동으로 메시지를 띄우지 않음
+   */
+  window.v5_damageExamples = function(){
+
+    return {
+
+      "300억":
+        v5_formatDamage(
+          30000000000
+        ),
+
+      "40억":
+        v5_formatDamage(
+          4000000000
+        ),
+
+      "270억":
+        v5_formatDamage(
+          27000000000
+        )
+
+    };
+
+  };
+
+
+  /*
+   * 앱 데이터가 로드된 뒤
+   * 기본 구조를 한번 정리
+   */
+  try {
+
+    if (
+      typeof getGuild === "function"
+    ){
+
+      v5_ensureGuildData();
+
+    }
+
+  }
+  catch(error){
+
+    console.warn(
+      "길드 데이터 안전장치:",
+      error
+    );
+
+  }
+
+})();
 </script>
 
 </body>
