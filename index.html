@@ -4,25 +4,122 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>117번째우정 토벌관리</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f0f2ff;color:#292d48;font-family:Arial,sans-serif}
-header{background:linear-gradient(135deg,#5868dc,#7655c9);color:white;padding:25px 18px;border-radius:0 0 25px 25px}
+body{
+ margin:0;
+ background:#f0f2ff;
+ color:#292d48;
+ font-family:Arial,sans-serif;
+}
+header{
+ background:linear-gradient(135deg,#5868dc,#7655c9);
+ color:white;
+ padding:25px 18px;
+ border-radius:0 0 25px 25px;
+}
 h1{margin:0;font-size:22px}
 header p{margin:8px 0 0;font-size:14px}
 main{padding:15px}
-nav{display:flex;gap:8px;margin-bottom:15px}
-button{border:0;border-radius:10px;padding:10px 14px;background:#e2e5ff;color:#4d5380}
-button.on{background:#606ddd;color:white}
-.card{background:white;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 3px 12px #ccd0e855}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.num{font-size:22px;font-weight:bold;margin-top:6px}
+nav{
+ display:flex;
+ gap:8px;
+ margin-bottom:15px;
+}
+button{
+ border:0;
+ border-radius:10px;
+ padding:10px 14px;
+ background:#e2e5ff;
+ color:#4d5380;
+ cursor:pointer;
+}
+button.on{
+ background:#606ddd;
+ color:white;
+}
+button.danger{
+ background:#ffe1e1;
+ color:#c33;
+}
+button.small{
+ padding:7px 9px;
+ font-size:12px;
+}
+.card{
+ background:white;
+ border-radius:18px;
+ padding:18px;
+ margin-bottom:12px;
+ box-shadow:0 3px 12px #ccd0e855;
+}
+.grid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
+}
+.num{
+ font-size:22px;
+ font-weight:bold;
+ margin-top:6px;
+}
 small{color:#8589a3}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:11px 5px;border-bottom:1px solid #eee;text-align:right}
-th:first-child,td:first-child{text-align:left}
-input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px 0 10px}
+table{
+ width:100%;
+ border-collapse:collapse;
+ margin-top:10px;
+}
+th,td{
+ padding:10px 5px;
+ border-bottom:1px solid #eee;
+ text-align:right;
+ font-size:13px;
+}
+th:first-child,
+td:first-child{
+ text-align:left;
+}
+input,select{
+ width:100%;
+ padding:11px;
+ border:1px solid #ddd;
+ border-radius:9px;
+ margin:5px 0 10px;
+ background:white;
+}
 .hidden{display:none}
+.full{width:100%}
+.section-title{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+ margin-bottom:12px;
+}
+.section-title h3{margin:0}
+.notice{
+ background:#f5f6ff;
+ border-radius:12px;
+ padding:12px;
+ font-size:13px;
+ margin-bottom:12px;
+}
+.total{
+ font-weight:bold;
+ color:#555fd1;
+}
+.actions{
+ display:flex;
+ gap:5px;
+ justify-content:flex-end;
+}
+@media(max-width:600px){
+ table{font-size:12px}
+ th,td{padding:8px 3px}
+ .actions{flex-direction:column}
+ button{padding:9px 10px}
+}
 </style>
 </head>
 
@@ -30,7 +127,7 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 
 <header>
 <h1>🏰 117번째우정</h1>
-<p>⚔️ 시즌 34-1 · 🏆 길드 74위 · 👥 토벌 21명</p>
+<p>🏆 길드순위 74위 · 👥 길드원 <span id="headerCount">23</span>명</p>
 </header>
 
 <main>
@@ -38,9 +135,11 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 <nav>
 <button class="on" onclick="show('home',this)">홈</button>
 <button onclick="show('members',this)">길드원</button>
+<button onclick="show('raid',this)">토벌</button>
 <button onclick="show('data',this)">데이터 관리</button>
 </nav>
 
+<!-- 홈 -->
 <section id="home">
 
 <div class="grid">
@@ -51,48 +150,38 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 </div>
 
 <div class="card">
-<small>길드 트로피</small>
-<div class="num">81,321,687</div>
+<small>통합시즌</small>
+<div class="num">34시즌</div>
 </div>
 
 <div class="card">
-<small>토벌 참여</small>
-<div class="num">21명</div>
+<small>길드원</small>
+<div class="num" id="homeCount">23명</div>
 </div>
 
 <div class="card">
-<small>등록 인원</small>
-<div class="num" id="cnt">0명</div>
+<small>현재 주차</small>
+<div class="num" id="homeSeason">34-1</div>
 </div>
 
 </div>
 
 <div class="card">
-<h3>📊 시즌 34-1</h3>
-<p>길드원의 토벌 총딜과 평균딜을 관리합니다.</p>
-<p>개별 타격 기록은 저장하지 않습니다.</p>
-</div>
+<h3>⚔️ 34 통합시즌</h3>
 
-</section>
-
-<section id="members" class="hidden">
-
-<div class="card">
-<h3>👥 길드원 기록</h3>
-<button onclick="addMember()">➕ 길드원 추가</button>
 <table>
 <thead>
 <tr>
-<th>길드원</th>
-<th>총딜</th>
-<th>횟수</th>
-<th>평균</th>
-<th>관리</th>
+<th>시즌</th>
+<th>보스 1</th>
+<th>보스 2</th>
 </tr>
 </thead>
-
-<tbody id="list">
-<tr><td colspan="4">등록된 데이터가 없습니다.</td></tr>
+<tbody>
+<tr><td>34-1</td><td>기계신</td><td>감초바다</td></tr>
+<tr><td>34-2</td><td>기계신</td><td>대천사</td></tr>
+<tr><td>34-3</td><td>대천사</td><td>감초바다</td></tr>
+<tr><td>34-4</td><td>기계신</td><td>감초바다</td></tr>
 </tbody>
 </table>
 
@@ -100,28 +189,82 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 
 </section>
 
+
+<!-- 길드원 -->
+<section id="members" class="hidden">
+
+<div class="card">
+
+<div class="section-title">
+<h3>👥 길드원</h3>
+<button onclick="addMember()">➕ 길드원 추가</button>
+</div>
+
+<div class="notice">
+최대 30명까지 등록할 수 있습니다.
+</div>
+
+<table>
+<thead>
+<tr>
+<th>길드원</th>
+<th>가입날짜</th>
+<th>관리</th>
+</tr>
+</thead>
+
+<tbody id="memberList"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+<!-- 토벌 -->
+<section id="raid" class="hidden">
+
+<div class="card">
+
+<div class="section-title">
+<h3>⚔️ 토벌 기록</h3>
+</div>
+
+<label>시즌</label>
+<select id="raidSeason" onchange="changeSeason()">
+<option value="34-1">34-1</option>
+<option value="34-2">34-2</option>
+<option value="34-3">34-3</option>
+<option value="34-4">34-4</option>
+</select>
+
+<div class="notice">
+현재 시즌의 등장 보스만 입력할 수 있습니다.
+</div>
+
+<div id="raidArea"></div>
+
+</div>
+
+</section>
+
+
+<!-- 데이터 관리 -->
 <section id="data" class="hidden">
 
 <div class="card">
 
-<h3>⚙️ 길드원 데이터</h3>
+<h3>⚙️ 토벌 데이터 입력</h3>
 
-<label>닉네임</label>
-<input id="name" placeholder="예: 홍길동">
+<p>현재 시즌: <b id="seasonName">34-1</b></p>
 
-<label>기계신 총딜</label>
-<input id="dragon" type="number">
+<label>길드원</label>
+<select id="name"></select>
 
-<label>기계신 횟수</label>
-<input id="dc" type="number">
+<div id="bossInputs"></div>
 
-<label>감초바다 총딜</label>
-<input id="sea" type="number">
-
-<label>감초바다 횟수</label>
-<input id="sc" type="number">
-
-<button class="on" onclick="add()">💾 저장</button>
+<button class="on full" onclick="saveRaid()">💾 토벌 기록 저장</button>
 
 </div>
 
@@ -129,8 +272,13 @@ input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px
 
 </main>
 
+
 <script>
-let data=JSON.parse(localStorage.getItem("raid")||"[]");
+
+/* =========================
+   길드원 기본정보
+========================= */
+
 let members=JSON.parse(localStorage.getItem("members")||"null")||[
 ["리퓨티","2024-01-27"],
 ["밀레니덤","2024-01-27"],
@@ -156,103 +304,532 @@ let members=JSON.parse(localStorage.getItem("members")||"null")||[
 ["히히꿀벌","2026-05-17"],
 ["나무미르","2026-07-31"]
 ];
+
+members=members.filter((m,i,a)=>
+a.findIndex(x=>x[0]===m[0])===i
+);
+
 localStorage.setItem("members",JSON.stringify(members));
+
+
+/* =========================
+   시즌 정보
+========================= */
+
+const seasonBosses={
+"34-1":["기계신","감초바다"],
+"34-2":["기계신","대천사"],
+"34-3":["대천사","감초바다"],
+"34-4":["기계신","감초바다"]
+};
+
+let currentSeason=
+localStorage.getItem("currentSeason")||"34-1";
+
+
+/* =========================
+   토벌 데이터
+========================= */
+
+let raidData=
+JSON.parse(localStorage.getItem("raidSeasons")||"{}");
+
+
+/* =========================
+   화면 이동
+========================= */
+
 function show(id,b){
-document.querySelectorAll("main section").forEach(x=>x.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
+
+document.querySelectorAll("main section")
+.forEach(x=>x.classList.add("hidden"));
+
+document.getElementById(id)
+.classList.remove("hidden");
+
+document.querySelectorAll("nav button")
+.forEach(x=>x.classList.remove("on"));
+
 if(b)b.classList.add("on");
-render();
+
+renderAll();
+
 }
 
-function add(){
-let n=document.getElementById("name").value.trim();
-let d=+document.getElementById("dragon").value||0;
-let dc=+document.getElementById("dc").value||0;
-let s=+document.getElementById("sea").value||0;
-let sc=+document.getElementById("sc").value||0;
 
-if(!n){alert("닉네임을 입력해주세요.");return}
-
-let old=data.find(x=>x.name===n);
-
-if(old){
-old.dragon=d;
-old.dc=dc;
-old.sea=s;
-old.sc=sc;
-}else{
-data.push({name:n,dragon:d,dc:dc,sea:s,sc:sc});
-}
-
-localStorage.setItem("raid",JSON.stringify(data));
-
-document.getElementById("name").value="";
-document.getElementById("dragon").value="";
-document.getElementById("dc").value="";
-document.getElementById("sea").value="";
-document.getElementById("sc").value="";
-
-render();
-
-alert("저장되었습니다.");
-}
+/* =========================
+   숫자 표시
+========================= */
 
 function fmt(n){
-if(n>=1000000000000)return(n/1e12).toFixed(2)+"T";
-if(n>=1000000000)return(n/1e9).toFixed(2)+"B";
-if(n>=1000000)return(n/1e6).toFixed(2)+"M";
+
+if(!n)return "0";
+
+if(n>=1000000000000)
+return(n/1e12).toFixed(2)+"T";
+
+if(n>=1000000000)
+  return(n/1e9).toFixed(2)+"B";
+
+if(n>=1000000)
+return(n/1e6).toFixed(2)+"M";
+
+if(n>=1000)
+return(n/1000).toFixed(1)+"K";
+
 return n.toLocaleString();
+
 }
+
+
+/* =========================
+   길드원 추가
+========================= */
+
 function addMember(){
+
 if(members.length>=30){
 alert("길드원은 최대 30명까지 등록할 수 있습니다.");
 return;
 }
+
 let name=prompt("길드원 닉네임을 입력하세요.");
+
 if(!name)return;
-let date=prompt("가입날짜를 입력하세요.\n예: 2026-09-08");
-if(!date)return;
-members.push([name,date]);
-localStorage.setItem("members",JSON.stringify(members));
-render();
+
+name=name.trim();
+
+if(!name)return;
+
+if(members.some(x=>x[0]===name)){
+alert("이미 등록된 닉네임입니다.");
+return;
 }
+
+let date=prompt(
+"가입날짜를 입력하세요.\n예: 2026-09-08"
+);
+
+if(!date)return;
+
+members.push([name,date]);
+
+localStorage.setItem(
+"members",
+JSON.stringify(members)
+);
+
+renderAll();
+
+alert("길드원이 추가되었습니다.");
+
+}
+
+
+/* =========================
+   길드원 수정
+========================= */
 
 function editMember(i){
-let name=prompt("닉네임을 수정하세요.",members[i][0]);
+
+let name=prompt(
+"닉네임을 수정하세요.",
+members[i][0]
+);
+
 if(!name)return;
-let date=prompt("가입날짜를 수정하세요.",members[i][1]);
-if(!date)return;
-members[i]=[name,date];
-localStorage.setItem("members",JSON.stringify(members));
-render();
+
+name=name.trim();
+
+if(!name)return;
+
+if(
+members.some((x,index)=>
+x[0]===name&&index!==i
+)
+){
+alert("이미 존재하는 닉네임입니다.");
+return;
 }
+
+let date=prompt(
+"가입날짜를 수정하세요.",
+members[i][1]
+);
+
+if(!date)return;
+
+members[i]=[name,date];
+
+localStorage.setItem(
+"members",
+JSON.stringify(members)
+);
+
+renderAll();
+
+}
+
+
+/* =========================
+   길드원 삭제
+========================= */
 
 function deleteMember(i){
-if(!confirm(members[i][0]+" 님을 삭제할까요?"))return;
-members.splice(i,1);
-localStorage.setItem("members",JSON.stringify(members));
-render();
-}
-function render(){
-document.getElementById("cnt").textContent=members.length+"명";
 
-let box=document.getElementById("list");
-document.querySelector("#members th:last-child").textContent="관리";
-box.innerHTML=members.map((m,i)=>{
-let x=data.find(d=>d.name===m[0]);
-let total=x?x.dragon+x.sea:0;
-let count=x?x.dc+x.sc:0;
+let name=members[i][0];
+
+if(!confirm(name+" 님을 삭제할까요?"))
+return;
+
+members.splice(i,1);
+
+localStorage.setItem(
+"members",
+JSON.stringify(members)
+);
+
+renderAll();
+
+}
+
+
+/* =========================
+   시즌 변경
+========================= */
+
+function changeSeason(){
+
+currentSeason=
+document.getElementById("raidSeason").value;
+
+localStorage.setItem(
+"currentSeason",
+currentSeason
+);
+
+document.getElementById("seasonName")
+.textContent=currentSeason;
+
+renderAll();
+
+}
+
+
+/* =========================
+   길드원 선택 목록
+========================= */
+
+function renderMemberSelect(){
+
+let select=
+document.getElementById("name");
+
+if(!select)return;
+
+let old=select.value;
+
+select.innerHTML=members.map(m=>
+"<option value='"+escapeHtml(m[0])+"'>"+
+escapeHtml(m[0])+
+"</option>"
+).join("");
+
+if(members.some(m=>m[0]===old))
+select.value=old;
+
+}
+
+
+/* =========================
+   보스 입력칸
+========================= */
+
+function renderBossInputs(){
+
+let area=
+document.getElementById("bossInputs");
+
+if(!area)return;
+
+let bosses=seasonBosses[currentSeason];
+
+area.innerHTML=bosses.map((boss,i)=>{
+
+return `
+<div class="card">
+<h3>⚔️ ${boss}</h3>
+
+<label>총딜</label>
+<input id="d${i}" type="number"
+placeholder="예: 123000000">
+
+<label>횟수</label>
+<input id="c${i}" type="number"
+placeholder="예: 3">
+
+</div>
+`;
+
+}).join("");
+
+loadSelectedRaid();
+
+}
+
+
+/* =========================
+   기존 기록 불러오기
+========================= */
+
+function loadSelectedRaid(){
+
+let name=
+document.getElementById("name").value;
+
+if(!name)return;
+
+let season=
+raidData[currentSeason]||{};
+
+let player=
+season[name]||{};
+
+let bosses=seasonBosses[currentSeason];
+
+bosses.forEach((boss,i)=>{
+
+let r=player[boss]||{};
+
+let d=document.getElementById("d"+i);
+let c=document.getElementById("c"+i);
+
+if(d)d.value=r.damage||"";
+if(c)c.value=r.count||"";
+
+});
+
+}
+
+
+/* =========================
+   토벌 기록 저장
+========================= */
+
+function saveRaid(){
+
+let name=
+document.getElementById("name").value;
+
+if(!name){
+alert("길드원을 선택해주세요.");
+return;
+}
+if(!raidData[currentSeason])
+raidData[currentSeason]={};
+
+if(!raidData[currentSeason][name])
+raidData[currentSeason][name]={};
+
+let bosses=seasonBosses[currentSeason];
+
+bosses.forEach((boss,i)=>{
+
+let damage=
++document.getElementById("d"+i).value||0;
+
+let count=
++document.getElementById("c"+i).value||0;
+
+raidData[currentSeason][name][boss]={
+damage:damage,
+count:count
+};
+
+});
+
+localStorage.setItem(
+"raidSeasons",
+JSON.stringify(raidData)
+);
+
+renderAll();
+
+alert("토벌 기록이 저장되었습니다.");
+
+}
+
+
+/* =========================
+   토벌 화면
+========================= */
+
+function renderRaid(){
+
+let area=
+document.getElementById("raidArea");
+
+if(!area)return;
+
+let season=
+raidData[currentSeason]||{};
+
+let bosses=
+seasonBosses[currentSeason];
+
+let rows=members.map(m=>{
+
+let player=season[m[0]]||{};
+
+let total=0;
+let count=0;
+
+bosses.forEach(b=>{
+
+let r=player[b]||{};
+
+total+=Number(r.damage)||0;
+count+=Number(r.count)||0;
+
+});
+
 let avg=count?total/count:0;
 
-return "<tr><td><b>"+m[0]+"</b><br><small>"+m[1]+"</small></td><td>"+(total?fmt(total):"-")+"</td><td>"+(count?count+"회":"-")+"</td><td>"+(avg?fmt(avg):"-")+"</td><td><button onclick='editMember("+i+")'>수정</button><button onclick='deleteMember("+i+")'>삭제</button></td></tr>";
+return `
+<tr>
+<td><b>${escapeHtml(m[0])}</b></td>
+<td>${total?fmt(total):"-"}</td>
+<td>${count?count+"회":"-"}</td>
+<td>${avg?fmt(avg):"-"}</td>
+</tr>
+`;
+
 }).join("");
+
+area.innerHTML=`
+
+<table>
+<thead>
+<tr>
+<th>길드원</th>
+<th>총딜</th>
+<th>횟수</th>
+<th>평균</th>
+</tr>
+</thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+
+`;
+
 }
 
 
+/* =========================
+   길드원 목록
+========================= */
 
-render();
+function renderMembers(){
+
+let box=
+document.getElementById("memberList");
+
+if(!box)return;
+
+box.innerHTML=members.map((m,i)=>`
+
+<tr>
+<td><b>${escapeHtml(m[0])}</b></td>
+<td>${escapeHtml(m[1])}</td>
+<td>
+<div class="actions">
+
+<button class="small"
+onclick="editMember(${i})">
+수정
+</button>
+
+<button class="small danger"
+onclick="deleteMember(${i})">
+삭제
+</button>
+
+</div>
+</td>
+</tr>
+
+`).join("");
+
+}
+
+
+/* =========================
+   전체 렌더링
+========================= */
+
+function renderAll(){
+
+document.getElementById("headerCount")
+.textContent=members.length;
+
+document.getElementById("homeCount")
+.textContent=members.length+"명";
+
+document.getElementById("homeSeason")
+.textContent=currentSeason;
+
+document.getElementById("seasonName")
+.textContent=currentSeason;
+
+let rs=document.getElementById("raidSeason");
+
+if(rs)rs.value=currentSeason;
+
+renderMembers();
+renderMemberSelect();
+renderBossInputs();
+renderRaid();
+
+}
+
+
+/* =========================
+   닉네임 안전처리
+========================= */
+
+function escapeHtml(str){
+
+return String(str)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================
+   길드원 선택 변경
+========================= */
+
+document.addEventListener("change",function(e){
+
+if(e.target&&e.target.id==="name")
+loadSelectedRaid();
+
+});
+
+
+/* =========================
+   시작
+========================= */
+
+renderAll();
+
 </script>
 
 </body>
-</html>
+</html>  
