@@ -10287,6 +10287,1659 @@ function closeModal() {
 
 
 })();
+/* ==================================================
+   최종 보정 패치
+   정확한 보스명 + OCR 보정 + 34-3 보정
+   + 운영진 로그인 상태/메시지 보정
+================================================== */
+
+(function(){
+
+  "use strict";
+
+
+  /* ==================================================
+     1. 보스 이름 기준표
+  ================================================== */
+
+  const BOSS_DEFINITIONS = [
+
+    {
+      short:
+        "드래곤",
+
+      full:
+        "레드벨벳 케이크 드래곤",
+
+      aliases: [
+        "드래곤",
+        "레드벨벳",
+        "레드벨벳케이크드래곤",
+        "레드벨벳 케이크 드래곤"
+      ]
+    },
+
+
+    {
+      short:
+        "기계신",
+
+      full:
+        "영원한 시간 속 공허의 기계신",
+
+      aliases: [
+        "기계신",
+        "영원한시간속공허의기계신",
+        "영원한 시간 속 공허의 기계신",
+        "공허의 기계신"
+      ]
+    },
+
+
+    {
+      short:
+        "감초바다",
+
+      full:
+        "덩어리진 감초바다의 심연",
+
+      aliases: [
+        "감초바다",
+        "덩어리진감초바다의심연",
+        "덩어리진 감초바다의 심연",
+        "감초바다의 심연",
+        "감초 바다"
+      ]
+    },
+
+
+    {
+      short:
+        "대천사",
+
+      full:
+        "운명의 대천사",
+
+      aliases: [
+        "대천사",
+        "운명의대천사",
+        "운명의 대천사"
+      ]
+    }
+
+  ];
+
+
+  /* ==================================================
+     2. 문자열 정리
+  ================================================== */
+
+  function compactText(
+    value
+  ){
+
+    return String(
+      value || ""
+    )
+      .toLowerCase()
+      .replace(
+        /\s+/g,
+        ""
+      )
+      .replace(
+        /[\[\]\(\)\{\}:;,|.!?'"`~_+=\-]/g,
+        ""
+      );
+
+  }
+
+
+  /* ==================================================
+     3. 정확한 보스명으로 변환
+  ================================================== */
+
+  function getFullBossName(
+    value
+  ){
+
+    const original =
+      String(
+        value || ""
+      ).trim();
+
+
+    if(!original)
+      return "";
+
+
+    const compact =
+      compactText(
+        original
+      );
+
+
+    for(
+      const boss of
+      BOSS_DEFINITIONS
+    ){
+
+      const aliases =
+        boss.aliases || [];
+
+
+      for(
+        const alias of
+        aliases
+      ){
+
+        const aliasCompact =
+          compactText(
+            alias
+          );
+
+
+        if(
+          compact ===
+          aliasCompact
+        ){
+
+          return boss.full;
+
+        }
+
+      }
+
+    }
+
+
+    /*
+     * 문자열 안에 정확한 보스명이
+     * 포함된 경우
+     */
+
+    for(
+      const boss of
+      BOSS_DEFINITIONS
+    ){
+
+      const fullCompact =
+        compactText(
+          boss.full
+        );
+
+
+      if(
+        compact.includes(
+          fullCompact
+        )
+      ){
+
+        return boss.full;
+
+      }
+
+    }
+
+
+    /*
+     * 짧은 이름이 포함된 경우
+     */
+
+    for(
+      const boss of
+      BOSS_DEFINITIONS
+    ){
+
+      if(
+        compact.includes(
+          compactText(
+            boss.short
+          )
+        )
+      ){
+
+        return boss.full;
+
+      }
+
+    }
+
+
+    /*
+     * 감초바다 OCR 보정
+     */
+
+    if(
+      compact.includes("감초") &&
+      (
+        compact.includes("바다") ||
+        compact.includes("바")
+      )
+    ){
+
+      return
+        "덩어리진 감초바다의 심연";
+
+    }
+
+
+    /*
+     * 기계신 OCR 보정
+     */
+
+    if(
+      compact.includes("기계신") ||
+      (
+        compact.includes("공허") &&
+        compact.includes("기계")
+      )
+    ){
+
+      return
+        "영원한 시간 속 공허의 기계신";
+
+    }
+
+
+    /*
+     * 대천사 OCR 보정
+     */
+
+    if(
+      compact.includes("대천사") ||
+      (
+        compact.includes("운명") &&
+        compact.includes("천사")
+      )
+    ){
+
+      return
+        "운명의 대천사";
+
+    }
+
+
+    /*
+     * 드래곤 OCR 보정
+     */
+
+    if(
+      compact.includes("드래곤") ||
+      (
+        compact.includes("레드벨벳") &&
+        compact.includes("케이크")
+      )
+    ){
+
+      return
+        "레드벨벳 케이크 드래곤";
+
+    }
+
+
+    return original;
+
+  }
+
+
+  window.v5_getFullBossName =
+    getFullBossName;
+
+
+  /* ==================================================
+     4. 기존 짧은 이름을 정확한 이름으로 변환
+  ================================================== */
+
+  function normalizeBossList(
+    list
+  ){
+
+    if(
+      !Array.isArray(list)
+    ){
+
+      return [];
+
+    }
+
+
+    return [
+      ...new Set(
+        list
+          .map(
+            getFullBossName
+          )
+          .filter(Boolean)
+      )
+    ];
+
+  }
+
+
+  /* ==================================================
+     5. 길드 보스 데이터 정리
+  ================================================== */
+
+  function repairBossData(){
+
+    if(
+      typeof getGuild !==
+      "function"
+    ){
+
+      return;
+
+    }
+
+
+    const guild =
+      getGuild();
+
+
+    if(!guild)
+      return;
+
+
+    if(!guild.bossTable){
+
+      guild.bossTable = {
+
+        bosses: [],
+
+        seasons: {},
+
+        source:
+          "manual",
+
+        updated:
+          null
+
+      };
+
+    }
+
+
+    if(
+      !Array.isArray(
+        guild.bossTable.bosses
+      )
+    ){
+
+      guild.bossTable.bosses = [];
+
+    }
+
+
+    if(
+      !guild.bossTable.seasons ||
+      typeof guild.bossTable.seasons !==
+        "object"
+    ){
+
+      guild.bossTable.seasons = {};
+
+    }
+
+
+    /*
+     * 전체 보스 목록 정확한 이름으로 정리
+     */
+
+    guild.bossTable.bosses =
+      normalizeBossList(
+        guild.bossTable.bosses
+      );
+
+
+    /*
+     * 기본 4보스도 반드시 후보에 존재
+     */
+
+    BOSS_DEFINITIONS.forEach(
+      boss => {
+
+        if(
+          !guild.bossTable.bosses
+            .includes(
+              boss.full
+            )
+        ){
+
+          guild.bossTable.bosses
+            .push(
+              boss.full
+            );
+
+        }
+
+      }
+    );
+
+
+    /*
+     * 기존 시즌 데이터 정리
+     */
+
+    Object.keys(
+      guild.bossTable.seasons
+    )
+    .forEach(
+      season => {
+
+        const values =
+          guild.bossTable
+            .seasons[
+              season
+            ];
+
+
+        if(
+          !Array.isArray(values)
+        ){
+
+          guild.bossTable
+            .seasons[
+              season
+            ] = [];
+
+          return;
+
+        }
+
+
+        guild.bossTable
+          .seasons[
+            season
+          ] =
+          normalizeBossList(
+            values
+          );
+
+      }
+    );
+
+
+    /*
+     * 현재 확인된 기본 시즌 보정
+     *
+     * 기존에 데이터가 없을 때만 생성
+     */
+
+    const defaults = {
+
+      "34-1": [
+        "영원한 시간 속 공허의 기계신",
+        "덩어리진 감초바다의 심연"
+      ],
+
+      "34-2": [
+        "영원한 시간 속 공허의 기계신",
+        "운명의 대천사"
+      ],
+
+      "34-3": [
+        "운명의 대천사",
+        "덩어리진 감초바다의 심연"
+      ],
+
+      "34-4": [
+        "영원한 시간 속 공허의 기계신",
+        "덩어리진 감초바다의 심연"
+      ]
+
+    };
+
+
+    Object.keys(
+      defaults
+    )
+    .forEach(
+      season => {
+
+        const current =
+          guild.bossTable
+            .seasons[
+              season
+            ];
+
+
+        if(
+          !Array.isArray(current) ||
+          current.length === 0
+        ){
+
+          guild.bossTable
+            .seasons[
+              season
+            ] =
+            [
+              ...defaults[
+                season
+              ]
+            ];
+
+        }
+
+      }
+    );
+
+
+    guild.bossTable.updated =
+      new Date().toISOString();
+
+
+    if(
+      typeof saveApp ===
+      "function"
+    ){
+
+      saveApp();
+
+    }
+
+  }
+
+
+  /* ==================================================
+     6. OCR 원문에서 정확한 보스 찾기
+  ================================================== */
+
+  function detectBossesFromText(
+    text
+  ){
+
+    const source =
+      String(
+        text || ""
+      );
+
+
+    const compact =
+      compactText(
+        source
+      );
+
+
+    const found = [];
+
+
+    BOSS_DEFINITIONS.forEach(
+      boss => {
+
+        let matched =
+          false;
+
+
+        /*
+         * 정확한 이름
+         */
+
+        if(
+          compact.includes(
+            compactText(
+              boss.full
+            )
+          )
+        ){
+
+          matched = true;
+
+        }
+
+
+        /*
+         * 별칭
+         */
+
+        if(!matched){
+
+          boss.aliases
+            .forEach(
+              alias => {
+
+                if(
+                  compact.includes(
+                    compactText(
+                      alias
+                    )
+                  )
+                ){
+
+                  matched = true;
+
+                }
+
+              }
+            );
+
+        }
+
+
+        /*
+         * 보정 패턴
+         */
+
+        if(!matched){
+
+          if(
+            boss.short ===
+              "감초바다" &&
+            compact.includes(
+              "감초"
+            )
+          ){
+
+            matched = true;
+
+          }
+
+
+          if(
+            boss.short ===
+              "기계신" &&
+            (
+              compact.includes(
+                "기계신"
+              ) ||
+              (
+                compact.includes(
+                  "공허"
+                ) &&
+                compact.includes(
+                  "기계"
+                )
+              )
+            )
+          ){
+
+            matched = true;
+
+          }
+
+
+          if(
+            boss.short ===
+              "대천사" &&
+            (
+              compact.includes(
+                "대천사"
+              ) ||
+              (
+                compact.includes(
+                  "운명"
+                ) &&
+                compact.includes(
+                  "천사"
+                )
+              )
+            )
+          ){
+
+            matched = true;
+
+          }
+
+
+          if(
+            boss.short ===
+              "드래곤" &&
+            (
+              compact.includes(
+                "드래곤"
+              ) ||
+              compact.includes(
+                "레드벨벳"
+              )
+            )
+          ){
+
+            matched = true;
+
+          }
+
+        }
+
+
+        if(matched){
+
+          found.push(
+            boss.full
+          );
+
+        }
+
+      }
+    );
+
+
+    return found;
+
+  }
+
+
+  window.v5_detectBossesFromText =
+    detectBossesFromText;
+
+
+  /* ==================================================
+     7. 34-3 누락 방지
+     
+     34-3이 대천사만 잡혔을 경우
+     감초바다를 자동 후보로 추가
+  ================================================== */
+
+  function repairSeason343(
+    table
+  ){
+
+    if(!table)
+      return;
+
+
+    const key =
+      "34-3";
+
+
+    if(
+      !Array.isArray(
+        table[key]
+      )
+    ){
+
+      table[key] = [];
+
+    }
+
+
+    table[key] =
+      normalizeBossList(
+        table[key]
+      );
+
+
+    /*
+     * 34-3에 이미 2보스가 있으면
+     * 그대로 유지
+     */
+
+    if(
+      table[key].length >= 2
+    ){
+
+      return;
+
+    }
+
+
+    /*
+     * 현재 알려진 34-3 구성
+     */
+
+    const expected = [
+
+      "운명의 대천사",
+
+      "덩어리진 감초바다의 심연"
+
+    ];
+
+
+    expected.forEach(
+      boss => {
+
+        if(
+          table[key].length < 2 &&
+          !table[key].includes(
+            boss
+          )
+        ){
+
+          table[key].push(
+            boss
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  window.v5_repairSeason343 =
+    repairSeason343;
+
+
+  /* ==================================================
+     8. 보스표 저장 함수 보정
+  ================================================== */
+
+  const originalSaveDetected =
+    window.v5_saveDetectedBossGrid;
+
+
+  if(
+    originalSaveDetected &&
+    !originalSaveDetected
+      .__exactBossPatch
+  ){
+
+    const patchedSave =
+      function(){
+
+        const result =
+          originalSaveDetected.apply(
+            this,
+            arguments
+          );
+
+
+        try{
+
+          repairBossData();
+
+        }
+        catch(error){
+
+          console.warn(
+            "보스 데이터 저장 보정:",
+            error
+          );
+
+        }
+
+
+        return result;
+
+      };
+
+
+    patchedSave
+      .__exactBossPatch =
+        true;
+
+
+    window.v5_saveDetectedBossGrid =
+      patchedSave;
+
+  }
+
+
+  /* ==================================================
+     9. 사진 분석 결과가 화면에 표시된 뒤
+        34-3을 안전하게 보정
+  ================================================== */
+
+  function patchBossImageResult(){
+
+    const box =
+      document.getElementById(
+        "bossImageResult"
+      );
+
+
+    if(!box)
+      return;
+
+
+    /*
+     * 현재 화면에 표시된 모든 입력을 찾음
+     */
+
+    const inputs =
+      box.querySelectorAll(
+        "input"
+      );
+
+
+    inputs.forEach(
+      input => {
+
+        const id =
+          String(
+            input.id || ""
+          );
+
+
+        /*
+         * 34-3 입력창인지 확인
+         */
+
+        if(
+          !(
+            id.includes(
+              "34_3"
+            ) ||
+            id.includes(
+              "34-3"
+            )
+          )
+        ){
+
+          return;
+
+        }
+
+
+        const current =
+          String(
+            input.value || ""
+          );
+
+
+        /*
+         * 입력값이 비어 있거나
+         * 보스가 하나뿐이면 34-3 보정
+         */
+
+        const values =
+          current
+            .split(
+              /[,/，、\n]+/
+            )
+            .map(
+              getFullBossName
+            )
+            .filter(Boolean);
+
+
+        if(
+          values.length < 2
+        ){
+
+          const unique =
+            [
+              ...new Set(
+                values
+              )
+            ];
+
+
+          if(
+            !unique.includes(
+              "운명의 대천사"
+            )
+          ){
+
+            unique.push(
+              "운명의 대천사"
+            );
+
+          }
+
+
+          if(
+            !unique.includes(
+              "덩어리진 감초바다의 심연"
+            )
+          ){
+
+            unique.push(
+              "덩어리진 감초바다의 심연"
+            );
+
+          }
+
+
+          input.value =
+            unique
+              .slice(
+                0,
+                2
+              )
+              .join(
+                ", "
+              );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* ==================================================
+     10. 운영진 로그인 메시지 보정
+  ================================================== */
+
+  function showAdminMessage(
+    message,
+    type
+  ){
+
+    const loginState =
+      document.getElementById(
+        "loginState"
+      );
+
+
+    if(loginState){
+
+      loginState.textContent =
+        message;
+
+
+      if(
+        type === "success"
+      ){
+
+        loginState.className =
+          "badge green";
+
+      }
+      else{
+
+        loginState.className =
+          "badge red";
+
+      }
+
+    }
+
+
+    /*
+     * 화면에 별도의 상태 메시지가 있으면 표시
+     */
+
+    const loginBox =
+      document.getElementById(
+        "adminLogin"
+      );
+
+
+    if(
+      loginBox
+    ){
+
+      let status =
+        document.getElementById(
+          "v5AdminLoginStatus"
+        );
+
+
+      if(!status){
+
+        status =
+          document.createElement(
+            "div"
+          );
+
+
+        status.id =
+          "v5AdminLoginStatus";
+
+
+        status.style.cssText =
+          `
+            margin-top:10px;
+            padding:10px;
+            border-radius:10px;
+            font-weight:600;
+          `;
+
+
+        loginBox.appendChild(
+          status
+        );
+
+      }
+
+
+      status.textContent =
+        message;
+
+
+      if(
+        type === "success"
+      ){
+
+        status.style.background =
+          "#e8f7ee";
+
+        status.style.color =
+          "#16834a";
+
+      }
+      else{
+
+        status.style.background =
+          "#fff0f0";
+
+        status.style.color =
+          "#c62828";
+
+      }
+
+    }
+
+  }
+
+
+  /* ==================================================
+     11. 현재 운영진 상태 확인
+  ================================================== */
+
+  function getCurrentAdmin(){
+
+    if(
+      typeof getGuild !==
+      "function"
+    ){
+
+      return null;
+
+    }
+
+
+    const guild =
+      getGuild();
+
+
+    if(!guild)
+      return null;
+
+
+    const guildId =
+      guild.id;
+
+
+    const adminGuild =
+      sessionStorage.getItem(
+        "adminGuild"
+      );
+
+
+    if(
+      adminGuild !==
+      guildId
+    ){
+
+      return null;
+
+    }
+
+
+    if(
+      sessionStorage.getItem(
+        "ownerGuild"
+      ) === guildId
+    ){
+
+      return (
+        guild.admins || []
+      ).find(
+        admin =>
+          admin.role === "owner"
+      ) || null;
+
+    }
+
+
+    return (
+      guild.admins || []
+    ).find(
+      admin =>
+        String(
+          admin.memberId
+        ) ===
+        String(
+          sessionStorage.getItem(
+            "adminMemberId"
+          )
+        )
+    ) || null;
+
+  }
+
+
+  /* ==================================================
+     12. 운영진 로그인 함수 최종 보정
+  ================================================== */
+
+  window.v5_loginAdminWithMessage =
+    function(){
+
+      const guild =
+        typeof getGuild ===
+          "function"
+          ? getGuild()
+          : null;
+
+
+      if(!guild){
+
+        alert(
+          "길드 정보를 찾을 수 없습니다."
+        );
+
+        return;
+
+      }
+
+
+      const input =
+        document.getElementById(
+          "adminCode"
+        );
+
+
+      const code =
+        String(
+          input?.value || ""
+        ).trim();
+
+
+      if(
+        !code
+      ){
+
+        showAdminMessage(
+          "❌ 운영진 코드를 입력해주세요.",
+          "error"
+        );
+
+
+        alert(
+          "운영진 코드를 입력해주세요."
+        );
+
+
+        return;
+
+      }
+
+
+      /*
+       * 테스트용 최초 운영진
+       */
+
+      if(
+        code === "1234" &&
+        !guild.ownerInitialized
+      ){
+
+        sessionStorage.setItem(
+          "adminGuild",
+          guild.id
+        );
+
+
+        sessionStorage.setItem(
+          "ownerGuild",
+          guild.id
+        );
+
+
+        sessionStorage.setItem(
+          "bootstrapOwner",
+          guild.id
+        );
+
+
+        if(input)
+          input.value = "";
+
+
+        showAdminMessage(
+          "👑 최초 운영진 테스트 권한으로 로그인되었습니다.",
+          "success"
+        );
+
+
+        if(
+          typeof renderAll ===
+          "function"
+        ){
+
+          renderAll();
+
+        }
+
+
+        if(
+          typeof renderAdminState ===
+          "function"
+        ){
+
+          renderAdminState();
+
+        }
+
+
+        alert(
+          "✅ 운영진 로그인 성공\n\n현재 권한: 최초 운영진\n\n길드원을 등록할 수 있습니다."
+        );
+
+
+        return;
+
+      }
+
+
+      /*
+       * 등록된 운영진 검색
+       */
+
+      const admin =
+        (
+          guild.admins || []
+        ).find(
+          item =>
+            String(
+              item.code
+            ) ===
+            code
+        );
+
+
+      if(!admin){
+
+        showAdminMessage(
+          "❌ 운영진 코드가 올바르지 않습니다.",
+          "error"
+        );
+
+
+        alert(
+          "❌ 운영진 코드가 올바르지 않습니다."
+        );
+
+
+        return;
+
+      }
+
+
+      sessionStorage.setItem(
+        "adminGuild",
+        guild.id
+      );
+
+
+      sessionStorage.setItem(
+        "adminMemberId",
+        String(
+          admin.memberId || ""
+        )
+      );
+
+
+      if(
+        admin.role ===
+        "owner"
+      ){
+
+        sessionStorage.setItem(
+          "ownerGuild",
+          guild.id
+        );
+
+      }
+      else{
+
+        sessionStorage.removeItem(
+          "ownerGuild"
+        );
+
+      }
+
+
+      sessionStorage.removeItem(
+        "bootstrapOwner"
+      );
+
+
+      if(input)
+        input.value = "";
+
+
+      const roleText =
+        admin.role === "owner"
+          ? "최초 운영진"
+          : "운영진";
+
+
+      showAdminMessage(
+        `✅ 운영진 로그인 성공 · 현재 권한: ${roleText}`,
+        "success"
+      );
+
+
+      if(
+        typeof renderAll ===
+        "function"
+      ){
+
+        renderAll();
+
+      }
+
+
+      if(
+        typeof renderAdminState ===
+        "function"
+      ){
+
+        renderAdminState();
+
+      }
+
+
+      alert(
+        `✅ 운영진 로그인 성공\n\n현재 권한: ${roleText}\n\n${admin.name || ""}`
+      );
+
+    };
+
+
+  /* ==================================================
+     13. 기존 로그인 버튼/함수와 연결
+  ================================================== */
+
+  window.v5_originalLoginAdmin =
+    window.loginAdmin;
+
+
+  window.loginAdmin =
+    function(){
+
+      try{
+
+        v5_loginAdminWithMessage();
+
+      }
+      catch(error){
+
+        console.error(
+          "운영진 로그인 오류:",
+          error
+        );
+
+
+        alert(
+          "운영진 로그인 처리 중 오류가 발생했습니다."
+        );
+
+      }
+
+    };
+
+
+  window.adminLogin =
+    function(){
+
+      window.loginAdmin();
+
+    };
+
+
+  /* ==================================================
+     14. 운영진 상태 표시 보정
+  ================================================== */
+
+  function updateAdminStatus(){
+
+    try{
+
+      if(
+        typeof renderAdminState ===
+        "function"
+      ){
+
+        renderAdminState();
+
+      }
+
+
+      const guild =
+        typeof getGuild ===
+          "function"
+          ? getGuild()
+          : null;
+
+
+      if(!guild)
+        return;
+
+
+      const adminGuild =
+        sessionStorage.getItem(
+          "adminGuild"
+        );
+
+
+      if(
+        adminGuild !==
+        guild.id
+      ){
+
+        return;
+
+      }
+
+
+      const owner =
+        sessionStorage.getItem(
+          "ownerGuild"
+        ) === guild.id;
+
+
+      showAdminMessage(
+        owner
+          ? "👑 현재 로그인 상태: 최초 운영진"
+          : "🛡️ 현재 로그인 상태: 운영진",
+        "success"
+      );
+
+    }
+    catch(error){
+
+      console.warn(
+        "운영진 상태 표시 오류:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* ==================================================
+     15. 초기 데이터 보정
+  ================================================== */
+
+  function initFinalPatch(){
+
+    try{
+
+      repairBossData();
+
+      patchBossImageResult();
+
+      updateAdminStatus();
+
+    }
+    catch(error){
+
+      console.warn(
+        "최종 보정 패치 초기화 오류:",
+        error
+      );
+
+    }
+
+  }
+
+
+  if(
+    document.readyState ===
+    "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initFinalPatch
+    );
+
+  }
+  else{
+
+    initFinalPatch();
+
+  }
+
+
+  /*
+   * 사진 분석 결과가 나중에 생성되므로
+   * 잠시 후에도 한 번 더 확인
+   */
+
+  setTimeout(
+    function(){
+
+      try{
+
+        patchBossImageResult();
+
+      }
+      catch(error){
+
+        console.warn(
+          "보스 결과 보정 오류:",
+          error
+        );
+
+      }
+
+    },
+    1000
+  );
+
+
+  setTimeout(
+    function(){
+
+      try{
+
+        patchBossImageResult();
+
+      }
+      catch(error){
+
+        console.warn(
+          "보스 결과 재보정 오류:",
+          error
+        );
+
+      }
+
+    },
+    3000
+  );
+
+
+})();
 </script>
 
 </body>
