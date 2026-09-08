@@ -3653,6 +3653,982 @@ document.addEventListener(
   }
 
 })();
+/* ==================================================
+   추가 패치 2
+   시즌별 보스표 관리 기반
+   기존 코드 수정 없이 추가
+================================================== */
+
+(function(){
+
+  /*
+   * -----------------------------------------------
+   * 시즌 이름 정리
+   * -----------------------------------------------
+   *
+   * 34-1
+   * 시즌 34-1
+   * 34 - 1
+   *
+   * 위와 같은 값을 최대한 동일하게 처리
+   */
+  window.v5_normalizeSeason = function(value){
+
+    if (
+      value === null ||
+      value === undefined
+    )
+      return "";
+
+    let text =
+      String(value)
+        .trim();
+
+    text =
+      text.replace(
+        /^시즌\s*/i,
+        ""
+      );
+
+    text =
+      text.replace(
+        /\s+/g,
+        ""
+      );
+
+    return text;
+  };
+
+
+  /*
+   * -----------------------------------------------
+   * 보스 이름 정리
+   * -----------------------------------------------
+   */
+  window.v5_normalizeBoss = function(value){
+
+    if (
+      value === null ||
+      value === undefined
+    )
+      return "";
+
+    return String(value)
+      .trim()
+      .replace(/\s+/g, " ");
+
+  };
+
+
+  /*
+   * -----------------------------------------------
+   * 시즌별 보스표 저장
+   * -----------------------------------------------
+   *
+   * 예:
+   *
+   * v5_saveSeasonBosses(
+   *   "34-1",
+   *   ["기계신","감초바다"]
+   * );
+   */
+  window.v5_saveSeasonBosses =
+    function(
+      season,
+      bosses,
+      source = "manual"
+    ){
+
+      if (
+        typeof isManager === "function" &&
+        !isManager()
+      ){
+
+        alert(
+          "운영진만 수정할 수 있습니다."
+        );
+
+        return false;
+      }
+
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return false;
+
+
+      const cleanSeason =
+        v5_normalizeSeason(
+          season
+        );
+
+
+      if (!cleanSeason){
+
+        alert(
+          "시즌을 확인해주세요."
+        );
+
+        return false;
+      }
+
+
+      if (!Array.isArray(bosses))
+        bosses = [];
+
+
+      const cleanBosses =
+        [
+          ...new Set(
+            bosses
+              .map(
+                v5_normalizeBoss
+              )
+              .filter(Boolean)
+          )
+        ];
+
+
+      guild.bossTable
+        .seasons[
+          cleanSeason
+        ] =
+        cleanBosses;
+
+
+      /*
+       * 전체 보스 목록에도 추가
+       */
+      cleanBosses.forEach(
+        boss => {
+
+          if (
+            !guild.bossTable.bosses
+              .includes(boss)
+          ){
+
+            guild.bossTable.bosses
+              .push(boss);
+
+          }
+
+        }
+      );
+
+
+      guild.bossTable.source =
+        source;
+
+      guild.bossTable.updated =
+        new Date().toISOString();
+
+
+      /*
+       * 현재 시즌이면
+       * currentSeason도 유지
+       */
+      if (
+        !guild.currentSeason
+      ){
+
+        guild.currentSeason =
+          cleanSeason;
+
+      }
+
+
+      if (
+        typeof saveApp === "function"
+      ){
+
+        saveApp();
+
+      }
+
+
+      return true;
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 여러 시즌 한번에 저장
+   * -----------------------------------------------
+   *
+   * 예:
+   *
+   * {
+   *   "34-1": ["기계신","감초바다"],
+   *   "34-2": ["기계신","대천사"]
+   * }
+   */
+  window.v5_saveSeasonBossTable =
+    function(
+      table,
+      source = "manual"
+    ){
+
+      if (
+        typeof isManager === "function" &&
+        !isManager()
+      ){
+
+        alert(
+          "운영진만 수정할 수 있습니다."
+        );
+
+        return false;
+      }
+
+
+      if (
+        !table ||
+        typeof table !== "object"
+      ){
+
+        alert(
+          "보스표 데이터를 확인해주세요."
+        );
+
+        return false;
+      }
+
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return false;
+
+
+      Object.keys(table)
+        .forEach(
+          rawSeason => {
+
+            const season =
+              v5_normalizeSeason(
+                rawSeason
+              );
+
+            if (!season)
+              return;
+
+
+            const bosses =
+              Array.isArray(
+                table[rawSeason]
+              )
+                ? table[rawSeason]
+                : [];
+
+
+            const cleanBosses =
+              [
+                ...new Set(
+                  bosses
+                    .map(
+                      v5_normalizeBoss
+                    )
+                    .filter(Boolean)
+                )
+              ];
+
+
+            guild.bossTable
+              .seasons[
+                season
+              ] =
+              cleanBosses;
+
+
+            cleanBosses.forEach(
+              boss => {
+
+                if (
+                  !guild.bossTable.bosses
+                    .includes(boss)
+                ){
+
+                  guild.bossTable.bosses
+                    .push(boss);
+
+                }
+
+              }
+            );
+
+          }
+        );
+
+
+      guild.bossTable.source =
+        source;
+
+      guild.bossTable.updated =
+        new Date().toISOString();
+
+
+      if (
+        typeof saveApp === "function"
+      ){
+
+        saveApp();
+
+      }
+
+
+      return true;
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 시즌 목록 가져오기
+   * -----------------------------------------------
+   */
+  window.v5_getSeasonList =
+    function(){
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return [];
+
+
+      const seasons =
+        Object.keys(
+          guild.bossTable.seasons || {}
+        );
+
+
+      /*
+       * 현재 시즌도 목록에 포함
+       */
+      if (
+        guild.currentSeason &&
+        !seasons.includes(
+          guild.currentSeason
+        )
+      ){
+
+        seasons.push(
+          guild.currentSeason
+        );
+
+      }
+
+
+      /*
+       * 숫자 기준으로 정렬
+       *
+       * 34-1
+       * 34-2
+       * 34-3
+       * 34-4
+       * 35-1
+       */
+      seasons.sort(
+        (a,b) => {
+
+          const pa =
+            a.split("-")
+              .map(Number);
+
+          const pb =
+            b.split("-")
+              .map(Number);
+
+
+          if (
+            Number.isFinite(pa[0]) &&
+            Number.isFinite(pb[0]) &&
+            pa[0] !== pb[0]
+          ){
+
+            return pa[0] - pb[0];
+
+          }
+
+
+          if (
+            Number.isFinite(pa[1]) &&
+            Number.isFinite(pb[1])
+          ){
+
+            return pa[1] - pb[1];
+
+          }
+
+
+          return a.localeCompare(b);
+
+        }
+      );
+
+
+      return seasons;
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 특정 시즌 보스표 삭제
+   * -----------------------------------------------
+   */
+  window.v5_deleteSeasonBosses =
+    function(season){
+
+      if (
+        typeof isManager === "function" &&
+        !isManager()
+      ){
+
+        alert(
+          "운영진만 수정할 수 있습니다."
+        );
+
+        return false;
+      }
+
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return false;
+
+
+      const cleanSeason =
+        v5_normalizeSeason(
+          season
+        );
+
+
+      if (!cleanSeason)
+        return false;
+
+
+      if (
+        !guild.bossTable
+          .seasons[
+            cleanSeason
+          ]
+      ){
+
+        return false;
+
+      }
+
+
+      if (
+        !confirm(
+          `${cleanSeason} 시즌의 보스표를 삭제할까요?`
+        )
+      ){
+
+        return false;
+
+      }
+
+
+      delete guild.bossTable
+        .seasons[
+          cleanSeason
+        ];
+
+
+      guild.bossTable.updated =
+        new Date().toISOString();
+
+
+      if (
+        typeof saveApp === "function"
+      ){
+
+        saveApp();
+
+      }
+
+
+      return true;
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 시즌 보스표 복사
+   * -----------------------------------------------
+   *
+   * 이전 시즌을 다음 시즌으로
+   * 복사할 때 사용
+   */
+  window.v5_copySeasonBosses =
+    function(
+      fromSeason,
+      toSeason
+    ){
+
+      if (
+        typeof isManager === "function" &&
+        !isManager()
+      ){
+
+        alert(
+          "운영진만 수정할 수 있습니다."
+        );
+
+        return false;
+      }
+
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return false;
+
+
+      const from =
+        v5_normalizeSeason(
+          fromSeason
+        );
+
+      const to =
+        v5_normalizeSeason(
+          toSeason
+        );
+
+
+      if (!from || !to)
+        return false;
+
+
+      const source =
+        guild.bossTable
+          .seasons[
+            from
+          ];
+
+
+      if (
+        !Array.isArray(source)
+      ){
+
+        alert(
+          `${from} 시즌의 보스표가 없습니다.`
+        );
+
+        return false;
+
+      }
+
+
+      guild.bossTable
+        .seasons[
+          to
+        ] =
+        [...source];
+
+
+      source.forEach(
+        boss => {
+
+          if (
+            !guild.bossTable.bosses
+              .includes(boss)
+          ){
+
+            guild.bossTable.bosses
+              .push(boss);
+
+          }
+
+        }
+      );
+
+
+      guild.bossTable.source =
+        "copied";
+
+
+      guild.bossTable.updated =
+        new Date().toISOString();
+
+
+      if (
+        typeof saveApp === "function"
+      ){
+
+        saveApp();
+
+      }
+
+
+      return true;
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 보스표 JSON 내보내기
+   * -----------------------------------------------
+   *
+   * 다음 단계에서 데이터 백업에도 사용
+   */
+  window.v5_exportBossTable =
+    function(){
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return null;
+
+
+      return JSON.stringify(
+        {
+
+          version:
+            1,
+
+          guild:
+            guild.name || "",
+
+          integratedSeason:
+            guild.integratedSeason,
+
+          seasons:
+            guild.bossTable
+              .seasons || {},
+
+          bosses:
+            guild.bossTable
+              .bosses || [],
+
+          source:
+            guild.bossTable
+              .source || "manual",
+
+          updated:
+            guild.bossTable
+              .updated || null
+
+        },
+        null,
+        2
+      );
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 보스표 JSON 가져오기
+   * -----------------------------------------------
+   */
+  window.v5_importBossTable =
+    function(json){
+
+      if (
+        typeof isManager === "function" &&
+        !isManager()
+      ){
+
+        alert(
+          "운영진만 수정할 수 있습니다."
+        );
+
+        return false;
+      }
+
+
+      let data;
+
+
+      try {
+
+        data =
+          typeof json === "string"
+            ? JSON.parse(json)
+            : json;
+
+      }
+      catch(error){
+
+        alert(
+          "보스표 데이터를 읽을 수 없습니다."
+        );
+
+        return false;
+
+      }
+
+
+      if (
+        !data ||
+        typeof data !== "object"
+      ){
+
+        alert(
+          "올바른 보스표가 아닙니다."
+        );
+
+        return false;
+
+      }
+
+
+      const seasons =
+        data.seasons;
+
+
+      if (
+        !seasons ||
+        typeof seasons !== "object"
+      ){
+
+        alert(
+          "시즌별 보스 데이터가 없습니다."
+        );
+
+        return false;
+
+      }
+
+
+      return v5_saveSeasonBossTable(
+        seasons,
+        "import"
+      );
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 현재 시즌 보스표 간단 확인
+   * -----------------------------------------------
+   */
+  window.v5_getCurrentBossTable =
+    function(){
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return [];
+
+
+      return v5_getSafeSeasonBosses(
+        guild.currentSeason
+      );
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 보스표 상태 정보
+   * -----------------------------------------------
+   */
+  window.v5_getBossTableInfo =
+    function(){
+
+      const guild =
+        v5_ensureGuildData();
+
+      if (!guild)
+        return {
+
+          seasons: 0,
+
+          bosses: 0,
+
+          source: "",
+
+          updated: null
+
+        };
+
+
+      return {
+
+        seasons:
+          Object.keys(
+            guild.bossTable
+              .seasons || {}
+          ).length,
+
+        bosses:
+          (
+            guild.bossTable
+              .bosses || []
+          ).length,
+
+        source:
+          guild.bossTable
+            .source || "manual",
+
+        updated:
+          guild.bossTable
+            .updated || null
+
+      };
+
+    };
+
+
+  /*
+   * -----------------------------------------------
+   * 초기 시즌 데이터 보정
+   * -----------------------------------------------
+   *
+   * 기존 화면에 있던
+   * 34-1 ~ 34-4 보스표를
+   * 새로운 저장 구조에 넣는다.
+   *
+   * 이미 운영진이 저장한 데이터가 있다면
+   * 덮어쓰지 않는다.
+   */
+  try {
+
+    const guild =
+      v5_ensureGuildData();
+
+
+    if (guild){
+
+      const seasons =
+        guild.bossTable
+          .seasons;
+
+
+      if (
+        !Array.isArray(
+          seasons["34-1"]
+        )
+      ){
+
+        seasons["34-1"] = [
+          "기계신",
+          "감초바다"
+        ];
+
+      }
+
+
+      if (
+        !Array.isArray(
+          seasons["34-2"]
+        )
+      ){
+
+        seasons["34-2"] = [
+          "기계신",
+          "대천사"
+        ];
+
+      }
+
+
+      if (
+        !Array.isArray(
+          seasons["34-3"]
+        )
+      ){
+
+        seasons["34-3"] = [
+          "대천사",
+          "감초바다"
+        ];
+
+      }
+
+
+      if (
+        !Array.isArray(
+          seasons["34-4"]
+        )
+      ){
+
+        seasons["34-4"] = [
+          "기계신",
+          "감초바다"
+        ];
+
+      }
+
+
+      /*
+       * 전체 보스 목록도 자동 보정
+       */
+      Object.values(seasons)
+        .forEach(
+          bosses => {
+
+            if (!Array.isArray(bosses))
+              return;
+
+
+            bosses.forEach(
+              boss => {
+
+                const clean =
+                  v5_normalizeBoss(
+                    boss
+                  );
+
+
+                if (
+                  clean &&
+                  !guild.bossTable
+                    .bosses
+                    .includes(clean)
+                ){
+
+                  guild.bossTable
+                    .bosses
+                    .push(clean);
+
+                }
+
+              }
+            );
+
+          }
+        );
+
+
+      if (
+        typeof saveApp === "function"
+      ){
+
+        saveApp();
+
+      }
+
+    }
+
+  }
+  catch(error){
+
+    console.warn(
+      "시즌 보스표 초기화:",
+      error
+    );
+
+  }
+
+
+})();
 </script>
 
 </body>
