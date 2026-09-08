@@ -1,1 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>117번째우정 토벌관리</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f0f2ff;color:#292d48;font-family:Arial,sans-serif}
+header{background:linear-gradient(135deg,#5868dc,#7655c9);color:white;padding:25px 18px;border-radius:0 0 25px 25px}
+h1{margin:0;font-size:22px}
+header p{margin:8px 0 0;font-size:14px}
+main{padding:15px}
+nav{display:flex;gap:8px;margin-bottom:15px}
+button{border:0;border-radius:10px;padding:10px 14px;background:#e2e5ff;color:#4d5380}
+button.on{background:#606ddd;color:white}
+.card{background:white;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 3px 12px #ccd0e855}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.num{font-size:22px;font-weight:bold;margin-top:6px}
+small{color:#8589a3}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:11px 5px;border-bottom:1px solid #eee;text-align:right}
+th:first-child,td:first-child{text-align:left}
+input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:5px 0 10px}
+.hidden{display:none}
+</style>
+</head>
 
+<body>
+
+<header>
+<h1>🏰 117번째우정</h1>
+<p>⚔️ 시즌 34-1 · 🏆 길드 74위 · 👥 토벌 21명</p>
+</header>
+
+<main>
+
+<nav>
+<button class="on" onclick="show('home',this)">홈</button>
+<button onclick="show('members',this)">길드원</button>
+<button onclick="show('data',this)">데이터 관리</button>
+</nav>
+
+<section id="home">
+
+<div class="grid">
+
+<div class="card">
+<small>길드 순위</small>
+<div class="num">🏆 74위</div>
+</div>
+
+<div class="card">
+<small>길드 트로피</small>
+<div class="num">81,321,687</div>
+</div>
+
+<div class="card">
+<small>토벌 참여</small>
+<div class="num">21명</div>
+</div>
+
+<div class="card">
+<small>등록 인원</small>
+<div class="num" id="cnt">0명</div>
+</div>
+
+</div>
+
+<div class="card">
+<h3>📊 시즌 34-1</h3>
+<p>길드원의 토벌 총딜과 평균딜을 관리합니다.</p>
+<p>개별 타격 기록은 저장하지 않습니다.</p>
+</div>
+
+</section>
+
+<section id="members" class="hidden">
+
+<div class="card">
+<h3>👥 길드원 기록</h3>
+
+<table>
+<thead>
+<tr>
+<th>길드원</th>
+<th>총딜</th>
+<th>횟수</th>
+<th>평균</th>
+</tr>
+</thead>
+
+<tbody id="list">
+<tr><td colspan="4">등록된 데이터가 없습니다.</td></tr>
+</tbody>
+</table>
+
+</div>
+
+</section>
+
+<section id="data" class="hidden">
+
+<div class="card">
+
+<h3>⚙️ 길드원 데이터</h3>
+
+<label>닉네임</label>
+<input id="name" placeholder="예: 홍길동">
+
+<label>기계신 총딜</label>
+<input id="dragon" type="number">
+
+<label>기계신 횟수</label>
+<input id="dc" type="number">
+
+<label>감초바다 총딜</label>
+<input id="sea" type="number">
+
+<label>감초바다 횟수</label>
+<input id="sc" type="number">
+
+<button class="on" onclick="add()">💾 저장</button>
+
+</div>
+
+</section>
+
+</main>
+
+<script>
+let data=JSON.parse(localStorage.getItem("raid")||"[]");
+
+function show(id,b){
+document.querySelectorAll("main section").forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));
+if(b)b.classList.add("on");
+render();
+}
+
+function add(){
+let n=document.getElementById("name").value.trim();
+let d=+document.getElementById("dragon").value||0;
+let dc=+document.getElementById("dc").value||0;
+let s=+document.getElementById("sea").value||0;
+let sc=+document.getElementById("sc").value||0;
+
+if(!n){alert("닉네임을 입력해주세요.");return}
+
+let old=data.find(x=>x.name===n);
+
+if(old){
+old.dragon=d;
+old.dc=dc;
+old.sea=s;
+old.sc=sc;
+}else{
+data.push({name:n,dragon:d,dc:dc,sea:s,sc:sc});
+}
+
+localStorage.setItem("raid",JSON.stringify(data));
+
+document.getElementById("name").value="";
+document.getElementById("dragon").value="";
+document.getElementById("dc").value="";
+document.getElementById("sea").value="";
+document.getElementById("sc").value="";
+
+render();
+
+alert("저장되었습니다.");
+}
+
+function fmt(n){
+if(n>=1000000000000)return(n/1e12).toFixed(2)+"T";
+if(n>=1000000000)return(n/1e9).toFixed(2)+"B";
+if(n>=1000000)return(n/1e6).toFixed(2)+"M";
+return n.toLocaleString();
+}
+
+function render(){
+
+document.getElementById("cnt").textContent=data.length+"명";
+
+let box=document.getElementById("list");
+
+if(!data.length){
+box.innerHTML='<tr><td colspan="4">등록된 데이터가 없습니다.</td></tr>';
+return;
+}
+
+data.sort((a,b)=>(b.dragon+b.sea)-(a.dragon+a.sea));
+
+box.innerHTML=data.map(x=>{
+let total=x.dragon+x.sea;
+let count=x.dc+x.sc;
+let avg=count?total/count:0;
+
+return "<tr><td><b>"+x.name+"</b></td><td>"+fmt(total)+"</td><td>"+count+"회</td><td>"+fmt(avg)+"</td></tr>";
+}).join("");
+}
+
+render();
+</script>
+
+</body>
+</html>
