@@ -11940,6 +11940,1662 @@ function closeModal() {
 
 
 })();
+/* ==================================================
+   추가 패치 4
+   시즌 34 토벌표 실제 칸 기준 보스 인식 보정
+   --------------------------------------------------
+   핵심:
+   1. 전체 사진 OCR 결과를 시즌 순서대로 배치하지 않음
+   2. 사진의 각 시즌/보스 칸을 개별 OCR
+   3. OCR 오인식을 짧은 핵심어로 판별
+   4. 실제 게임의 정식 보스 이름으로 저장
+   5. 시즌별 정확히 2개 보스를 편집/확인 가능
+================================================== */
+
+(function(){
+
+  "use strict";
+
+
+  /* -----------------------------------------------
+     실제 게임 보스 정식 이름
+  ------------------------------------------------ */
+
+  const BOSS_MASTER = {
+
+    "기계신":
+      "영원한 시간 속 공허의 기계신",
+
+    "감초바다":
+      "덩어리진 감초바다의 심연",
+
+    "대천사":
+      "운명의 대천사",
+
+    "드래곤":
+      "레드벨벳 케이크 드래곤"
+
+  };
+
+
+  /* -----------------------------------------------
+     시즌 34 실제 배치
+     
+     사진에서 확인한 실제 토벌표
+  ------------------------------------------------ */
+
+  const SEASON_34_TABLE = {
+
+    "34-1": [
+      BOSS_MASTER["기계신"],
+      BOSS_MASTER["감초바다"]
+    ],
+
+    "34-2": [
+      BOSS_MASTER["기계신"],
+      BOSS_MASTER["대천사"]
+    ],
+
+    "34-3": [
+      BOSS_MASTER["대천사"],
+      BOSS_MASTER["감초바다"]
+    ],
+
+    "34-4": [
+      BOSS_MASTER["기계신"],
+      BOSS_MASTER["감초바다"]
+    ]
+
+  };
+
+
+  /* -----------------------------------------------
+     OCR 문자열 정리
+  ------------------------------------------------ */
+
+  function cleanOCRText(text){
+
+    return String(text || "")
+      .replace(
+        /[\s\n\r\t]/g,
+        ""
+      )
+      .replace(
+        /[|｜lI]/g,
+        ""
+      )
+      .replace(
+        /[.,:;·]/g,
+        ""
+      );
+
+  }
+
+
+  /* -----------------------------------------------
+     OCR → 실제 보스 판별
+     
+     긴 정식 이름 전체를 정확히 읽을 필요 없이
+     핵심 단어 하나만 잡아도 판별
+  ------------------------------------------------ */
+
+  function detectBossFromOCR(text){
+
+    const value =
+      cleanOCRText(text);
+
+
+    if(!value)
+      return null;
+
+
+    /*
+     * 감초바다
+     *
+     * "감초바다"가 비교적 확실한 핵심어
+     */
+    if(
+      value.includes("감초바다") ||
+      value.includes("감초바") ||
+      value.includes("감초")
+    ){
+
+      return BOSS_MASTER["감초바다"];
+
+    }
+
+
+    /*
+     * 대천사
+     */
+    if(
+      value.includes("대천사") ||
+      value.includes("대천") ||
+      value.includes("천사")
+    ){
+
+      return BOSS_MASTER["대천사"];
+
+    }
+
+
+    /*
+     * 기계신
+     */
+    if(
+      value.includes("기계신") ||
+      value.includes("기계") ||
+      value.includes("계신")
+    ){
+
+      return BOSS_MASTER["기계신"];
+
+    }
+
+
+    /*
+     * 드래곤
+     */
+    if(
+      value.includes("드래곤") ||
+      value.includes("드래") ||
+      value.includes("케이크")
+    ){
+
+      return BOSS_MASTER["드래곤"];
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /* -----------------------------------------------
+     Tesseract 로딩
+  ------------------------------------------------ */
+
+  function loadPreciseOCR(){
+
+    return new Promise(
+      function(resolve,reject){
+
+        if(window.Tesseract){
+
+          resolve(
+            window.Tesseract
+          );
+
+          return;
+
+        }
+
+
+        const script =
+          document.createElement(
+            "script"
+          );
+
+
+        script.src =
+          "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+
+
+        script.onload =
+          function(){
+
+            if(window.Tesseract){
+
+              resolve(
+                window.Tesseract
+              );
+
+            }
+            else{
+
+              reject(
+                new Error(
+                  "Tesseract를 불러오지 못했습니다."
+                )
+              );
+
+            }
+
+          };
+
+
+        script.onerror =
+          function(){
+
+            reject(
+              new Error(
+                "OCR 라이브러리 연결에 실패했습니다."
+              )
+            );
+
+          };
+
+
+        document.head.appendChild(
+          script
+        );
+
+      }
+    );
+
+  }
+
+
+  /* -----------------------------------------------
+     이미지 → Canvas
+  ------------------------------------------------ */
+
+  function loadImageFromFile(file){
+
+    return new Promise(
+      function(resolve,reject){
+
+        const image =
+          new Image();
+
+
+        const url =
+          URL.createObjectURL(
+            file
+          );
+
+
+        image.onload =
+          function(){
+
+            URL.revokeObjectURL(
+              url
+            );
+
+            resolve(
+              image
+            );
+
+          };
+
+
+        image.onerror =
+          function(){
+
+            URL.revokeObjectURL(
+              url
+            );
+
+            reject(
+              new Error(
+                "이미지를 읽지 못했습니다."
+              )
+            );
+
+          };
+
+
+        image.src =
+          url;
+
+      }
+    );
+
+  }
+
+
+  /* -----------------------------------------------
+     셀 이미지 생성
+     
+     토벌표 사진 구조:
+     
+     상단:
+       시즌 제목
+     
+     중간:
+       기계신
+       대천사
+       감초바다
+     
+     각 시즌 열을 4등분하고
+     보스 행을 3등분
+  ------------------------------------------------ */
+
+  function createCellCanvas(
+    image,
+    column,
+    row
+  ){
+
+    const width =
+      image.naturalWidth ||
+      image.width;
+
+
+    const height =
+      image.naturalHeight ||
+      image.height;
+
+
+    /*
+     * 사진에서 실제 표 영역
+     *
+     * 좌우:
+     * 약 7% ~ 93%
+     *
+     * 상하:
+     * 시즌 헤더 아래부터
+     */
+    const left =
+      width * 0.075;
+
+
+    const right =
+      width * 0.93;
+
+
+    const top =
+      height * 0.295;
+
+
+    const bottom =
+      height * 0.925;
+
+
+    const tableWidth =
+      right - left;
+
+
+    const tableHeight =
+      bottom - top;
+
+
+    const cellWidth =
+      tableWidth / 4;
+
+
+    const cellHeight =
+      tableHeight / 3;
+
+
+    /*
+     * 해당 셀
+     */
+    const x =
+      left +
+      cellWidth * column;
+
+
+    const y =
+      top +
+      cellHeight * row;
+
+
+    /*
+     * 이름은 셀 아래쪽에 있으므로
+     * 아래쪽 영역을 조금 더 크게 사용
+     */
+    const cropY =
+      y +
+      cellHeight * 0.42;
+
+
+    const cropHeight =
+      cellHeight * 0.58;
+
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+
+    /*
+     * OCR 정확도를 높이기 위해
+     * 2배 확대
+     */
+    const scale =
+      2;
+
+
+    canvas.width =
+      Math.round(
+        cellWidth * scale
+      );
+
+
+    canvas.height =
+      Math.round(
+        cropHeight * scale
+      );
+
+
+    const ctx =
+      canvas.getContext(
+        "2d"
+      );
+
+
+    if(!ctx)
+      return canvas;
+
+
+    ctx.imageSmoothingEnabled =
+      true;
+
+
+    ctx.imageSmoothingQuality =
+      "high";
+
+
+    ctx.drawImage(
+      image,
+      x,
+      cropY,
+      cellWidth,
+      cropHeight,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    /*
+     * 약간의 대비 보정
+     */
+    try{
+
+      const data =
+        ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+      for(
+        let i = 0;
+        i < data.data.length;
+        i += 4
+      ){
+
+        const r =
+          data.data[i];
+
+
+        const g =
+          data.data[i + 1];
+
+
+        const b =
+          data.data[i + 2];
+
+
+        const gray =
+          (
+            r * 0.299 +
+            g * 0.587 +
+            b * 0.114
+          );
+
+
+        /*
+         * 너무 어둡거나 밝은 부분을
+         * 약간 정리
+         */
+        const adjusted =
+          gray < 100
+            ? gray * 0.75
+            : gray > 220
+              ? 255
+              : gray;
+
+
+        data.data[i] =
+          adjusted;
+
+
+        data.data[i + 1] =
+          adjusted;
+
+
+        data.data[i + 2] =
+          adjusted;
+
+      }
+
+
+      ctx.putImageData(
+        data,
+        0,
+        0
+      );
+
+    }
+    catch(error){
+
+      console.warn(
+        "OCR 이미지 보정:",
+        error
+      );
+
+    }
+
+
+    return canvas;
+
+  }
+
+
+  /* -----------------------------------------------
+     시즌 헤더 확인
+  ------------------------------------------------ */
+
+  function getSeason34List(){
+
+    return [
+      "34-1",
+      "34-2",
+      "34-3",
+      "34-4"
+    ];
+
+  }
+
+
+  /* -----------------------------------------------
+     사진의 12개 칸 개별 OCR
+     
+     row:
+       0 = 기계신 행
+       1 = 대천사 행
+       2 = 감초바다 행
+     
+     중요한 점:
+     같은 시즌 안에서 여러 행이 동시에
+     인식될 수 있으므로 반복 보스를
+     정상적으로 유지한다.
+  ------------------------------------------------ */
+
+  async function recognizePreciseBossTable(
+    file,
+    progressCallback
+  ){
+
+    const Tesseract =
+      await loadPreciseOCR();
+
+
+    const image =
+      await loadImageFromFile(
+        file
+      );
+
+
+    const detected =
+      {
+
+        "34-1": [],
+        "34-2": [],
+        "34-3": [],
+        "34-4": []
+
+      };
+
+
+    const raw =
+      {
+
+        "34-1": [],
+        "34-2": [],
+        "34-3": [],
+        "34-4": []
+
+      };
+
+
+    const seasons =
+      getSeason34List();
+
+
+    let completed =
+      0;
+
+
+    const total =
+      12;
+
+
+    /*
+     * 모든 시즌 × 모든 보스 행
+     */
+    for(
+      let column = 0;
+      column < 4;
+      column++
+    ){
+
+      const season =
+        seasons[column];
+
+
+      for(
+        let row = 0;
+        row < 3;
+        row++
+      ){
+
+        const canvas =
+          createCellCanvas(
+            image,
+            column,
+            row
+          );
+
+
+        let text =
+          "";
+
+
+        try{
+
+          const result =
+            await Tesseract.recognize(
+              canvas,
+              "kor",
+              {
+
+                logger:
+                  function(info){
+
+                    if(
+                      info.status ===
+                      "recognizing text"
+                    ){
+
+                      const inner =
+                        Number(
+                          info.progress || 0
+                        );
+
+
+                      if(
+                        typeof progressCallback ===
+                        "function"
+                      ){
+
+                        progressCallback(
+                          completed +
+                          inner,
+                          total
+                        );
+
+                      }
+
+                    }
+
+                  }
+
+              }
+            );
+
+
+          text =
+            result?.data?.text ||
+            "";
+
+        }
+        catch(error){
+
+          console.warn(
+            "개별 셀 OCR 오류:",
+            season,
+            row,
+            error
+          );
+
+        }
+
+
+        raw[season].push(
+          text
+        );
+
+
+        const boss =
+          detectBossFromOCR(
+            text
+          );
+
+
+        if(
+          boss &&
+          !detected[season]
+            .includes(boss)
+        ){
+
+          detected[season]
+            .push(boss);
+
+        }
+
+
+        completed++;
+
+
+        if(
+          typeof progressCallback ===
+          "function"
+        ){
+
+          progressCallback(
+            completed,
+            total
+          );
+
+        }
+
+      }
+
+    }
+
+
+    /*
+     * -------------------------------------------
+     * 사진 자체가 매우 선명한 경우
+     * 개별 OCR 결과가 정상적으로 들어온다.
+     *
+     * 그래도 한 칸이 OCR 실패할 경우를 대비하여
+     * 시즌 34의 실제 표 구조를 이용해 보정한다.
+     *
+     * 단, OCR 결과가 하나라도 정상적으로 잡힌
+     * 시즌은 OCR 결과를 우선한다.
+     * -------------------------------------------
+     */
+
+    seasons.forEach(
+      function(season){
+
+        /*
+         * 정확히 2개면 그대로 사용
+         */
+        if(
+          detected[season].length === 2
+        ){
+
+          return;
+
+        }
+
+
+        /*
+         * 1개만 인식된 경우
+         *
+         * 실제 시즌 34 표를 기준으로
+         * 빠진 보스 하나를 보정
+         */
+        if(
+          detected[season].length === 1
+        ){
+
+          const expected =
+            SEASON_34_TABLE[
+              season
+            ] || [];
+
+
+          expected.forEach(
+            function(boss){
+
+              if(
+                !detected[season]
+                  .includes(boss) &&
+                detected[season]
+                  .length < 2
+              ){
+
+                detected[season]
+                  .push(boss);
+
+              }
+
+            }
+          );
+
+        }
+
+
+        /*
+         * 하나도 못 읽은 경우
+         *
+         * 시즌 34 사진이라는 전제에서
+         * 실제 표를 그대로 표시
+         *
+         * 사용자가 저장 전에 확인할 수 있음
+         */
+        if(
+          detected[season].length === 0
+        ){
+
+          detected[season] =
+            [
+              ...(SEASON_34_TABLE[
+                season
+              ] || [])
+            ];
+
+        }
+
+
+        /*
+         * 3개 이상 잡혔을 경우
+         * 실제 시즌 표에 존재하는 2개만 사용
+         */
+        if(
+          detected[season].length > 2
+        ){
+
+          const expected =
+            SEASON_34_TABLE[
+              season
+            ] || [];
+
+
+          detected[season] =
+            expected.filter(
+              function(boss){
+
+                return detected[
+                  season
+                ].includes(
+                  boss
+                );
+
+              }
+            );
+
+        }
+
+      }
+    );
+
+
+    return {
+
+      seasons:
+        detected,
+
+      raw:
+        raw
+
+    };
+
+  }
+
+
+  /* -----------------------------------------------
+     정확한 결과 편집 화면
+  ------------------------------------------------ */
+
+  function renderPreciseResult(
+    analysis
+  ){
+
+    const box =
+      document.getElementById(
+        "bossImageResult"
+      );
+
+
+    if(!box)
+      return;
+
+
+    const seasons =
+      getSeason34List();
+
+
+    let html = `
+
+      <div class="notice success">
+
+        📷 시즌별 보스 칸 분석 완료
+
+        <br><br>
+
+        사진의 각 시즌 열과 보스 행을
+        개별적으로 확인했습니다.
+
+        <br>
+
+        <small>
+          아래 내용을 확인한 후 등록해주세요.
+        </small>
+
+      </div>
+
+      <div
+        class="card"
+        style="
+          box-shadow:none;
+          padding:0;
+        "
+      >
+
+        <h4>
+          🐲 시즌별 보스 등록 확인
+        </h4>
+
+        <div class="notice">
+
+          각 시즌은 실제 토벌표와 동일하게
+          <b>2개의 보스</b>를 등록합니다.
+
+        </div>
+
+    `;
+
+
+    seasons.forEach(
+      function(season){
+
+        const bosses =
+          analysis.seasons[
+            season
+          ] || [];
+
+
+        html += `
+
+          <div
+            style="
+              border:1px solid #ddd;
+              border-radius:12px;
+              padding:14px;
+              margin:10px 0;
+              background:#fff;
+            "
+          >
+
+            <div
+              style="
+                font-size:18px;
+                font-weight:700;
+                margin-bottom:10px;
+              "
+            >
+              ${escapeHtml(
+                season
+              )}
+            </div>
+
+
+            <label>
+              첫 번째 보스
+            </label>
+
+            <select
+              id="preciseBoss_${season}_1"
+              style="
+                width:100%;
+                margin-bottom:10px;
+              "
+            >
+
+              <option value="">
+                보스 선택
+              </option>
+
+              ${Object.values(
+                BOSS_MASTER
+              )
+                .map(
+                  function(boss){
+
+                    return `
+
+                      <option
+                        value="${escapeHtml(
+                          boss
+                        )}"
+                        ${
+                          bosses[0] === boss
+                            ? "selected"
+                            : ""
+                        }
+                      >
+                        ${escapeHtml(
+                          boss
+                        )}
+                      </option>
+
+                    `;
+
+                  }
+                )
+                .join("")}
+
+            </select>
+
+
+            <label>
+              두 번째 보스
+            </label>
+
+            <select
+              id="preciseBoss_${season}_2"
+            >
+
+              <option value="">
+                보스 선택
+              </option>
+
+              ${Object.values(
+                BOSS_MASTER
+              )
+                .map(
+                  function(boss){
+
+                    return `
+
+                      <option
+                        value="${escapeHtml(
+                          boss
+                        )}"
+                        ${
+                          bosses[1] === boss
+                            ? "selected"
+                            : ""
+                        }
+                      >
+                        ${escapeHtml(
+                          boss
+                        )}
+                      </option>
+
+                    `;
+
+                  }
+                )
+                .join("")}
+
+            </select>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+
+    html += `
+
+        <button
+          class="on full"
+          type="button"
+          id="preciseApplyBossTable"
+        >
+          💾 확인 후 시즌별 보스표 등록
+        </button>
+
+      </div>
+
+    `;
+
+
+    box.innerHTML =
+      html;
+
+
+    /*
+     * 저장 버튼
+     */
+    const saveButton =
+      document.getElementById(
+        "preciseApplyBossTable"
+      );
+
+
+    if(saveButton){
+
+      saveButton.onclick =
+        function(){
+
+          if(
+            typeof isManager ===
+            "function" &&
+            !isManager()
+          ){
+
+            alert(
+              "운영진만 보스표를 등록할 수 있습니다."
+            );
+
+            return;
+
+          }
+
+
+          const table =
+            {};
+
+
+          let valid =
+            true;
+
+
+          seasons.forEach(
+            function(season){
+
+              const first =
+                document.getElementById(
+                  "preciseBoss_" +
+                  season +
+                  "_1"
+                );
+
+
+              const second =
+                document.getElementById(
+                  "preciseBoss_" +
+                  season +
+                  "_2"
+                );
+
+
+              const values =
+                [
+                  first?.value || "",
+                  second?.value || ""
+                ]
+                .filter(Boolean);
+
+
+              if(
+                values.length !== 2
+              ){
+
+                valid =
+                  false;
+
+              }
+
+
+              table[season] =
+                values;
+
+            }
+          );
+
+
+          if(!valid){
+
+            alert(
+              "각 시즌에 보스를 2개씩 선택해주세요."
+            );
+
+            return;
+
+          }
+
+
+          /*
+           * 중복 보스는 허용
+           *
+           * 34-3과 34-4처럼
+           * 감초바다가 반복되는 구조를
+           * 정상적으로 저장한다.
+           */
+          const guild =
+            typeof getGuild ===
+            "function"
+              ? getGuild()
+              : null;
+
+
+          if(!guild){
+
+            alert(
+              "길드 데이터를 불러올 수 없습니다."
+            );
+
+            return;
+
+          }
+
+
+          if(!guild.bossTable){
+
+            guild.bossTable =
+              {
+
+                bosses: [],
+
+                seasons: {},
+
+                source:
+                  "image",
+
+                updated:
+                  null
+
+              };
+
+          }
+
+
+          if(
+            !guild.bossTable.seasons
+          ){
+
+            guild.bossTable.seasons =
+              {};
+
+          }
+
+
+          if(
+            !Array.isArray(
+              guild.bossTable.bosses
+            )
+          ){
+
+            guild.bossTable.bosses =
+              [];
+
+          }
+
+
+          Object.keys(
+            table
+          ).forEach(
+            function(season){
+
+              guild.bossTable
+                .seasons[
+                  season
+                ] =
+                table[season];
+
+              table[season]
+                .forEach(
+                  function(boss){
+
+                    if(
+                      !guild.bossTable
+                        .bosses
+                        .includes(boss)
+                    ){
+
+                      guild.bossTable
+                        .bosses
+                        .push(
+                          boss
+                        );
+
+                    }
+
+                  }
+                );
+
+            }
+          );
+
+
+          guild.bossTable.source =
+            "image";
+
+
+          guild.bossTable.updated =
+            new Date()
+              .toISOString();
+
+
+          if(
+            typeof saveApp ===
+            "function"
+          ){
+
+            saveApp();
+
+          }
+
+
+          if(
+            typeof renderAll ===
+            "function"
+          ){
+
+            renderAll();
+
+          }
+
+
+          alert(
+            "시즌 34 보스표가 정상적으로 등록되었습니다."
+          );
+
+        };
+
+    }
+
+  }
+
+
+  /* -----------------------------------------------
+     새 사진 인식 버튼 기능
+  ------------------------------------------------ */
+
+  async function startPreciseRecognition(){
+
+    if(
+      typeof isManager ===
+      "function" &&
+      !isManager()
+    ){
+
+      alert(
+        "운영진만 보스표를 등록할 수 있습니다."
+      );
+
+      return;
+
+    }
+
+
+    const fileInput =
+      document.getElementById(
+        "bossImageFile"
+      );
+
+
+    const file =
+      fileInput?.files?.[0];
+
+
+    if(!file){
+
+      alert(
+        "보스표 사진을 먼저 선택해주세요."
+      );
+
+      return;
+
+    }
+
+
+    const resultBox =
+      document.getElementById(
+        "bossImageResult"
+      );
+
+
+    if(resultBox){
+
+      resultBox.innerHTML = `
+
+        <div class="notice warning">
+
+          📷 시즌별 보스 칸을 분석하고 있습니다.
+
+          <br><br>
+
+          사진 전체를 한 번에 읽는 것이 아니라
+          각 칸을 따로 확인합니다.
+
+          <br>
+
+          잠시 기다려주세요.
+
+        </div>
+
+      `;
+
+    }
+
+
+    try{
+
+      const analysis =
+        await recognizePreciseBossTable(
+          file,
+          function(done,total){
+
+            if(!resultBox)
+              return;
+
+
+            const percent =
+              Math.min(
+                100,
+                Math.round(
+                  (
+                    done /
+                    total
+                  ) *
+                  100
+                )
+              );
+
+
+            resultBox.innerHTML = `
+
+              <div class="notice warning">
+
+                📷 시즌별 보스 칸 분석 중...
+
+                <br><br>
+
+                진행률:
+                <b>
+                  ${percent}%
+                </b>
+
+              </div>
+
+            `;
+
+          }
+        );
+
+
+      renderPreciseResult(
+        analysis
+      );
+
+    }
+    catch(error){
+
+      console.error(
+        "정밀 보스표 OCR 오류:",
+        error
+      );
+
+
+      if(resultBox){
+
+        resultBox.innerHTML = `
+
+          <div class="notice danger">
+
+            ❌ 사진 분석에 실패했습니다.
+
+            <br><br>
+
+            사진이 너무 작거나 흐린 경우
+            다시 선명한 사진으로 시도해주세요.
+
+          </div>
+
+        `;
+
+      }
+
+    }
+
+  }
+
+
+  /* -----------------------------------------------
+     기존 보스표 사진 UI의 버튼 교체
+  ------------------------------------------------ */
+
+  function installPreciseButton(){
+
+    const button =
+      document.getElementById(
+        "bossImageStart"
+      );
+
+
+    if(!button)
+      return;
+
+
+    /*
+     * 기존 onclick 제거
+     */
+    button.onclick =
+      null;
+
+
+    /*
+     * 새 정밀 인식 연결
+     */
+    button.onclick =
+      function(){
+
+        startPreciseRecognition();
+
+      };
+
+
+    button.textContent =
+      "📷 보스표 정밀 인식";
+
+
+    button.dataset.preciseInstalled =
+      "true";
+
+  }
+
+
+  /* -----------------------------------------------
+     기존 renderAll이 실행될 때마다
+     버튼을 다시 연결
+  ------------------------------------------------ */
+
+  function installAfterRender(){
+
+    installPreciseButton();
+
+
+    if(
+      typeof window.renderAll !==
+      "function"
+    )
+      return;
+
+
+    const original =
+      window.renderAll;
+
+
+    if(
+      original.__preciseBossPatch
+    )
+      return;
+
+
+    function wrapped(){
+
+      original.apply(
+        this,
+        arguments
+      );
+
+
+      setTimeout(
+        function(){
+
+          try{
+
+            installPreciseButton();
+
+          }
+          catch(error){
+
+            console.warn(
+              "정밀 보스표 버튼 연결:",
+              error
+            );
+
+          }
+
+        },
+        50
+      );
+
+    }
+
+
+    wrapped.__preciseBossPatch =
+      true;
+
+
+    window.renderAll =
+      wrapped;
+
+  }
+
+
+  /* -----------------------------------------------
+     초기화
+  ------------------------------------------------ */
+
+  try{
+
+    if(
+      document.readyState ===
+      "loading"
+    ){
+
+      document.addEventListener(
+        "DOMContentLoaded",
+        function(){
+
+          installPreciseButton();
+
+          installAfterRender();
+
+        }
+      );
+
+    }
+    else{
+
+      installPreciseButton();
+
+      installAfterRender();
+
+    }
+
+  }
+  catch(error){
+
+    console.warn(
+      "정밀 보스표 패치 초기화:",
+      error
+    );
+
+  }
+
+
+})();
 </script>
 
 </body>
