@@ -1,1 +1,2107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>길드 관리</title>
 
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --main: #2196f3;
+    --main-dark: #0877d1;
+    --sub: #eaf7ff;
+    --text: #1764a0;
+    --white: #ffffff;
+    --card: rgba(255,255,255,0.88);
+    --shadow: 0 8px 25px rgba(0, 100, 180, 0.15);
+}
+
+body {
+    font-family:
+        "Pretendard",
+        "Noto Sans KR",
+        Arial,
+        sans-serif;
+
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+
+    background:
+        linear-gradient(
+            180deg,
+            #38bdf8 0%,
+            #8edcff 45%,
+            #e9faff 100%
+        );
+
+    transition:
+        background 0.5s ease,
+        color 0.3s ease;
+}
+
+/* =========================
+   테마
+========================= */
+
+body.spring {
+    --main: #ec6fa9;
+    --main-dark: #d94f91;
+    --sub: #fff0f7;
+    --text: #a63d70;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffb7d5 0%,
+            #ffe5f0 50%,
+            #fff8fb 100%
+        );
+}
+
+body.summer {
+    --main: #2196f3;
+    --main-dark: #0877d1;
+    --sub: #eaf7ff;
+    --text: #1764a0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #27aaf7 0%,
+            #8bdbff 48%,
+            #eafaff 100%
+        );
+}
+
+body.autumn {
+    --main: #e98535;
+    --main-dark: #c9631d;
+    --sub: #fff2e6;
+    --text: #9c4d1b;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ef9b53 0%,
+            #ffd19e 48%,
+            #fff3e6 100%
+        );
+}
+
+body.winter {
+    --main: #638fd8;
+    --main-dark: #466db7;
+    --sub: #edf5ff;
+    --text: #3f65a3;
+
+    background:
+        linear-gradient(
+            180deg,
+            #91bdf5 0%,
+            #dcecff 50%,
+            #f7fbff 100%
+        );
+}
+
+/* =========================
+   배경 장식
+========================= */
+
+.background-decoration {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.cloud {
+    position: absolute;
+    width: 180px;
+    height: 60px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 100px;
+    filter: blur(1px);
+}
+
+.cloud::before,
+.cloud::after {
+    content: "";
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 90px;
+    height: 90px;
+    left: 25px;
+    bottom: 0;
+}
+
+.cloud::after {
+    width: 110px;
+    height: 110px;
+    right: 20px;
+    bottom: 0;
+}
+
+.cloud1 {
+    top: 10%;
+    left: -40px;
+}
+
+.cloud2 {
+    top: 24%;
+    right: -70px;
+    transform: scale(.7);
+}
+
+.sun {
+    position: absolute;
+    top: 55px;
+    right: 8%;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.7);
+    box-shadow: 0 0 45px rgba(255,255,255,.9);
+}
+
+.wave {
+    position: absolute;
+    bottom: -50px;
+    left: -5%;
+    width: 110%;
+    height: 150px;
+    background: rgba(255,255,255,.45);
+    border-radius: 50% 50% 0 0;
+}
+
+/* =========================
+   공통
+========================= */
+
+.hidden {
+    display: none !important;
+}
+
+button {
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+}
+
+.app {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.screen {
+    width: 100%;
+    max-width: 1100px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 25px 18px 100px;
+}
+
+.top-title {
+    text-align: center;
+    color: white;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 5px rgba(0,0,0,.12);
+}
+
+.card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+    margin-bottom: 18px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.input {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    border: 1px solid rgba(33,150,243,.2);
+    background: rgba(255,255,255,.8);
+    padding: 0 15px;
+    font-size: 15px;
+    outline: none;
+    margin-bottom: 12px;
+}
+
+.input:focus {
+    border-color: var(--main);
+}
+
+.primary-btn {
+    width: 100%;
+    height: 50px;
+    border-radius: 15px;
+    background: linear-gradient(
+        135deg,
+        var(--main),
+        var(--main-dark)
+    );
+    color: white;
+    font-size: 16px;
+    font-weight: 800;
+    box-shadow: 0 5px 15px rgba(0,100,200,.2);
+}
+
+.secondary-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    background: white;
+    color: var(--main);
+    border: 2px solid var(--main);
+    font-weight: 700;
+}
+
+/* =========================
+   최초 접속
+========================= */
+
+.start-screen {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+}
+
+.start-box {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(255,255,255,.9);
+    border-radius: 30px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0,80,160,.2);
+}
+
+.logo {
+    text-align: center;
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+.start-title {
+    text-align: center;
+    font-size: 27px;
+    font-weight: 900;
+    color: var(--main-dark);
+    margin-bottom: 8px;
+}
+
+.start-description {
+    text-align: center;
+    color: #6c9bc0;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.guild-option {
+    width: 100%;
+    min-height: 75px;
+    border-radius: 18px;
+    background: white;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    padding: 12px 18px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    transition: .2s;
+}
+
+.guild-option:hover {
+    border-color: var(--main);
+    transform: translateY(-2px);
+}
+
+.guild-heart {
+    font-size: 30px;
+    margin-right: 13px;
+}
+
+.guild-arrow {
+    margin-left: auto;
+    font-size: 24px;
+}
+
+/* =========================
+   헤더
+========================= */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    margin-bottom: 18px;
+}
+
+.header h1 {
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.header button {
+    background: rgba(255,255,255,.25);
+    color: white;
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 12px;
+    padding: 8px 13px;
+}
+
+/* =========================
+   홈
+========================= */
+
+.welcome {
+    color: white;
+    margin-bottom: 20px;
+}
+
+.welcome h2 {
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.welcome p {
+    opacity: .9;
+}
+
+.guild-home {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.guild-symbol {
+    font-size: 52px;
+    margin-bottom: 8px;
+}
+
+.guild-name {
+    font-size: 25px;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.member-count {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 170px;
+    height: 130px;
+
+    background: rgba(255,255,255,.7);
+    border-radius: 25px;
+}
+
+.member-count strong {
+    font-size: 38px;
+    color: var(--main-dark);
+}
+
+.member-count span {
+    margin-top: 5px;
+    color: #6c9bc0;
+}
+
+/* =========================
+   길드원
+========================= */
+
+.member-search {
+    position: relative;
+}
+
+.member-search input {
+    margin-bottom: 15px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 17px;
+    padding: 13px;
+    margin-bottom: 9px;
+}
+
+.member-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 23px;
+}
+
+.member-name {
+    font-weight: 800;
+}
+
+.member-date {
+    font-size: 12px;
+    color: #91abc0;
+    margin-top: 3px;
+}
+
+.crown {
+    margin-left: auto;
+}
+
+/* =========================
+   토벌
+========================= */
+
+.boss-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 13px;
+    border-radius: 17px;
+    margin-bottom: 10px;
+}
+
+.boss-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background:
+        linear-gradient(
+            135deg,
+            #173f76,
+            #43a8ff
+        );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    margin-right: 14px;
+}
+
+.boss-info strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.boss-info span {
+    font-size: 13px;
+    color: #83a6c0;
+}
+
+/* =========================
+   유물
+========================= */
+
+.score-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 5px;
+    border-bottom: 1px solid #e5f0f7;
+}
+
+.score-rank {
+    width: 35px;
+    font-weight: 900;
+    color: var(--main);
+}
+
+.score-name {
+    flex: 1;
+    font-weight: 700;
+}
+
+.score-value {
+    font-weight: 900;
+    color: var(--main-dark);
+}
+
+/* =========================
+   챌프
+========================= */
+
+.compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.compare-box {
+    background: white;
+    border-radius: 20px;
+    padding: 25px 15px;
+    text-align: center;
+    border: 1px solid #e0f1fb;
+}
+
+.compare-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.compare-box strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.compare-box span {
+    font-size: 13px;
+    color: #86a8c0;
+}
+
+/* =========================
+   개인
+========================= */
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-avatar {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background: var(--sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+}
+
+.profile-name {
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.profile-guild {
+    color: #83a7c1;
+    margin-top: 5px;
+}
+
+.personal-menu {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.personal-menu button {
+    width: 100%;
+    height: 58px;
+    padding: 0 18px;
+    background: white;
+    border-bottom: 1px solid #edf4f8;
+    text-align: left;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.personal-menu button:last-child {
+    border-bottom: none;
+}
+
+/* =========================
+   운영 / 테마
+========================= */
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.theme-card {
+    min-height: 150px;
+    border-radius: 20px;
+    padding: 10px;
+    background: white;
+    border: 3px solid transparent;
+    transition: .2s;
+}
+
+.theme-card.selected {
+    border-color: var(--main);
+}
+
+.theme-preview {
+    height: 90px;
+    border-radius: 14px;
+    margin-bottom: 9px;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-preview.spring {
+    background:
+        linear-gradient(
+            135deg,
+            #ffb5d2,
+            #fff0f7
+        );
+}
+
+.theme-preview.summer {
+    background:
+        linear-gradient(
+            135deg,
+            #1aa9f5,
+            #9ce4ff
+        );
+}
+
+.theme-preview.autumn {
+    background:
+        linear-gradient(
+            135deg,
+            #e7762d,
+            #ffd095
+        );
+}
+
+.theme-preview.winter {
+    background:
+        linear-gradient(
+            135deg,
+            #719be0,
+            #eaf4ff
+        );
+}
+
+.theme-preview::before {
+    content: "☁️";
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 22px;
+}
+
+.theme-preview::after {
+    position: absolute;
+    bottom: 4px;
+    right: 10px;
+    font-size: 35px;
+}
+
+.theme-preview.spring::after {
+    content: "🌸";
+}
+
+.theme-preview.summer::after {
+    content: "💙";
+}
+
+.theme-preview.autumn::after {
+    content: "🍁";
+}
+
+.theme-preview.winter::after {
+    content: "❄️";
+}
+
+.theme-name {
+    text-align: center;
+    font-weight: 900;
+}
+
+/* =========================
+   하단 네비게이션
+========================= */
+
+.bottom-nav {
+    position: fixed;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+
+    width: calc(100% - 24px);
+    max-width: 1050px;
+
+    height: 68px;
+
+    background: rgba(0,79,160,.92);
+    backdrop-filter: blur(15px);
+
+    border-radius: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    box-shadow: 0 8px 30px rgba(0,70,130,.25);
+
+    z-index: 100;
+}
+
+.nav-btn {
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    color: rgba(255,255,255,.75);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.nav-icon {
+    font-size: 21px;
+}
+
+.nav-btn.active {
+    color: #ffffff;
+}
+
+.nav-btn.active .nav-icon {
+    transform: scale(1.12);
+}
+
+/* =========================
+   모달
+========================= */
+
+.modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,50,100,.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 500;
+}
+
+.modal {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    border-radius: 25px;
+    padding: 25px;
+}
+
+.modal h3 {
+    font-size: 21px;
+    margin-bottom: 17px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    flex: 1;
+}
+
+/* =========================
+   반응형
+========================= */
+
+@media (max-width: 600px) {
+
+    .screen {
+        padding-top: 18px;
+    }
+
+    .top-title {
+        font-size: 23px;
+    }
+
+    .compare-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bottom-nav {
+        height: 64px;
+        border-radius: 20px;
+    }
+
+    .nav-icon {
+        font-size: 19px;
+    }
+
+    .nav-btn {
+        font-size: 9px;
+    }
+
+    .theme-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+</head>
+
+<body class="summer">
+
+<div class="background-decoration">
+    <div class="sun"></div>
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="wave"></div>
+</div>
+
+<div id="app"></div>
+
+<script>
+
+/* =====================================================
+   기본 데이터
+===================================================== */
+
+const DEFAULT_DATA = {
+    guilds: {
+        "117번째우정": [],
+        "117번째사랑": []
+    },
+
+    currentGuild: null,
+    currentUser: null,
+    theme: "summer"
+};
+
+
+/* =====================================================
+   저장 / 불러오기
+===================================================== */
+
+function loadData() {
+
+    const saved = localStorage.getItem("guildAppData");
+
+    if (!saved) {
+        return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    try {
+        return JSON.parse(saved);
+    } catch (error) {
+        return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+}
+
+
+function saveData() {
+    localStorage.setItem(
+        "guildAppData",
+        JSON.stringify(data)
+    );
+}
+
+
+let data = loadData();
+
+
+/* =====================================================
+   테마 적용
+===================================================== */
+
+function applyTheme(theme) {
+
+    document.body.classList.remove(
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+    );
+
+    document.body.classList.add(theme);
+
+    data.theme = theme;
+
+    saveData();
+}
+
+
+/* =====================================================
+   초기 실행
+===================================================== */
+
+applyTheme(data.theme || "summer");
+
+if (
+    data.currentGuild &&
+    data.currentUser
+) {
+    showHome();
+} else {
+    showStart();
+}
+
+
+/* =====================================================
+   최초 접속 - 길드 선택
+===================================================== */
+
+function showStart() {
+
+    document.getElementById("app").innerHTML = `
+
+        <div class="start-screen">
+
+            <div class="start-box">
+
+                <div class="logo">💙</div>
+
+                <div class="start-title">
+                    길드를 선택해주세요
+                </div>
+
+                <div class="start-description">
+                    가입할 길드를 선택한 후<br>
+                    길드원 등록을 진행해주세요.
+                </div>
+
+                <button
+                    class="guild-option"
+                    onclick="selectGuild('117번째우정')"
+                >
+                    <span class="guild-heart">💙</span>
+                    <span>117번째우정</span>
+                    <span class="guild-arrow">›</span>
+                </button>
+
+                <button
+                    class="guild-option"
+                    onclick="selectGuild('117번째사랑')"
+                >
+                    <span class="guild-heart">🩷</span>
+                    <span>117번째사랑</span>
+                    <span class="guild-arrow">›</span>
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* =====================================================
+   길드 선택
+===================================================== */
+
+function selectGuild(guildName) {
+
+    data.currentGuild = guildName;
+    saveData();
+
+    showRegister();
+}
+
+
+/* =====================================================
+   회원 등록
+===================================================== */
+
+function showRegister() {
+
+    document.getElementById("app").innerHTML = `
+
+        <div class="start-screen">
+
+            <div class="start-box">
+
+                <div class="logo">👥</div>
+
+                <div class="start-title">
+                    길드원 등록
+                </div>
+
+                <div class="start-description">
+                    ${data.currentGuild}<br>
+                    사용할 닉네임과 비밀번호를 설정해주세요.
+                </div>
+
+                <input
+                    id="registerNickname"
+                    class="input"
+                    placeholder="닉네임"
+                    maxlength="20"
+                >
+
+                <input
+                    id="registerPassword"
+                    class="input"
+                    type="password"
+                    placeholder="간단한 비밀번호"
+                    maxlength="20"
+                >
+
+                <button
+                    class="primary-btn"
+                    onclick="registerMember()"
+                >
+                    등록하기
+                </button>
+
+                <br><br>
+
+                <button
+                    class="secondary-btn"
+                    onclick="showLogin()"
+                >
+                    이미 등록했다면 로그인
+                </button>
+
+                <br><br>
+
+                <button
+                    class="secondary-btn"
+                    onclick="showStart()"
+                >
+                    길드 다시 선택
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* =====================================================
+   회원 등록 처리
+===================================================== */
+
+function registerMember() {
+
+    const nickname =
+        document
+            .getElementById("registerNickname")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("registerPassword")
+            .value
+            .trim();
+
+    if (!nickname || !password) {
+        alert("닉네임과 비밀번호를 모두 입력해주세요.");
+        return;
+    }
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    const duplicate =
+        members.some(
+            member =>
+                member.nickname === nickname
+        );
+
+    if (duplicate) {
+        alert("이미 등록된 닉네임입니다.");
+        return;
+    }
+
+    const newMember = {
+        id: Date.now(),
+        nickname,
+        password,
+        joinDate:
+            new Date()
+                .toLocaleDateString("ko-KR"),
+
+        raidDamage: 0,
+        relicScore: 0
+    };
+
+    members.push(newMember);
+
+    data.currentUser = newMember;
+
+    saveData();
+
+    showHome();
+}
+
+
+/* =====================================================
+   로그인
+===================================================== */
+
+function showLogin() {
+
+    document.getElementById("app").innerHTML = `
+
+        <div class="start-screen">
+
+            <div class="start-box">
+
+                <div class="logo">💙</div>
+
+                <div class="start-title">
+                    로그인
+                </div>
+
+                <div class="start-description">
+                    ${data.currentGuild}
+                </div>
+
+                <input
+                    id="loginNickname"
+                    class="input"
+                    placeholder="닉네임"
+                >
+
+                <input
+                    id="loginPassword"
+                    class="input"
+                    type="password"
+                    placeholder="비밀번호"
+                >
+
+                <button
+                    class="primary-btn"
+                    onclick="login()"
+                >
+                    로그인
+                </button>
+
+                <br><br>
+
+                <button
+                    class="secondary-btn"
+                    onclick="showStart()"
+                >
+                    길드 변경
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+function login() {
+
+    const nickname =
+        document
+            .getElementById("loginNickname")
+            .value
+            .trim();
+
+    const password =
+        document
+            .getElementById("loginPassword")
+            .value
+            .trim();
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    const member =
+        members.find(
+            m =>
+                m.nickname === nickname &&
+                m.password === password
+        );
+
+    if (!member) {
+        alert(
+            "닉네임 또는 비밀번호가 올바르지 않습니다."
+        );
+        return;
+    }
+
+    data.currentUser = member;
+
+    saveData();
+
+    showHome();
+}
+
+
+/* =====================================================
+   공통 화면
+===================================================== */
+
+function renderLayout(
+    title,
+    content,
+    active
+) {
+
+    document.getElementById("app").innerHTML = `
+
+        <div class="screen">
+
+            <div class="header">
+
+                <h1>${title}</h1>
+
+                <button onclick="logout()">
+                    로그아웃
+                </button>
+
+            </div>
+
+            ${content}
+
+        </div>
+
+        ${renderNavigation(active)}
+
+    `;
+}
+
+
+function renderNavigation(active) {
+
+    const menus = [
+
+        ["home", "⌂", "홈"],
+        ["members", "👥", "길드원"],
+        ["raid", "⚔️", "토벌"],
+        ["relic", "💎", "유물"],
+        ["champ", "🏆", "챌프"],
+        ["personal", "👤", "개인"],
+        ["admin", "⚙️", "운영"]
+
+    ];
+
+    return `
+
+        <nav class="bottom-nav">
+
+            ${menus.map(menu => `
+
+                <button
+                    class="nav-btn ${
+                        active === menu[0]
+                            ? "active"
+                            : ""
+                    }"
+                    onclick="navigate('${menu[0]}')"
+                >
+
+                    <span class="nav-icon">
+                        ${menu[1]}
+                    </span>
+
+                    <span>
+                        ${menu[2]}
+                    </span>
+
+                </button>
+
+            `).join("")}
+
+        </nav>
+    `;
+}
+
+
+/* =====================================================
+   화면 이동
+===================================================== */
+
+function navigate(page) {
+
+    switch(page) {
+
+        case "home":
+            showHome();
+            break;
+
+        case "members":
+            showMembers();
+            break;
+
+        case "raid":
+            showRaid();
+            break;
+
+        case "relic":
+            showRelic();
+            break;
+
+        case "champ":
+            showChamp();
+            break;
+
+        case "personal":
+            showPersonal();
+            break;
+
+        case "admin":
+            showAdmin();
+            break;
+    }
+}
+
+
+/* =====================================================
+   홈
+===================================================== */
+
+function showHome() {
+
+    const guild =
+        data.currentGuild;
+
+    const members =
+        data.guilds[guild];
+
+    const nickname =
+        data.currentUser.nickname;
+
+    const heart =
+        guild === "117번째우정"
+            ? "💙"
+            : "🩷";
+
+    renderLayout(
+        "홈",
+        `
+
+        <div class="welcome">
+
+            <h2>
+                안녕하세요, ${nickname}님
+            </h2>
+
+            <p>
+                오늘도 즐거운 길드 생활 되세요!
+            </p>
+
+        </div>
+
+        <div class="card guild-home">
+
+            <div class="guild-symbol">
+                ${heart}
+            </div>
+
+            <div class="guild-name">
+                ${guild}
+            </div>
+
+            <div class="member-count">
+
+                <strong>
+                    ${members.length}
+                </strong>
+
+                <span>
+                    총 길드원
+                </span>
+
+            </div>
+
+        </div>
+
+        `,
+        "home"
+    );
+}
+
+
+/* =====================================================
+   길드원
+===================================================== */
+
+function showMembers() {
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    renderLayout(
+        "길드원",
+        `
+
+        <div class="card">
+
+            <div class="section-title">
+                길드원 목록
+            </div>
+
+            <input
+                id="memberSearch"
+                class="input"
+                placeholder="닉네임으로 검색하세요."
+                oninput="filterMembers()"
+            >
+
+            <div id="memberList">
+
+                ${renderMemberList(members)}
+
+            </div>
+
+        </div>
+
+        `,
+        "members"
+    );
+}
+
+
+function renderMemberList(members) {
+
+    if (members.length === 0) {
+
+        return `
+            <div style="
+                text-align:center;
+                padding:30px;
+                color:#8caabd;
+            ">
+                등록된 길드원이 없습니다.
+            </div>
+        `;
+    }
+
+    return members.map(
+        (member, index) => `
+
+        <div class="member-item">
+
+            <div class="member-avatar">
+                👤
+            </div>
+
+            <div>
+
+                <div class="member-name">
+                    ${member.nickname}
+                </div>
+
+                <div class="member-date">
+                    가입일 ${member.joinDate}
+                </div>
+
+            </div>
+
+            ${
+                index === 0
+                    ? `<span class="crown">👑</span>`
+                    : ""
+            }
+
+        </div>
+
+    `).join("");
+}
+
+
+function filterMembers() {
+
+    const keyword =
+        document
+            .getElementById("memberSearch")
+            .value
+            .toLowerCase();
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    const filtered =
+        members.filter(
+            member =>
+                member.nickname
+                    .toLowerCase()
+                    .includes(keyword)
+        );
+
+    document
+        .getElementById("memberList")
+        .innerHTML =
+            renderMemberList(filtered);
+}
+
+
+/* =====================================================
+   토벌
+===================================================== */
+
+function showRaid() {
+
+    const bosses = [
+        ["보스 1", "🐉"],
+        ["보스 2", "👾"],
+        ["보스 3", "🐲"],
+        ["보스 4", "🔥"]
+    ];
+
+    renderLayout(
+        "토벌",
+        `
+
+        <div class="card">
+
+            <div class="section-title">
+                토벌 기록
+            </div>
+
+            <p style="
+                color:#82a7bf;
+                margin-bottom:15px;
+            ">
+                길드원들의 토벌 기록을 확인할 수 있습니다.
+            </p>
+
+            ${bosses.map(
+                boss => `
+
+                <div class="boss-item">
+
+                    <div class="boss-image">
+                        ${boss[1]}
+                    </div>
+
+                    <div class="boss-info">
+
+                        <strong>
+                            ${boss[0]}
+                        </strong>
+
+                        <span>
+                            최근 토벌 기록
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `).join("")}
+
+        </div>
+
+        `,
+        "raid"
+    );
+}
+
+
+/* =====================================================
+   유물
+===================================================== */
+
+function showRelic() {
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    renderLayout(
+        "유물",
+        `
+
+        <div class="card">
+
+            <div class="section-title">
+                유물 정보
+            </div>
+
+            <p style="
+                color:#82a7bf;
+                margin-bottom:15px;
+            ">
+                길드원들의 유물 점수를 확인할 수 있습니다.
+            </p>
+
+            ${
+                members.length
+                    ? members.map(
+                        (member, index) => `
+
+                        <div class="score-item">
+
+                            <div class="score-rank">
+                                ${index + 1}
+                            </div>
+
+                            <div class="score-name">
+                                ${member.nickname}
+                            </div>
+
+                            <div class="score-value">
+                                ${Number(
+                                    member.relicScore || 0
+                                ).toLocaleString()}점
+                            </div>
+
+                        </div>
+
+                    `
+                    ).join("")
+                    :
+                    `
+                    <div style="
+                        text-align:center;
+                        padding:30px;
+                    ">
+                        등록된 길드원이 없습니다.
+                    </div>
+                    `
+            }
+
+        </div>
+
+        `,
+        "relic"
+    );
+}
+
+
+/* =====================================================
+   챌프
+===================================================== */
+
+function showChamp() {
+
+    renderLayout(
+        "챌프",
+        `
+
+        <div class="card">
+
+            <div class="section-title">
+                길드원 비교
+            </div>
+
+            <p style="
+                color:#82a7bf;
+                margin-bottom:18px;
+            ">
+                토벌 딜과 유물 점수를 비교할 수 있습니다.
+            </p>
+
+            <div class="compare-grid">
+
+                <div class="compare-box">
+
+                    <div class="compare-icon">
+                        ⚔️
+                    </div>
+
+                    <strong>
+                        토벌 비교
+                    </strong>
+
+                    <span>
+                        길드원들의 토벌 딜을
+                        비교할 수 있습니다.
+                    </span>
+
+                </div>
+
+                <div class="compare-box">
+
+                    <div class="compare-icon">
+                        💎
+                    </div>
+
+                    <strong>
+                        유물 비교
+                    </strong>
+
+                    <span>
+                        길드원들의 유물 점수를
+                        비교할 수 있습니다.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        `,
+        "champ"
+    );
+}
+
+
+/* =====================================================
+   개인
+===================================================== */
+
+function showPersonal() {
+
+    const user =
+        getCurrentUser();
+
+    renderLayout(
+        "개인",
+        `
+
+        <div class="card">
+
+            <div class="profile">
+
+                <div class="profile-avatar">
+                    👤
+                </div>
+
+                <div>
+
+                    <div class="profile-name">
+                        ${user.nickname}
+                    </div>
+
+                    <div class="profile-guild">
+                        ${data.currentGuild}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">
+                내 정보
+            </div>
+
+            <div class="personal-menu">
+
+                <button onclick="editRaidDamage()">
+                    ⚔️ 내 토벌 딜
+                    <span style="float:right;">
+                        ${Number(
+                            user.raidDamage || 0
+                        ).toLocaleString()}
+                    </span>
+                </button>
+
+                <button onclick="editRelicScore()">
+                    💎 내 유물 점수
+                    <span style="float:right;">
+                        ${Number(
+                            user.relicScore || 0
+                        ).toLocaleString()}
+                    </span>
+                </button>
+
+                <button onclick="changeNickname()">
+                    ✏️ 닉네임 변경
+                </button>
+
+                <button onclick="changePassword()">
+                    🔒 비밀번호 변경
+                </button>
+
+            </div>
+
+        </div>
+
+        `,
+        "personal"
+    );
+}
+
+
+function getCurrentUser() {
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    const user =
+        members.find(
+            member =>
+                member.id === data.currentUser.id
+        );
+
+    if (user) {
+        data.currentUser = user;
+    }
+
+    return user || data.currentUser;
+}
+
+
+/* =====================================================
+   개인 정보 수정
+===================================================== */
+
+function editRaidDamage() {
+
+    const value =
+        prompt(
+            "내 토벌 딜을 입력해주세요.",
+            getCurrentUser().raidDamage || 0
+        );
+
+    if (value === null) return;
+
+    getCurrentUser().raidDamage =
+        Number(value) || 0;
+
+    saveData();
+
+    showPersonal();
+}
+
+
+function editRelicScore() {
+
+    const value =
+        prompt(
+            "내 유물 점수를 입력해주세요.",
+            getCurrentUser().relicScore || 0
+        );
+
+    if (value === null) return;
+
+    getCurrentUser().relicScore =
+        Number(value) || 0;
+
+    saveData();
+
+    showPersonal();
+}
+
+
+function changeNickname() {
+
+    const newNickname =
+        prompt(
+            "새 닉네임을 입력해주세요.",
+            getCurrentUser().nickname
+        );
+
+    if (!newNickname) return;
+
+    const nickname =
+        newNickname.trim();
+
+    if (!nickname) return;
+
+    const members =
+        data.guilds[data.currentGuild];
+
+    const duplicate =
+        members.some(
+            member =>
+                member.nickname === nickname &&
+                member.id !== getCurrentUser().id
+        );
+
+    if (duplicate) {
+
+        alert(
+            "이미 사용 중인 닉네임입니다."
+        );
+
+        return;
+    }
+
+    getCurrentUser().nickname =
+        nickname;
+
+    saveData();
+
+    alert(
+        "닉네임이 변경되었습니다."
+    );
+
+    showPersonal();
+}
+
+
+function changePassword() {
+
+    const newPassword =
+        prompt(
+            "새 비밀번호를 입력해주세요."
+        );
+
+    if (!newPassword) return;
+
+    getCurrentUser().password =
+        newPassword;
+
+    saveData();
+
+    alert(
+        "비밀번호가 변경되었습니다."
+    );
+}
+
+
+/* =====================================================
+   운영
+===================================================== */
+
+function showAdmin() {
+
+    renderLayout(
+        "운영",
+        `
+
+        <div class="card">
+
+            <div class="section-title">
+                ⚙️ 운영
+            </div>
+
+            <p style="
+                color:#82a7bf;
+                margin-bottom:20px;
+            ">
+                다양한 설정을 관리할 수 있습니다.
+            </p>
+
+            <div class="section-title">
+                🎨 테마 선택
+            </div>
+
+            <p style="
+                color:#82a7bf;
+                margin-bottom:15px;
+            ">
+                원하는 계절 테마를 선택해주세요.
+            </p>
+
+            <div class="theme-grid">
+
+                ${renderTheme(
+                    "spring",
+                    "봄",
+                    "🌸"
+                )}
+
+                ${renderTheme(
+                    "summer",
+                    "여름",
+                    "🌴"
+                )}
+
+                ${renderTheme(
+                    "autumn",
+                    "가을",
+                    "🍁"
+                )}
+
+                ${renderTheme(
+                    "winter",
+                    "겨울",
+                    "❄️"
+                )}
+
+            </div>
+
+        </div>
+
+        `,
+        "admin"
+    );
+}
+
+
+function renderTheme(
+    theme,
+    name,
+    icon
+) {
+
+    return `
+
+        <button
+            class="theme-card ${
+                data.theme === theme
+                    ? "selected"
+                    : ""
+            }"
+            onclick="selectTheme('${theme}')"
+        >
+
+            <div class="theme-preview ${theme}">
+
+                <span style="
+                    position:absolute;
+                    left:10px;
+                    bottom:8px;
+                    font-size:22px;
+                ">
+                    ${icon}
+                </span>
+
+            </div>
+
+            <div class="theme-name">
+                ${name}
+
+                ${
+                    data.theme === theme
+                        ? " ✓"
+                        : ""
+                }
+            </div>
+
+        </button>
+
+    `;
+}
+
+
+function selectTheme(theme) {
+
+    applyTheme(theme);
+
+    showAdmin();
+}
+
+
+/* =====================================================
+   로그아웃
+===================================================== */
+
+function logout() {
+
+    data.currentUser = null;
+
+    saveData();
+
+    showLogin();
+}
+
+</script>
+
+</body>
+</html>
