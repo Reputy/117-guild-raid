@@ -14202,7 +14202,1627 @@ const table = {};
 })();
 
 
-     
+<script>
+/* =========================================================
+   FINAL PATCH
+   운영진 / 보스표 / 화면 정리 최종 보정
+   ========================================================= */
+
+(function(){
+
+  "use strict";
+
+
+  /* =======================================================
+     1. 실제 게임 보스 정식 이름
+  ======================================================= */
+
+  const FINAL_BOSS = {
+
+    "드래곤":
+      "레드벨벳 케이크 드래곤",
+
+    "기계신":
+      "영원한 시간 속 공허의 기계신",
+
+    "감초바다":
+      "덩어리진 감초바다의 심연",
+
+    "대천사":
+      "운명의 대천사"
+
+  };
+
+
+  /* =======================================================
+     2. 시즌 34 확정 보스표
+  ======================================================= */
+
+  const FINAL_SEASON_34 = {
+
+    "34-1": [
+      FINAL_BOSS["기계신"],
+      FINAL_BOSS["감초바다"]
+    ],
+
+    "34-2": [
+      FINAL_BOSS["기계신"],
+      FINAL_BOSS["대천사"]
+    ],
+
+    "34-3": [
+      FINAL_BOSS["대천사"],
+      FINAL_BOSS["감초바다"]
+    ],
+
+    "34-4": [
+      FINAL_BOSS["기계신"],
+      FINAL_BOSS["감초바다"]
+    ]
+
+  };
+
+
+  /* =======================================================
+     3. 보스 이름 정규화
+     짧은 이름 / 정식 이름 모두 정식 이름으로 저장
+  ======================================================= */
+
+  function finalNormalizeBoss(value){
+
+    let text =
+      String(value || "")
+        .trim()
+        .replace(/\s+/g," ");
+
+    if(!text)
+      return "";
+
+
+    const compact =
+      text.replace(/\s/g,"");
+
+
+    if(
+      compact.includes("감초바다") ||
+      compact.includes("감초")
+    ){
+
+      return FINAL_BOSS["감초바다"];
+
+    }
+
+
+    if(
+      compact.includes("대천사") ||
+      compact.includes("대천")
+    ){
+
+      return FINAL_BOSS["대천사"];
+
+    }
+
+
+    if(
+      compact.includes("기계신") ||
+      compact.includes("기계")
+    ){
+
+      return FINAL_BOSS["기계신"];
+
+    }
+
+
+    if(
+      compact.includes("드래곤") ||
+      compact.includes("드래") ||
+      compact.includes("케이크")
+    ){
+
+      return FINAL_BOSS["드래곤"];
+
+    }
+
+
+    if(
+      text === FINAL_BOSS["감초바다"]
+    )
+      return FINAL_BOSS["감초바다"];
+
+
+    if(
+      text === FINAL_BOSS["대천사"]
+    )
+      return FINAL_BOSS["대천사"];
+
+
+    if(
+      text === FINAL_BOSS["기계신"]
+    )
+      return FINAL_BOSS["기계신"];
+
+
+    if(
+      text === FINAL_BOSS["드래곤"]
+    )
+      return FINAL_BOSS["드래곤"];
+
+
+    return text;
+
+  }
+
+
+  /* =======================================================
+     4. 시즌 34 데이터 강제 보정
+     이미 저장된 다른 데이터는 최대한 유지
+  ======================================================= */
+
+  function finalEnsureBossData(){
+
+    if(
+      typeof getGuild !== "function"
+    )
+      return null;
+
+
+    const guild =
+      getGuild();
+
+
+    if(!guild)
+      return null;
+
+
+    if(!guild.bossTable){
+
+      guild.bossTable = {
+
+        bosses: [],
+
+        seasons: {},
+
+        source: "manual",
+
+        updated: null
+
+      };
+
+    }
+
+
+    if(
+      !guild.bossTable.seasons ||
+      typeof guild.bossTable.seasons !== "object"
+    ){
+
+      guild.bossTable.seasons = {};
+
+    }
+
+
+    if(
+      !Array.isArray(
+        guild.bossTable.bosses
+      )
+    ){
+
+      guild.bossTable.bosses = [];
+
+    }
+
+
+    Object.keys(
+      FINAL_SEASON_34
+    ).forEach(
+      function(season){
+
+        guild.bossTable.seasons[
+          season
+        ] =
+          FINAL_SEASON_34[
+            season
+          ].slice();
+
+      }
+    );
+
+
+    /*
+     * 전체 보스 목록도 정식 이름으로 통일
+     */
+
+    const allBosses = [];
+
+
+    Object.values(
+      guild.bossTable.seasons
+    )
+      .forEach(
+        function(list){
+
+          if(!Array.isArray(list))
+            return;
+
+
+          list.forEach(
+            function(boss){
+
+              const clean =
+                finalNormalizeBoss(
+                  boss
+                );
+
+
+              if(
+                clean &&
+                !allBosses.includes(clean)
+              ){
+
+                allBosses.push(clean);
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+    guild.bossTable.bosses =
+      allBosses;
+
+
+    guild.bossTable.source =
+      "final-patch";
+
+
+    guild.bossTable.updated =
+      new Date().toISOString();
+
+
+    return guild;
+
+  }
+
+
+  /* =======================================================
+     5. 저장 안전 함수
+  ======================================================= */
+
+  function finalSaveBossData(){
+
+    try{
+
+      if(
+        typeof saveApp === "function"
+      ){
+
+        saveApp();
+
+        return true;
+
+      }
+
+    }
+    catch(error){
+
+      console.warn(
+        "보스표 저장 오류:",
+        error
+      );
+
+    }
+
+
+    return false;
+
+  }
+
+
+  /* =======================================================
+     6. 보스표 저장 함수 최종 교체
+  ======================================================= */
+
+  window.v5_finalSaveBossTable =
+    function(table){
+
+      const guild =
+        finalEnsureBossData();
+
+
+      if(!guild){
+
+        alert(
+          "길드 데이터를 찾을 수 없습니다."
+        );
+
+        return false;
+
+      }
+
+
+      /*
+       * 전달받은 시즌 데이터가 있으면 적용
+       */
+
+      if(
+        table &&
+        typeof table === "object"
+      ){
+
+        Object.keys(table)
+          .forEach(
+            function(season){
+
+              const values =
+                Array.isArray(
+                  table[season]
+                )
+                  ? table[season]
+                  : [];
+
+
+              guild.bossTable
+                .seasons[
+                  season
+                ] =
+                [
+                  ...new Set(
+                    values
+                      .map(
+                        finalNormalizeBoss
+                      )
+                      .filter(Boolean)
+                  )
+                ];
+
+            }
+          );
+
+      }
+
+
+      /*
+       * 시즌 34는 반드시 2보스 유지
+       */
+
+      Object.keys(
+        FINAL_SEASON_34
+      )
+      .forEach(
+        function(season){
+
+          const list =
+            guild.bossTable
+              .seasons[
+                season
+              ];
+
+
+          if(
+            !Array.isArray(list) ||
+            list.length !== 2
+          ){
+
+            guild.bossTable
+              .seasons[
+                season
+              ] =
+              FINAL_SEASON_34[
+                season
+              ].slice();
+
+          }
+
+        }
+      );
+
+
+      /*
+       * 전체 보스 목록 재작성
+       */
+
+      const bossSet =
+        new Set();
+
+
+      Object.values(
+        guild.bossTable.seasons
+      )
+      .forEach(
+        function(list){
+
+          if(!Array.isArray(list))
+            return;
+
+
+          list.forEach(
+            function(boss){
+
+              const clean =
+                finalNormalizeBoss(
+                  boss
+                );
+
+
+              if(clean)
+                bossSet.add(clean);
+
+            }
+          );
+
+        }
+      );
+
+
+      guild.bossTable.bosses =
+        Array.from(bossSet);
+
+
+      guild.bossTable.source =
+        "image";
+
+
+      guild.bossTable.updated =
+        new Date().toISOString();
+
+
+      if(
+        !finalSaveBossData()
+      ){
+
+        alert(
+          "저장 기능을 찾을 수 없습니다."
+        );
+
+        return false;
+
+      }
+
+
+      /*
+       * 저장 후 다시 읽어서 확인
+       */
+
+      const saved =
+        getGuild();
+
+
+      if(
+        !saved ||
+        !saved.bossTable ||
+        !saved.bossTable.seasons
+      ){
+
+        alert(
+          "저장 결과를 확인하지 못했습니다."
+        );
+
+        return false;
+
+      }
+
+
+      return true;
+
+    };
+
+
+  /* =======================================================
+     7. 보스표 반영 버튼 강제 연결
+     ======================================================= */
+
+  function installBossApplyHandler(){
+
+    const button =
+      document.getElementById(
+        "v5ImprovedBossApply"
+      );
+
+
+    if(!button)
+      return;
+
+
+    if(
+      button.dataset.finalPatch ===
+      "1"
+    )
+      return;
+
+
+    button.dataset.finalPatch =
+      "1";
+
+
+    button.type =
+      "button";
+
+
+    /*
+     * 기존 onclick을 제거하고
+     * 최종 저장 함수만 사용
+     */
+
+    button.onclick =
+      function(event){
+
+        if(event)
+          event.preventDefault();
+
+
+        const guild =
+          typeof getGuild === "function"
+            ? getGuild()
+            : null;
+
+
+        if(!guild){
+
+          alert(
+            "길드 데이터를 찾을 수 없습니다."
+          );
+
+          return;
+
+        }
+
+
+        /*
+         * 운영진 확인
+         */
+
+        if(
+          typeof isManager === "function" &&
+          !isManager()
+        ){
+
+          alert(
+            "운영진만 보스표를 등록할 수 있습니다."
+          );
+
+          return;
+
+        }
+
+
+        const inputs =
+          document.querySelectorAll(
+            '[id^="v5ImprovedBoss_"]'
+          );
+
+
+        const table = {};
+
+
+        inputs.forEach(
+          function(input){
+
+            const prefix =
+              "v5ImprovedBoss_";
+
+
+            const safeId =
+              input.id.slice(
+                prefix.length
+              );
+
+
+            const season =
+              safeId.replace(
+                /_/g,
+                "-"
+              );
+
+
+            const values =
+              String(
+                input.value || ""
+              )
+              .split(
+                /[,/，、\n]+/
+              )
+              .map(
+                finalNormalizeBoss
+              )
+              .filter(Boolean);
+
+
+            if(season){
+
+              table[season] =
+                [
+                  ...new Set(
+                    values
+                  )
+                ];
+
+            }
+
+          }
+        );
+
+
+        /*
+         * 인식 화면에 시즌이 제대로 잡히지 않는 경우
+         * 시즌 34 실제표를 사용
+         */
+
+        if(
+          !Object.keys(table).length
+        ){
+
+          Object.assign(
+            table,
+            FINAL_SEASON_34
+          );
+
+        }
+
+
+        /*
+         * 시즌 34에서 2보스가 아닌 경우
+         * 실제 토벌표 기준으로 보정
+         */
+
+        Object.keys(
+          FINAL_SEASON_34
+        )
+        .forEach(
+          function(season){
+
+            if(
+              !Array.isArray(
+                table[season]
+              ) ||
+              table[season].length !== 2
+            ){
+
+              table[season] =
+                FINAL_SEASON_34[
+                  season
+                ].slice();
+
+            }
+
+          }
+        );
+
+
+        const success =
+          window.v5_finalSaveBossTable(
+            table
+          );
+
+
+        if(!success)
+          return;
+
+
+        /*
+         * 화면 갱신 오류 때문에
+         * 저장 자체가 실패 처리되지 않도록 분리
+         */
+
+        try{
+
+          if(
+            typeof renderAll ===
+            "function"
+          ){
+
+            renderAll();
+
+          }
+
+        }
+        catch(error){
+
+          console.warn(
+            "보스표 저장 후 화면 갱신 오류:",
+            error
+          );
+
+        }
+
+
+        alert(
+          "✅ 시즌 34 보스표가 저장되었습니다."
+        );
+
+      };
+
+  }
+
+
+  /* =======================================================
+     8. 동적으로 생성되는 반영 버튼 감시
+  ======================================================= */
+
+  function watchBossApplyButton(){
+
+    installBossApplyHandler();
+
+
+    if(
+      window.MutationObserver
+    ){
+
+      const observer =
+        new MutationObserver(
+          function(){
+
+            installBossApplyHandler();
+
+          }
+        );
+
+
+      observer.observe(
+        document.body,
+        {
+          childList:true,
+          subtree:true
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     9. 운영진 로그인 최종 교체
+     오류 메시지를 잘못 출력하지 않음
+  ======================================================= */
+
+  window.loginAdmin =
+    function(){
+
+      const guild =
+        typeof getGuild === "function"
+          ? getGuild()
+          : null;
+
+
+      if(!guild){
+
+        alert(
+          "길드 정보를 찾을 수 없습니다."
+        );
+
+        return false;
+
+      }
+
+
+      const input =
+        document.getElementById(
+          "adminCode"
+        );
+
+
+      const code =
+        String(
+          input?.value || ""
+        ).trim();
+
+
+      if(!code){
+
+        alert(
+          "운영진 코드를 입력해주세요."
+        );
+
+        return false;
+
+      }
+
+
+      /*
+       * 최초 운영진 테스트 코드
+       *
+       * 아직 ownerInitialized가 false라면
+       * 1234로 바로 최초 운영진 진입
+       */
+
+      if(
+        code === "1234" &&
+        !guild.ownerInitialized
+      ){
+
+        sessionStorage.setItem(
+          "adminGuild",
+          guild.id
+        );
+
+
+        sessionStorage.setItem(
+          "ownerGuild",
+          guild.id
+        );
+
+
+        sessionStorage.setItem(
+          "bootstrapOwner",
+          guild.id
+        );
+
+
+        if(input)
+          input.value = "";
+
+
+        /*
+         * 화면 갱신은 로그인 성공 이후
+         * 별도로 안전하게 처리
+         */
+
+        try{
+
+          if(
+            typeof renderAll ===
+            "function"
+          ){
+
+            renderAll();
+
+          }
+
+        }
+        catch(error){
+
+          console.warn(
+            "운영진 로그인 후 화면 갱신 오류:",
+            error
+          );
+
+        }
+
+
+        try{
+
+          if(
+            typeof renderAdminState ===
+            "function"
+          ){
+
+            renderAdminState();
+
+          }
+
+        }
+        catch(error){
+
+          console.warn(
+            "운영진 상태 갱신 오류:",
+            error
+          );
+
+        }
+
+
+        alert(
+          "✅ 운영진 로그인 성공\n\n현재 권한: 최초 운영진"
+        );
+
+
+        return true;
+
+      }
+
+
+      /*
+       * 기존 등록 운영진 검색
+       */
+
+      const admin =
+        (
+          guild.admins || []
+        )
+        .find(
+          function(item){
+
+            return String(
+              item.code || ""
+            ) === code;
+
+          }
+        );
+
+
+      if(!admin){
+
+        alert(
+          "❌ 운영진 코드가 올바르지 않습니다."
+        );
+
+        return false;
+
+      }
+
+
+      sessionStorage.setItem(
+        "adminGuild",
+        guild.id
+      );
+
+
+      sessionStorage.setItem(
+        "adminMemberId",
+        String(
+          admin.memberId || ""
+        )
+      );
+
+
+      if(
+        admin.role === "owner"
+      ){
+
+        sessionStorage.setItem(
+          "ownerGuild",
+          guild.id
+        );
+
+      }
+      else{
+
+        sessionStorage.removeItem(
+          "ownerGuild"
+        );
+
+      }
+
+
+      sessionStorage.removeItem(
+        "bootstrapOwner"
+      );
+
+
+      if(input)
+        input.value = "";
+
+
+      const roleText =
+        admin.role === "owner"
+          ? "최초 운영진"
+          : "운영진";
+
+
+      /*
+       * 로그인 자체는 이미 성공.
+       * 이후 renderAll에서 문제가 생겨도
+       * 로그인 실패 메시지를 출력하지 않는다.
+       */
+
+      try{
+
+        if(
+          typeof renderAll ===
+          "function"
+        ){
+
+          renderAll();
+
+        }
+
+      }
+      catch(error){
+
+        console.warn(
+          "로그인 후 화면 갱신 오류:",
+          error
+        );
+
+      }
+
+
+      try{
+
+        if(
+          typeof renderAdminState ===
+          "function"
+        ){
+
+          renderAdminState();
+
+        }
+
+      }
+      catch(error){
+
+        console.warn(
+          "운영진 상태 갱신 오류:",
+          error
+        );
+
+      }
+
+
+      alert(
+        `✅ 운영진 로그인 성공\n\n현재 권한: ${roleText}`
+      );
+
+
+      return true;
+
+    };
+
+
+  /*
+   * 기존 버튼이 adminLogin을 호출하는 경우도 연결
+   */
+
+  window.adminLogin =
+    function(){
+
+      return window.loginAdmin();
+
+    };
+
+
+  /* =======================================================
+     10. 최초 운영진 상태에서 길드원 추가 허용
+  ======================================================= */
+
+  const previousManager =
+    window.isManager;
+
+
+  window.isManager =
+    function(){
+
+      const guild =
+        typeof getGuild === "function"
+          ? getGuild()
+          : null;
+
+
+      if(!guild)
+        return false;
+
+
+      if(
+        sessionStorage.getItem(
+          "bootstrapOwner"
+        ) === guild.id
+      ){
+
+        return true;
+
+      }
+
+
+      if(
+        typeof previousManager ===
+        "function"
+      ){
+
+        try{
+
+          return previousManager();
+
+        }
+        catch(error){
+
+          console.warn(
+            "운영진 권한 확인 오류:",
+            error
+          );
+
+        }
+
+      }
+
+
+      return false;
+
+    };
+
+
+  /* =======================================================
+     11. 길드원 화면
+     탈퇴자 / 임시등록은 운영진 이상만 표시
+  ======================================================= */
+
+  function updateMemberRestrictedSections(){
+
+    const manager =
+      typeof isManager ===
+        "function"
+        ? isManager()
+        : false;
+
+
+    const retiredList =
+      document.getElementById(
+        "retiredList"
+      );
+
+
+    const temporaryList =
+      document.getElementById(
+        "temporaryList"
+      );
+
+
+    const retiredCount =
+      document.getElementById(
+        "retiredCount"
+      );
+
+
+    const temporaryCount =
+      document.getElementById(
+        "temporaryCount"
+      );
+
+
+    /*
+     * 가장 가까운 card를 찾아 숨김
+     */
+
+    function toggleCard(
+      element,
+      visible
+    ){
+
+      if(!element)
+        return;
+
+
+      let card =
+        element.closest(
+          ".card"
+        );
+
+
+      if(card){
+
+        card.style.display =
+          visible
+            ? ""
+            : "none";
+
+      }
+
+    }
+
+
+    toggleCard(
+      retiredList,
+      manager
+    );
+
+
+    toggleCard(
+      temporaryList,
+      manager
+    );
+
+
+    if(
+      retiredCount &&
+      !manager
+    ){
+
+      retiredCount.textContent =
+        "";
+
+    }
+
+
+    if(
+      temporaryCount &&
+      !manager
+    ){
+
+      temporaryCount.textContent =
+        "";
+
+    }
+
+  }
+
+
+  /* =======================================================
+     12. renderMembers 이후 제한 화면 적용
+  ======================================================= */
+
+  const oldRenderMembers =
+    window.renderMembers;
+
+
+  if(
+    typeof oldRenderMembers ===
+    "function" &&
+    !oldRenderMembers.__finalRestricted
+  ){
+
+    function finalRenderMembers(){
+
+      oldRenderMembers.apply(
+        this,
+        arguments
+      );
+
+
+      updateMemberRestrictedSections();
+
+    }
+
+
+    finalRenderMembers
+      .__finalRestricted =
+      true;
+
+
+    window.renderMembers =
+      finalRenderMembers;
+
+  }
+
+
+  /* =======================================================
+     13. 홈 화면
+     상단에 이미 있는 순위/인원과 중복되는
+     홈 카드만 제거
+  ======================================================= */
+
+  function removeHomeDuplicateCards(){
+
+    const home =
+      document.getElementById(
+        "home"
+      );
+
+
+    if(!home)
+      return;
+
+
+    const grid =
+      home.querySelector(
+        ".grid"
+      );
+
+
+    if(!grid)
+      return;
+
+
+    const cards =
+      Array.from(
+        grid.children
+      );
+
+
+    cards.forEach(
+      function(card){
+
+        const text =
+          String(
+            card.textContent || ""
+          ).trim();
+
+
+        /*
+         * 길드 순위 카드
+         */
+
+        if(
+          text.includes("길드 순위") ||
+          card.querySelector(
+            "#homeRank"
+          )
+        ){
+
+          card.remove();
+
+          return;
+
+        }
+
+
+        /*
+         * 현재 길드원 카드
+         */
+
+        if(
+          text.includes("현재 길드원") ||
+          card.querySelector(
+            "#homeCount"
+          )
+        ){
+
+          card.remove();
+
+          return;
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     14. 데이터 화면의 중복 보스표 UI 제거
+     기존 사진 등록 기능 하나만 유지
+  ======================================================= */
+
+  function removeDuplicateBossImageUI(){
+
+    const data =
+      document.getElementById(
+        "data"
+      );
+
+
+    if(!data)
+      return;
+
+
+    const boxes =
+      Array.from(
+        data.querySelectorAll(
+          ".card"
+        )
+      );
+
+
+    let bossImageCards = [];
+
+
+    boxes.forEach(
+      function(card){
+
+        const text =
+          String(
+            card.textContent || ""
+          );
+
+
+        if(
+          text.includes(
+            "시즌별 보스표 사진 등록"
+          ) ||
+          text.includes(
+            "보스표 사진 인식"
+          )
+        ){
+
+          bossImageCards.push(
+            card
+          );
+
+        }
+
+      }
+    );
+
+
+    /*
+     * 첫 번째 등록 UI만 유지
+     */
+
+    bossImageCards
+      .slice(1)
+      .forEach(
+        function(card){
+
+          card.remove();
+
+        }
+      );
+
+  }
+
+
+  /* =======================================================
+     15. 시즌 34 보스표를 정식 이름으로 보정
+  ======================================================= */
+
+  function repairFinalBossTable(){
+
+    const guild =
+      finalEnsureBossData();
+
+
+    if(!guild)
+      return;
+
+
+    /*
+     * 저장은 최초 실행에서만
+     * 현재 데이터의 짧은 이름도 정식 이름으로 변환
+     */
+
+    Object.keys(
+      guild.bossTable.seasons
+    )
+    .forEach(
+      function(season){
+
+        const list =
+          guild.bossTable
+            .seasons[
+              season
+            ];
+
+
+        if(!Array.isArray(list))
+          return;
+
+
+        guild.bossTable
+          .seasons[
+            season
+          ] =
+          [
+            ...new Set(
+              list
+                .map(
+                  finalNormalizeBoss
+                )
+                .filter(Boolean)
+            )
+          ];
+
+      }
+    );
+
+
+    /*
+     * 시즌 34는 실제 사진 기준으로 확정
+     */
+
+    Object.keys(
+      FINAL_SEASON_34
+    )
+    .forEach(
+      function(season){
+
+        guild.bossTable
+          .seasons[
+            season
+          ] =
+          FINAL_SEASON_34[
+            season
+          ].slice();
+
+      }
+    );
+
+
+    finalSaveBossData();
+
+  }
+
+
+  /* =======================================================
+     16. 초기화
+  ======================================================= */
+
+  function finalInit(){
+
+    try{
+
+      repairFinalBossTable();
+
+    }
+    catch(error){
+
+      console.warn(
+        "최종 보스 데이터 보정:",
+        error
+      );
+
+    }
+
+
+    try{
+
+      removeHomeDuplicateCards();
+
+    }
+    catch(error){
+
+      console.warn(
+        "홈 화면 정리:",
+        error
+      );
+
+    }
+
+
+    try{
+
+      updateMemberRestrictedSections();
+
+    }
+    catch(error){
+
+      console.warn(
+        "길드원 화면 권한 정리:",
+        error
+      );
+
+    }
+
+
+    try{
+
+      removeDuplicateBossImageUI();
+
+    }
+    catch(error){
+
+      console.warn(
+        "보스표 중복 UI 정리:",
+        error
+      );
+
+    }
+
+
+    try{
+
+      watchBossApplyButton();
+
+    }
+    catch(error){
+
+      console.warn(
+        "보스표 저장 버튼 연결:",
+        error
+      );
+
+    }
+
+  }
+
+
+  if(
+    document.readyState ===
+    "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      finalInit
+    );
+
+  }
+  else{
+
+    finalInit();
+
+  }
+
+
+  /*
+   * renderAll 후에도 화면 정리
+   */
+
+  setTimeout(
+    finalInit,
+    500
+  );
+
+
+  setTimeout(
+    finalInit,
+    1500
+  );
+
+
+})();
+</script>
 </script>
 
 </body>
