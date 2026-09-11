@@ -1570,7 +1570,7 @@ function updateHome() {
 
 
     const recent =
-        notices.slice(0, 3);
+        notices.slice(0, 1);
 
 
     const list =
@@ -1602,26 +1602,13 @@ function updateHome() {
             item.className =
                 "notice-item";
 
-
-           item.innerHTML = `
+item.innerHTML = `
     <div>
         <strong>
             ${escapeHtml(notice.title)}
         </strong>
-
-        <small>
-            ${escapeHtml(notice.date)}
-        </small>
     </div>
-
-    <p style="
-        margin:8px 0 0;
-        white-space:pre-wrap;
-    ">
-        ${escapeHtml(notice.content)}
-    </p>
 `;
-
 
             item.onclick =
                 () => showScreen("notice");
