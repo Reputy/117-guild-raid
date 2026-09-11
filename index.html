@@ -501,7 +501,12 @@ body.theme-winter {
     <header class="topbar">
 
         <div class="user-info">
-            <span id="currentGuild"></span>
+            <span
+    id="currentGuild"
+    onclick="goHome()"
+    style="cursor:pointer;"
+    title="홈으로 이동"
+></span>
             <span>|</span>
             <span id="currentNickname"></span>
             <span id="currentRole"></span>
@@ -975,15 +980,25 @@ document.addEventListener(
 
         loadTheme();
 
-        if (currentUser) {
+if (currentUser) {
 
-            startApp();
+    startApp();
 
-        } else {
+    if (
+        sessionStorage.getItem("goHomeAfterReload") === "true"
+    ) {
 
-            showLogin();
+        sessionStorage.removeItem("goHomeAfterReload");
 
-        }
+        showScreen("home");
+
+    }
+
+} else {
+
+    showLogin();
+
+}
 
     }
 );
@@ -1281,6 +1296,24 @@ function startApp() {
 
     document.getElementById("currentGuild").textContent =
         member.guild;
+    document.getElementById("currentGuild").style.cursor = "pointer";
+
+document.getElementById("currentGuild").onclick = function() {
+    sessionStorage.setItem("goHomeAfterReload", "true");
+    location.reload();
+};
+    document.getElementById("currentGuild").onclick =
+    function() {
+        sessionStorage.setItem(
+            "goHomeAfterReload",
+            "true"
+        );
+
+        location.reload();
+    };
+
+document.getElementById("currentGuild").style.cursor =
+    "pointer";
 
     document.getElementById("currentNickname").textContent =
         member.nickname;
@@ -2647,6 +2680,18 @@ function renderExistingGuildMemberList() {
 
             `
         ).join("");
+
+}
+function goHome() {
+
+    // 현재 로그인 정보는 유지
+    // 화면만 새로고침 후 홈으로 이동
+    sessionStorage.setItem(
+        "goHomeAfterReload",
+        "true"
+    );
+
+    location.reload();
 
 }
 </script>
