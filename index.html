@@ -1293,27 +1293,24 @@ function startApp() {
 
     }
 
+document.getElementById("currentGuild").textContent =
+    member.guild;
 
-    document.getElementById("currentGuild").textContent =
-        member.guild;
-    document.getElementById("currentGuild").style.cursor = "pointer";
+document.getElementById("currentGuild").style.cursor =
+    "pointer";
 
-document.getElementById("currentGuild").onclick = function() {
-    sessionStorage.setItem("goHomeAfterReload", "true");
-    location.reload();
-};
-    document.getElementById("currentGuild").onclick =
+document.getElementById("currentGuild").onclick =
     function() {
+
         sessionStorage.setItem(
             "goHomeAfterReload",
             "true"
         );
 
         location.reload();
+
     };
 
-document.getElementById("currentGuild").style.cursor =
-    "pointer";
 
     document.getElementById("currentNickname").textContent =
         member.nickname;
