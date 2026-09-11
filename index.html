@@ -2437,8 +2437,7 @@ function saveGuildRoster(roster) {
  */
 function addExistingGuildMember() {
 
-    const admin =
-        getCurrentMember();
+    const admin = getCurrentMember();
 
     if (
         !admin ||
@@ -2447,68 +2446,93 @@ function addExistingGuildMember() {
             admin.role !== "운영진"
         )
     ) {
-
         alert("관리자 또는 운영진만 사용할 수 있습니다.");
         return;
-
     }
 
-    const nickname =
-        prompt("등록할 기존 길드원 닉네임");
+    const input = prompt(
+        "기존 길드원의 닉네임을 입력해주세요.\n\n" +
+        "한 줄에 한 명씩 입력하면 여러 명을 한꺼번에 등록할 수 있습니다.\n\n" +
+        "예)\n" +
+        "홍길동\n" +
+        "철수\n" +
+        "영희\n" +
+        "김길드원"
+    );
 
-    if (!nickname) return;
+    if (input === null) return;
 
-    const name =
-        nickname.trim();
+    const names = input
+        .split(/\r?\n/)
+        .map(name => name.trim())
+        .filter(name => name !== "");
 
-    if (!name) return;
+    if (names.length === 0) {
 
-    const roster =
-        getGuildRoster();
-
-    const guild =
-        admin.guild;
-
-    if (!roster[guild]) {
-
-        roster[guild] = [];
-
-    }
-
-    if (
-        roster[guild].some(
-            item => item.nickname === name
-        )
-    ) {
-
-        alert("이미 기존 길드원 명단에 등록되어 있습니다.");
+        alert("등록할 닉네임이 없습니다.");
         return;
 
     }
 
-    roster[guild].push({
+    const roster = getGuildRoster();
+    const guild = admin.guild;
 
-        nickname:
-            name,
+    if (!roster[guild]) {
+        roster[guild] = [];
+    }
 
-        joinDate:
-            prompt(
-                "가입일 (YYYY-MM-DD)\n모르면 비워두세요.",
-                ""
-            ) || ""
+    const today =
+        new Date()
+            .toISOString()
+            .slice(0, 10);
+
+    let added = [];
+    let duplicated = [];
+
+    names.forEach(name => {
+
+        const exists =
+            roster[guild].some(
+                item => item.nickname === name
+            );
+
+        if (exists) {
+
+            duplicated.push(name);
+            return;
+
+        }
+
+        roster[guild].push({
+
+            nickname: name,
+
+            joinDate: today
+
+        });
+
+        added.push(name);
 
     });
 
     saveGuildRoster(roster);
 
-    alert(
-        `"${name}" 님을 기존 길드원 명단에 등록했습니다.`
-    );
-
     updateOperation();
 
-}
+    let message =
+        `${added.length}명이 등록되었습니다.`;
 
+    if (duplicated.length > 0) {
+
+        message +=
+            `\n\n이미 등록된 닉네임 ${duplicated.length}명:\n` +
+            duplicated.join("\n");
+
+    }
+
+    alert(message);
+
+}
 
 /*
  * 운영 화면
