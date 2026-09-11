@@ -3,165 +3,269 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>길드 관리 시스템</title>
 
+<!--
+=========================================================
+Tesseract.js
+토벌 화면에서 업로드한 게임 이미지를 OCR로 읽기 위해 사용
+=========================================================
+-->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 <style>
+
 /* =========================================================
-   기본 스타일
+   기본
 ========================================================= */
 
 * {
     box-sizing: border-box;
 }
 
+:root {
+    --blue-dark: #14549a;
+    --blue: #2788d8;
+    --blue-light: #e9f6ff;
+    --sky: #55bff0;
+    --text: #173b63;
+    --sub: #7190ad;
+    --white: rgba(255,255,255,.92);
+    --border: rgba(120,190,235,.25);
+    --shadow: 0 12px 35px rgba(37,120,180,.12);
+}
+
+html,
 body {
     margin: 0;
-    font-family: Arial, "Noto Sans KR", sans-serif;
-    color: #18324a;
-    min-height: 100vh;
-    transition: background 0.5s ease, color 0.5s ease;
-
-    /* 기본 여름 테마 */
-    background:
-        linear-gradient(
-            180deg,
-            rgba(87, 190, 235, 0.35),
-            rgba(225, 248, 255, 0.95)
-        );
+    min-height: 100%;
 }
 
-/* 테마 */
+body {
+    font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
 
-body.theme-spring {
+    color: var(--text);
+
     background:
         linear-gradient(
             180deg,
-            #ffd8e7 0%,
-            #fff4f8 50%,
-            #e7f8e9 100%
-        );
-}
-
-body.theme-summer {
-    background:
-        linear-gradient(
-            180deg,
-            #48bfe8 0%,
-            #a7e8f5 45%,
-            #e9fbff 100%
-        );
-}
-
-body.theme-autumn {
-    background:
-        linear-gradient(
-            180deg,
-            #e99b52 0%,
-            #f8c98c 45%,
-            #fff1d8 100%
-        );
-}
-
-body.theme-winter {
-    background:
-        linear-gradient(
-            180deg,
-            #8fc7f2 0%,
-            #dff4ff 50%,
+            #dff7ff 0%,
+            #edfaff 45%,
             #ffffff 100%
         );
+
+    min-height: 100vh;
 }
+
+
+/* =========================================================
+   앱
+========================================================= */
 
 .app {
     min-height: 100vh;
+    display: flex;
 }
 
+
 /* =========================================================
-   상단 영역
+   사이드바
 ========================================================= */
 
-.topbar {
-    position: sticky;
+.sidebar {
+    width: 230px;
+    min-height: 100vh;
+
+    position: fixed;
+    left: 0;
     top: 0;
+    bottom: 0;
+
+    padding: 22px 15px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #1459a3,
+            #2375c4 60%,
+            #1d5da6
+        );
+
+    color: white;
+
+    box-shadow:
+        8px 0 30px rgba(20,90,160,.16);
+
     z-index: 1000;
+}
+
+.guild-logo {
+    padding: 10px 10px 25px;
+    text-align: center;
+}
+
+.guild-logo-icon {
+    width: 65px;
+    height: 65px;
+
+    margin: auto;
+
+    border-radius: 20px;
 
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: center;
 
-    padding: 14px 20px;
+    background: rgba(255,255,255,.18);
 
-    background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(12px);
+    font-size: 34px;
 
-    border-bottom: 1px solid rgba(255,255,255,0.7);
+    box-shadow:
+        inset 0 0 20px rgba(255,255,255,.15);
 }
 
-.user-info {
+.guild-name {
+    margin-top: 10px;
+
+    font-size: 20px;
     font-weight: bold;
-}
 
-.user-info span {
-    margin-right: 8px;
+    word-break: keep-all;
 }
-
-.logout-btn {
-    border: 0;
-    border-radius: 10px;
-    padding: 8px 13px;
-    cursor: pointer;
-    background: #ffffff;
-    color: #24506b;
-}
-
-/* =========================================================
-   메뉴
-========================================================= */
 
 .menu {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;
-
-    padding: 12px 15px;
-
-    background: rgba(255,255,255,0.65);
+    flex-direction: column;
+    gap: 7px;
 }
 
 .menu button {
-    flex-shrink: 0;
+    width: 100%;
 
     border: 0;
-    border-radius: 14px;
+    border-radius: 12px;
 
-    padding: 10px 15px;
+    padding: 12px 15px;
 
-    background: rgba(255,255,255,0.75);
-    color: #24506b;
+    background: transparent;
+    color: rgba(255,255,255,.88);
 
-    cursor: pointer;
+    text-align: left;
+
+    font-size: 14px;
     font-weight: bold;
 
-    transition: 0.2s;
+    cursor: pointer;
+
+    transition: .2s;
 }
 
 .menu button:hover {
-    transform: translateY(-1px);
+    background: rgba(255,255,255,.12);
 }
 
 .menu button.active {
-    background: #237ca3;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.23),
+            rgba(255,255,255,.10)
+        );
+
     color: white;
+
+    box-shadow:
+        inset 3px 0 0 white;
 }
 
+
 /* =========================================================
-   화면
+   메인
 ========================================================= */
 
-.main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 20px;
+.main-area {
+    width: calc(100% - 230px);
+    margin-left: 230px;
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   상단바
+========================================================= */
+
+.topbar {
+    height: 72px;
+
+    padding: 0 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: rgba(255,255,255,.76);
+
+    backdrop-filter: blur(15px);
+
+    border-bottom:
+        1px solid rgba(100,180,230,.15);
+
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    font-weight: bold;
+}
+
+.guild-top {
+    cursor: pointer;
+    color: var(--blue-dark);
+}
+
+.role-badge {
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    background: #e6f4ff;
+    color: #2476b7;
+
+    font-size: 12px;
+}
+
+.logout-btn {
+    border: 1px solid #d9eaf5;
+
+    border-radius: 10px;
+
+    padding: 8px 14px;
+
+    background: white;
+    color: #52738e;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   콘텐츠
+========================================================= */
+
+.content {
+    max-width: 1250px;
+    margin: auto;
+
+    padding: 30px;
 }
 
 .screen {
@@ -172,63 +276,417 @@ body.theme-winter {
     display: block;
 }
 
-.page-title {
-    margin-bottom: 20px;
+.page-header {
+    margin-bottom: 22px;
 }
+
+.page-header h1 {
+    margin: 0 0 5px;
+
+    font-size: 28px;
+}
+
+.page-header p {
+    margin: 0;
+
+    color: var(--sub);
+}
+
 
 /* =========================================================
    카드
 ========================================================= */
 
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
+.card {
+    background: var(--white);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 20px;
+
+    padding: 22px;
+
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(12px);
 }
 
-.card {
-    background: rgba(255,255,255,0.82);
-    border-radius: 20px;
-    padding: 20px;
+.card h3 {
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   홈 상단 배너
+========================================================= */
+
+.guild-banner {
+    position: relative;
+
+    overflow: hidden;
+
+    min-height: 125px;
+
+    margin-bottom: 20px;
+
+    padding: 25px 30px;
+
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            100deg,
+            #35b9ec,
+            #8cdef5 55%,
+            #dff8ff
+        );
+
+    color: #134b73;
 
     box-shadow:
-        0 8px 30px rgba(50,120,150,0.12);
-
-    backdrop-filter: blur(8px);
+        0 12px 30px rgba(60,170,220,.18);
 }
 
-.card-title {
-    font-size: 14px;
-    color: #668499;
-    margin-bottom: 8px;
+.guild-banner::after {
+    content: "☁️   🌊   ☀️";
+
+    position: absolute;
+
+    right: 25px;
+    bottom: 15px;
+
+    font-size: 40px;
+
+    opacity: .55;
 }
 
-.card-value {
+.guild-banner h2 {
+    margin: 0 0 7px;
+
     font-size: 26px;
-    font-weight: bold;
 }
+
+.guild-banner p {
+    margin: 0;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   통계 카드
+========================================================= */
+
+.stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 17px;
+
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.stat-icon {
+    font-size: 25px;
+}
+
+.stat-title {
+    color: var(--sub);
+
+    font-size: 13px;
+
+    margin-top: 8px;
+}
+
+.stat-value {
+    font-size: 30px;
+
+    font-weight: 800;
+
+    margin-top: 5px;
+
+    color: #174f85;
+}
+
+.stat-sub {
+    font-size: 12px;
+    color: #8ba2b5;
+}
+
 
 /* =========================================================
    공지
 ========================================================= */
 
-.notice-list {
+.notice-header {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+}
+
+.notice-header h3 {
+    margin: 0;
+}
+
+.notice-more {
+    color: var(--blue);
+    font-size: 13px;
+    cursor: pointer;
 }
 
 .notice-item {
-    padding: 15px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.85);
+    padding: 15px 16px;
+
+    border-radius: 13px;
+
+    background: #f7fcff;
+
+    border:
+        1px solid #e0f1fa;
+
     cursor: pointer;
 }
 
 .notice-item strong {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
 }
+
+.notice-item p {
+    margin: 0;
+
+    color: #6e879b;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   토벌 시즌 정보
+========================================================= */
+
+.raid-summary {
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr 1fr;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.season-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.season-icon {
+    width: 58px;
+    height: 58px;
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #50bde9,
+            #dff8ff
+        );
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 30px;
+}
+
+.season-title {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.season-sub {
+    color: var(--sub);
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   보스
+========================================================= */
+
+.boss-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 16px;
+}
+
+.boss-card {
+    overflow: hidden;
+
+    padding: 0;
+}
+
+.boss-image {
+    min-height: 120px;
+
+    padding: 18px;
+
+    display: flex;
+    align-items: flex-end;
+
+    background:
+        linear-gradient(
+            135deg,
+            #34306b,
+            #7e5da8,
+            #278ac5
+        );
+
+    color: white;
+}
+
+.boss-image.boss-two {
+    background:
+        linear-gradient(
+            135deg,
+            #29274d,
+            #7e4c9c,
+            #3c7ac1
+        );
+}
+
+.boss-image.boss-three {
+    background:
+        linear-gradient(
+            135deg,
+            #287fb1,
+            #72cbe8
+        );
+}
+
+.boss-name {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.boss-level {
+    display: inline-block;
+
+    margin-top: 7px;
+
+    padding: 4px 8px;
+
+    border-radius: 15px;
+
+    background: #f34c68;
+
+    font-size: 11px;
+}
+
+.boss-body {
+    padding: 17px;
+}
+
+.boss-row {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 8px 0;
+
+    border-bottom:
+        1px solid #edf3f7;
+
+    font-size: 13px;
+}
+
+.boss-row:last-child {
+    border-bottom: 0;
+}
+
+.boss-row span:first-child {
+    color: #7991a5;
+}
+
+.boss-row strong {
+    color: #274e70;
+}
+
+
+/* =========================================================
+   이미지 업로드
+========================================================= */
+
+.upload-area {
+    margin-bottom: 20px;
+
+    padding: 25px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #edf9ff,
+            #ffffff
+        );
+
+    border:
+        1px dashed #8ecce9;
+
+    text-align: center;
+}
+
+.upload-area input {
+    display: none;
+}
+
+.upload-label {
+    display: inline-block;
+
+    padding: 12px 20px;
+
+    border-radius: 12px;
+
+    background: var(--blue);
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.ocr-status {
+    margin-top: 12px;
+
+    color: #6f899d;
+
+    font-size: 13px;
+}
+
 
 /* =========================================================
    버튼
@@ -236,26 +694,168 @@ body.theme-winter {
 
 .btn {
     border: 0;
+
     border-radius: 10px;
+
     padding: 10px 15px;
+
     cursor: pointer;
+
     font-weight: bold;
 }
 
 .btn-primary {
-    background: #237ca3;
+    background: #2588d2;
     color: white;
 }
 
 .btn-secondary {
-    background: #e8f3f8;
-    color: #24506b;
+    background: #eaf6fc;
+    color: #286184;
 }
 
 .btn-danger {
-    background: #e95f6a;
+    background: #ef6873;
     color: white;
 }
+
+
+/* =========================================================
+   길드원
+========================================================= */
+
+.member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 15px;
+
+    border-radius: 14px;
+
+    background: white;
+
+    border: 1px solid #e3f0f6;
+}
+
+.member-name {
+    font-weight: bold;
+}
+
+.member-date {
+    color: #8197a8;
+    font-size: 12px;
+}
+
+.badge {
+    display: inline-block;
+
+    margin-left: 7px;
+
+    padding: 4px 9px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-admin {
+    background: #fff0bc;
+    color: #987000;
+}
+
+.badge-staff {
+    background: #d9f0ff;
+    color: #2672a2;
+}
+
+.badge-member {
+    background: #def5e5;
+    color: #318051;
+}
+
+.badge-temp {
+    background: #ffe0e0;
+    color: #bd4e4e;
+}
+
+
+/* =========================================================
+   테마
+========================================================= */
+
+.theme-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+}
+
+.theme-button {
+    min-height: 130px;
+
+    border: 0;
+
+    border-radius: 18px;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.theme-button:hover {
+    transform: translateY(-3px);
+}
+
+.theme-spring-button {
+    background:
+        linear-gradient(
+            135deg,
+            #ffd0e2,
+            #e0f7df
+        );
+}
+
+.theme-summer-button {
+    background:
+        linear-gradient(
+            135deg,
+            #42bce7,
+            #d8f8ff
+        );
+}
+
+.theme-autumn-button {
+    background:
+        linear-gradient(
+            135deg,
+            #e69a50,
+            #ffe1b0
+        );
+}
+
+.theme-winter-button {
+    background:
+        linear-gradient(
+            135deg,
+            #a4d6f4,
+            #ffffff
+        );
+}
+
 
 /* =========================================================
    로그인
@@ -265,26 +865,51 @@ body.theme-winter {
     min-height: 100vh;
 
     display: none;
+
     align-items: center;
     justify-content: center;
 
     padding: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4bc0eb,
+            #dff8ff
+        );
 }
 
 .login-box {
     width: 100%;
     max-width: 430px;
 
-    padding: 30px;
+    padding: 35px;
 
-    background: rgba(255,255,255,0.9);
     border-radius: 25px;
 
-    box-shadow: 0 15px 50px rgba(30,100,130,0.2);
+    background:
+        rgba(255,255,255,.94);
+
+    box-shadow:
+        0 20px 60px rgba(20,100,150,.22);
+}
+
+.login-logo {
+    text-align: center;
+
+    font-size: 40px;
+
+    margin-bottom: 10px;
 }
 
 .login-box h1 {
-    margin-top: 0;
+    text-align: center;
+    margin-bottom: 7px;
+}
+
+.login-box > p {
+    text-align: center;
+    color: var(--sub);
 }
 
 .form-group {
@@ -293,7 +918,9 @@ body.theme-winter {
 
 .form-group label {
     display: block;
-    margin-bottom: 6px;
+
+    margin-bottom: 7px;
+
     font-weight: bold;
 }
 
@@ -303,166 +930,167 @@ body.theme-winter {
 
     padding: 12px;
 
-    border: 1px solid #c9dce6;
+    border:
+        1px solid #cfe1ec;
+
     border-radius: 10px;
+
+    outline: none;
 }
 
 .login-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.login-actions button {
-    flex: 1;
-}
-
-/* =========================================================
-   회원 목록
-========================================================= */
-
-.member-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 14px;
-
-    margin-bottom: 8px;
-
-    background: rgba(255,255,255,0.8);
-    border-radius: 12px;
-}
-
-.badge {
-    display: inline-block;
-
-    padding: 4px 9px;
-
-    border-radius: 20px;
-
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.badge-admin {
-    background: #ffd76a;
-}
-
-.badge-staff {
-    background: #b9e6ff;
-}
-
-.badge-member {
-    background: #dff4df;
-}
-
-.badge-temp {
-    background: #ffd7d7;
-}
-
-/* =========================================================
-   테마 선택
-========================================================= */
-
-.theme-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+
+    margin-top: 20px;
 }
 
-.theme-button {
-    min-height: 120px;
-
-    border: 0;
-    border-radius: 20px;
-
-    cursor: pointer;
-
-    font-size: 18px;
-    font-weight: bold;
-
-    color: #18324a;
-}
-
-.theme-spring-button {
-    background: linear-gradient(135deg,#ffd0e2,#dff5dd);
-}
-
-.theme-summer-button {
-    background: linear-gradient(135deg,#44c1e9,#d9f8ff);
-}
-
-.theme-autumn-button {
-    background: linear-gradient(135deg,#e99b52,#ffe0ae);
-}
-
-.theme-winter-button {
-    background: linear-gradient(135deg,#9ed3f4,#ffffff);
-}
 
 /* =========================================================
    모바일
 ========================================================= */
 
+@media (max-width: 900px) {
+
+    .sidebar {
+        width: 75px;
+        padding: 15px 9px;
+    }
+
+    .guild-name {
+        display: none;
+    }
+
+    .guild-logo-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 25px;
+    }
+
+    .menu button {
+        font-size: 0;
+        text-align: center;
+        padding: 13px 5px;
+    }
+
+    .main-area {
+        width: calc(100% - 75px);
+        margin-left: 75px;
+    }
+
+    .stats-grid,
+    .raid-summary,
+    .boss-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .theme-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media (max-width: 600px) {
 
     .topbar {
-        padding: 12px;
+        padding: 0 13px;
     }
 
-    .main {
-        padding: 15px;
+    .content {
+        padding: 18px 13px;
+    }
+
+    .guild-top {
+        font-size: 13px;
+    }
+
+    .user-info {
+        gap: 4px;
+    }
+
+    .role-badge {
+        display: none;
     }
 
     .theme-grid {
         grid-template-columns: 1fr;
     }
 
-    .login-box {
-        padding: 22px;
-    }
 }
+
 </style>
 </head>
 
-<body class="theme-summer">
 
-<!-- =======================================================
-     로그인 화면
-======================================================= -->
+<body>
+
+
+<!-- =========================================================
+     로그인
+========================================================= -->
 
 <div id="loginScreen">
 
     <div class="login-box">
 
-        <h1>💙 길드 관리 시스템</h1>
-        <p>길드를 선택하고 로그인해주세요.</p>
+        <div class="login-logo">
+            💙
+        </div>
+
+        <h1>길드 관리 시스템</h1>
+
+        <p>
+            길드를 선택하고 로그인해주세요.
+        </p>
 
         <div class="form-group">
-            <label>길드 선택</label>
+
+            <label>
+                길드 선택
+            </label>
 
             <select id="guildSelect">
-                <option value="117번째우정">117번째우정</option>
-                <option value="117번째사랑">117번째사랑</option>
+
+                <option value="117번째우정">
+                    117번째우정
+                </option>
+
+                <option value="117번째사랑">
+                    117번째사랑
+                </option>
+
             </select>
+
         </div>
 
         <div class="form-group">
-            <label>닉네임</label>
+
+            <label>
+                닉네임
+            </label>
+
             <input
-                type="text"
                 id="nicknameInput"
-                placeholder="닉네임을 입력하세요"
+                type="text"
+                placeholder="닉네임"
             >
+
         </div>
 
         <div class="form-group">
-            <label>비밀번호</label>
+
+            <label>
+                비밀번호
+            </label>
+
             <input
-                type="password"
                 id="passwordInput"
-                placeholder="간단한 비밀번호"
+                type="password"
+                placeholder="비밀번호"
             >
+
         </div>
 
         <div class="login-actions">
@@ -478,7 +1106,7 @@ body.theme-winter {
                 class="btn btn-secondary"
                 onclick="registerMember()"
             >
-                최초 가입
+                가입
             </button>
 
         </div>
@@ -490,376 +1118,709 @@ body.theme-winter {
 </div>
 
 
-<!-- =======================================================
-     메인 앱
-======================================================= -->
 
-<div id="app" class="app" style="display:none;">
+<!-- =========================================================
+     앱
+========================================================= -->
 
-    <!-- 상단 -->
+<div
+    id="app"
+    class="app"
+    style="display:none;"
+>
 
-    <header class="topbar">
 
-        <div class="user-info">
-            <span
-    id="currentGuild"
-    onclick="goHome()"
-    style="cursor:pointer;"
-    title="홈으로 이동"
-></span>
-            <span>|</span>
-            <span id="currentNickname"></span>
-            <span id="currentRole"></span>
+<!-- =========================================================
+     사이드바
+========================================================= -->
+
+<aside class="sidebar">
+
+    <div class="guild-logo">
+
+        <div class="guild-logo-icon">
+            🏰
         </div>
 
-        <button
-            class="logout-btn"
-            onclick="logout()"
+        <div
+            id="sideGuildName"
+            class="guild-name"
         >
-            로그아웃
-        </button>
+            117번째우정
+        </div>
 
-    </header>
-
-
-    <!-- ===================================================
-         메뉴
-    =================================================== -->
+    </div>
 
     <nav
         id="menu"
         class="menu"
     ></nav>
 
+</aside>
 
-    <!-- ===================================================
-         화면 영역
-    =================================================== -->
 
-    <main class="main">
 
-        <!-- 홈 -->
+<!-- =========================================================
+     메인
+========================================================= -->
 
-        <section
-            id="screen-home"
-            class="screen"
+<div class="main-area">
+
+
+<!-- =========================================================
+     상단
+========================================================= -->
+
+<header class="topbar">
+
+    <div class="user-info">
+
+        <span
+            id="currentGuild"
+            class="guild-top"
+            onclick="goHome()"
+            title="홈으로 이동"
         >
+        </span>
 
-            <h2 class="page-title">홈</h2>
+        <span>|</span>
 
-            <div class="card-grid">
+        <span id="currentNickname">
+        </span>
 
-                <div class="card">
-                    <div class="card-title">
-                        길드 순위
-                    </div>
+        <span
+            id="currentRole"
+            class="role-badge"
+        >
+        </span>
 
-                    <div
-                        id="homeGuildRank"
-                        class="card-value"
-                    >
-                        -
-                    </div>
+    </div>
+
+    <button
+        class="logout-btn"
+        onclick="logout()"
+    >
+        로그아웃
+    </button>
+
+</header>
+
+
+
+<main class="content">
+
+
+<!-- =========================================================
+     홈
+========================================================= -->
+
+<section
+    id="screen-home"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>홈</h1>
+
+        <p>
+            길드의 주요 정보를 한눈에 확인하세요.
+        </p>
+
+    </div>
+
+
+    <div class="guild-banner">
+
+        <h2 id="homeGuildName">
+            117번째우정
+        </h2>
+
+        <p>
+            함께하는 모든 순간이 소중한 우리 길드
+        </p>
+
+    </div>
+
+
+    <div class="stats-grid">
+
+
+        <div class="card stat-card">
+
+            <div>
+
+                <div class="stat-icon">
+                    🏆
                 </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        현재 시즌
-                    </div>
-
-                    <div
-                        id="homeSeason"
-                        class="card-value"
-                    >
-                        -
-                    </div>
+                <div class="stat-title">
+                    길드 순위
                 </div>
-
-                <div class="card">
-                    <div class="card-title">
-                        총 길드원 수
-                    </div>
-
-                    <div
-                        id="homeMemberCount"
-                        class="card-value"
-                    >
-                        -
-                    </div>
-                </div>
-
-            </div>
-
-            <br>
-
-            <div class="card">
-
-                <h3>📢 최근 공지</h3>
 
                 <div
-                    id="homeNoticeList"
-                    class="notice-list"
-                ></div>
-
-                <br>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="showScreen('notice')"
+                    id="homeGuildRank"
+                    class="stat-value"
                 >
-                    공지사항 전체보기
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- 길드원 -->
-
-        <section
-            id="screen-members"
-            class="screen"
-        >
-
-            <h2 class="page-title">길드원</h2>
-
-            <div
-                id="memberList"
-            ></div>
-
-        </section>
-
-
-        <!-- 토벌 -->
-
-        <section
-            id="screen-raid"
-            class="screen"
-        >
-
-            <h2 class="page-title">토벌</h2>
-
-            <div class="card">
-
-                <p>
-                    길드원은 본인의 토벌 데이터만 확인할 수 있습니다.
-                </p>
-
-                <p>
-                    운영진 이상은 전체 길드원의 토벌 데이터를 확인할 수 있습니다.
-                </p>
-
-                <div id="raidContent"></div>
-
-            </div>
-
-        </section>
-
-
-        <!-- 유물 -->
-
-        <section
-            id="screen-relic"
-            class="screen"
-        >
-
-            <h2 class="page-title">유물</h2>
-
-            <div class="card">
-
-                <p>
-                    길드원은 본인의 유물 데이터만 확인할 수 있습니다.
-                </p>
-
-                <p>
-                    운영진 이상은 전체 길드원의 유물 데이터를 확인할 수 있습니다.
-                </p>
-
-                <div id="relicContent"></div>
-
-            </div>
-
-        </section>
-
-
-        <!-- 챌프 -->
-
-        <section
-            id="screen-champ"
-            class="screen"
-        >
-
-            <h2 class="page-title">챌프</h2>
-
-            <div class="card">
-
-                <p>
-                    운영진 이상만 확인할 수 있는 화면입니다.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- 개인 -->
-
-        <section
-            id="screen-personal"
-            class="screen"
-        >
-
-            <h2 class="page-title">개인</h2>
-
-            <div class="card">
-
-                <h3 id="personalNickname"></h3>
-
-                <p>
-                    나의 토벌딜
-                </p>
-
-                <p>
-                    나의 유물 점수
-                </p>
-
-                <hr>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="changeNickname()"
-                >
-                    닉네임 변경
-                </button>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="changePassword()"
-                >
-                    비밀번호 변경
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- 운영 -->
-
-        <section
-            id="screen-operation"
-            class="screen"
-        >
-
-            <h2 class="page-title">운영</h2>
-
-            <div class="card">
-
-                <h3>🎨 테마 선택</h3>
-
-                <div class="theme-grid">
-
-                    <button
-                        class="theme-button theme-spring-button"
-                        onclick="changeTheme('spring')"
-                    >
-                        🌸 봄
-                    </button>
-
-                    <button
-                        class="theme-button theme-summer-button"
-                        onclick="changeTheme('summer')"
-                    >
-                        💙 여름
-                    </button>
-
-                    <button
-                        class="theme-button theme-autumn-button"
-                        onclick="changeTheme('autumn')"
-                    >
-                        🍂 가을
-                    </button>
-
-                    <button
-                        class="theme-button theme-winter-button"
-                        onclick="changeTheme('winter')"
-                    >
-                        ❄️ 겨울
-                    </button>
-
+                    -
                 </div>
 
             </div>
 
-            <br>
+            <div class="stat-sub">
+                토벌 화면에서 이미지 인식
+            </div>
 
-            <div class="card">
+        </div>
 
-                <h3>운영 기능</h3>
 
-                <p>
-                    이후 관리자 / 운영진 관리 기능을 이 영역에 추가합니다.
-                </p>
+        <div class="card stat-card">
+
+            <div>
+
+                <div class="stat-icon">
+                    📅
+                </div>
+
+                <div class="stat-title">
+                    현재 시즌
+                </div>
+
+                <div
+                    id="homeSeason"
+                    class="stat-value"
+                >
+                    -
+                </div>
 
             </div>
 
-        </section>
+            <div
+                id="homeSeasonName"
+                class="stat-sub"
+            >
+                -
+            </div>
+
+        </div>
 
 
-        <!-- 공지사항 -->
+        <div class="card stat-card">
 
-        <section
-            id="screen-notice"
-            class="screen"
-        >
+            <div>
 
-            <h2 class="page-title">공지사항</h2>
+                <div class="stat-icon">
+                    👥
+                </div>
 
-            <div id="noticeList"></div>
+                <div class="stat-title">
+                    총 길드원 수
+                </div>
 
-            <br>
-
-            <div id="noticeAdminArea"></div>
-
-        </section>
-
-
-        <!-- 통합랭킹 -->
-
-        <section
-            id="screen-ranking"
-            class="screen"
-        >
-
-            <h2 class="page-title">통합랭킹</h2>
-
-            <div class="card">
-
-                <p>
-                    운영진 이상만 확인할 수 있습니다.
-                </p>
-
-                <div id="rankingContent"></div>
+                <div
+                    id="homeMemberCount"
+                    class="stat-value"
+                >
+                    -
+                </div>
 
             </div>
 
-        </section>
+        </div>
 
-    </main>
+    </div>
+
+
+    <div class="card">
+
+        <div class="notice-header">
+
+            <h3>
+                📢 최근 공지
+            </h3>
+
+            <span
+                class="notice-more"
+                onclick="showScreen('notice')"
+            >
+                전체보기 →
+            </span>
+
+        </div>
+
+        <div
+            id="homeNotice"
+        ></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     길드원
+========================================================= -->
+
+<section
+    id="screen-members"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>길드원</h1>
+
+        <p>
+            길드원 정보를 관리합니다.
+        </p>
+
+    </div>
+
+
+    <div
+        id="memberAdminArea"
+        class="card"
+        style="margin-bottom:18px;"
+    ></div>
+
+
+    <div
+        id="memberList"
+        class="member-list"
+    ></div>
+
+</section>
+
+
+
+<!-- =========================================================
+     토벌
+========================================================= -->
+
+<section
+    id="screen-raid"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>토벌</h1>
+
+        <p>
+            토벌 화면 이미지를 한 번 인식하면
+            시즌과 길드 순위가 자동으로 반영됩니다.
+        </p>
+
+    </div>
+
+
+    <!-- 이미지 인식 -->
+
+    <div class="card upload-area">
+
+        <h3>
+            📷 토벌 화면 인식
+        </h3>
+
+        <p>
+            게임의 토벌 화면 캡처 이미지를 선택해주세요.
+        </p>
+
+        <label
+            class="upload-label"
+            for="raidImageInput"
+        >
+            이미지 선택 및 인식
+        </label>
+
+        <input
+            id="raidImageInput"
+            type="file"
+            accept="image/*"
+            onchange="recognizeRaidImage(event)"
+        >
+
+        <div
+            id="ocrStatus"
+            class="ocr-status"
+        >
+            아직 인식된 토벌 이미지가 없습니다.
+        </div>
+
+    </div>
+
+
+    <!-- 시즌 정보 -->
+
+    <div class="raid-summary">
+
+        <div class="card season-card">
+
+            <div class="season-icon">
+                ⚔️
+            </div>
+
+            <div>
+
+                <div
+                    id="raidSeason"
+                    class="season-title"
+                >
+                    시즌 -
+                </div>
+
+                <div
+                    id="raidSeasonName"
+                    class="season-sub"
+                >
+                    -
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="stat-title">
+                길드 순위
+            </div>
+
+            <div
+                id="raidGuildRank"
+                class="stat-value"
+            >
+                -
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="stat-title">
+                참여 인원
+            </div>
+
+            <div
+                id="raidParticipants"
+                class="stat-value"
+            >
+                -
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- 보스 -->
+
+    <div class="card">
+
+        <h3>
+            보스 정보
+        </h3>
+
+        <div
+            id="bossGrid"
+            class="boss-grid"
+        ></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     유물
+========================================================= -->
+
+<section
+    id="screen-relic"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>유물</h1>
+
+        <p>
+            운영진 이상은 전체 유물 데이터를 확인할 수 있습니다.
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <div id="relicContent"></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     챌프
+========================================================= -->
+
+<section
+    id="screen-champ"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>챌프</h1>
+
+        <p>
+            길드 챌프 정보를 확인합니다.
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        운영진 이상만 확인할 수 있습니다.
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     개인
+========================================================= -->
+
+<section
+    id="screen-personal"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>개인</h1>
+
+        <p>
+            나의 길드 데이터를 확인합니다.
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2 id="personalNickname">
+        </h2>
+
+        <hr>
+
+        <p>
+            ⚔️ 나의 토벌딜
+        </p>
+
+        <p>
+            🏆 나의 유물 점수
+        </p>
+
+        <br>
+
+        <button
+            class="btn btn-secondary"
+            onclick="changeNickname()"
+        >
+            닉네임 변경
+        </button>
+
+        <button
+            class="btn btn-secondary"
+            onclick="changePassword()"
+        >
+            비밀번호 변경
+        </button>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     운영
+========================================================= -->
+
+<section
+    id="screen-operation"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>운영</h1>
+
+        <p>
+            관리자 및 운영진 전용 화면입니다.
+        </p>
+
+    </div>
+
+
+    <!-- 가입 대기 -->
+
+    <div class="card">
+
+        <h3>
+            ⏳ 가입대기
+        </h3>
+
+        <p>
+            기존 길드원 명단에 없는 닉네임으로
+            임시 가입한 회원입니다.
+        </p>
+
+        <div
+            id="pendingMemberList"
+        ></div>
+
+    </div>
+
+
+    <br>
+
+
+    <!-- 테마 -->
+
+    <div class="card">
+
+        <h3>
+            🎨 테마 선택
+        </h3>
+
+        <div class="theme-grid">
+
+            <button
+                class="theme-button theme-spring-button"
+                onclick="changeTheme('spring')"
+            >
+                🌸 봄
+            </button>
+
+            <button
+                class="theme-button theme-summer-button"
+                onclick="changeTheme('summer')"
+            >
+                💙 여름
+            </button>
+
+            <button
+                class="theme-button theme-autumn-button"
+                onclick="changeTheme('autumn')"
+            >
+                🍂 가을
+            </button>
+
+            <button
+                class="theme-button theme-winter-button"
+                onclick="changeTheme('winter')"
+            >
+                ❄️ 겨울
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     통합랭킹
+========================================================= -->
+
+<section
+    id="screen-ranking"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>통합랭킹</h1>
+
+        <p>
+            운영진 이상만 확인할 수 있습니다.
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <div id="rankingContent">
+            통합랭킹 데이터가 연결되면 표시됩니다.
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     공지사항
+========================================================= -->
+
+<section
+    id="screen-notice"
+    class="screen"
+>
+
+    <div class="page-header">
+
+        <h1>공지사항</h1>
+
+        <p>
+            길드 공지사항입니다.
+        </p>
+
+    </div>
+
+
+    <div
+        id="noticeList"
+    ></div>
+
+
+    <br>
+
+
+    <div
+        id="noticeAdminArea"
+    ></div>
+
+</section>
+
+
+</main>
 
 </div>
+
+</div>
+
 
 
 <script>
 
 /* =========================================================
    1. 메뉴 순서
-   ---------------------------------------------------------
-   나중에 순서 변경할 때 이 부분만 수정하면 됩니다.
 ========================================================= */
 
 const MENU_ORDER = [
+
     "home",
     "members",
     "raid",
@@ -869,35 +1830,27 @@ const MENU_ORDER = [
     "operation",
     "ranking",
     "notice"
+
 ];
 
 
-/* =========================================================
-   2. 화면 이름
-========================================================= */
-
 const SCREEN_NAME = {
 
-    home: "홈",
-    members: "길드원",
-    raid: "토벌",
-    relic: "유물",
-    champ: "챌프",
-    personal: "개인",
-    operation: "운영",
-    notice: "공지사항",
-    ranking: "통합랭킹"
+    home: "🏠  홈",
+    members: "👥  길드원",
+    raid: "⚔️  토벌",
+    relic: "🔮  유물",
+    champ: "🏆  챌프",
+    personal: "👤  개인",
+    operation: "⚙️  운영",
+    ranking: "📊  통합랭킹",
+    notice: "📢  공지사항"
 
 };
 
 
 /* =========================================================
-   3. 권한
-   ---------------------------------------------------------
-   관리자
-   운영진
-   길드원
-   임시
+   2. 권한
 ========================================================= */
 
 const SCREEN_PERMISSION = {
@@ -955,23 +1908,40 @@ const SCREEN_PERMISSION = {
 
 };
 
+
 /* =========================================================
-   4. 데이터
+   3. 저장 데이터
 ========================================================= */
 
 let members =
     JSON.parse(
-        localStorage.getItem("guildMembers")
+        localStorage.getItem(
+            "guildMembers"
+        )
     ) || {};
+
 
 let currentUser =
     JSON.parse(
-        localStorage.getItem("currentUser")
+        localStorage.getItem(
+            "currentUser"
+        )
     ) || null;
 
 
+/*
+ * 길드별 토벌 데이터
+ */
+let raidData =
+    JSON.parse(
+        localStorage.getItem(
+            "guildRaidData"
+        )
+    ) || {};
+
+
 /* =========================================================
-   5. 초기 실행
+   4. 시작
 ========================================================= */
 
 document.addEventListener(
@@ -980,63 +1950,147 @@ document.addEventListener(
 
         loadTheme();
 
-if (currentUser) {
+        if (currentUser) {
 
-    startApp();
+            startApp();
 
-    if (
-        sessionStorage.getItem("goHomeAfterReload") === "true"
-    ) {
+            if (
+                sessionStorage.getItem(
+                    "goHomeAfterReload"
+                ) === "true"
+            ) {
 
-        sessionStorage.removeItem("goHomeAfterReload");
+                sessionStorage.removeItem(
+                    "goHomeAfterReload"
+                );
 
-        showScreen("home");
+                showScreen("home");
 
-    }
+            }
 
-} else {
+        } else {
 
-    showLogin();
+            showLogin();
 
-}
+        }
 
     }
 );
 
 
 /* =========================================================
-   6. 로그인 화면
+   5. 로그인
 ========================================================= */
 
 function showLogin() {
 
-    document.getElementById("loginScreen").style.display =
-        "flex";
+    document.getElementById(
+        "loginScreen"
+    ).style.display = "flex";
 
-    document.getElementById("app").style.display =
-        "none";
+    document.getElementById(
+        "app"
+    ).style.display = "none";
+
+}
+
+
+function login() {
+
+    const guild =
+        document.getElementById(
+            "guildSelect"
+        ).value;
+
+    const nicknameInput =
+        document.getElementById(
+            "nicknameInput"
+        );
+
+    const passwordInput =
+        document.getElementById(
+            "passwordInput"
+        );
+
+    const nickname =
+        nicknameInput.value.trim();
+
+    const password =
+        passwordInput.value.trim();
+
+    const list =
+        members[guild] || [];
+
+    const member =
+        list.find(
+            m =>
+                m.nickname === nickname &&
+                m.password === password
+        );
+
+
+    if (!member) {
+
+        /*
+         * 로그인 실패하면
+         * 입력한 비밀번호를 반드시 삭제
+         */
+
+        passwordInput.value = "";
+
+        document.getElementById(
+            "loginMessage"
+        ).textContent =
+            "길드, 닉네임 또는 비밀번호를 확인해주세요.";
+
+        return;
+
+    }
+
+
+    currentUser = {
+
+        guild: guild,
+
+        nickname: member.nickname
+
+    };
+
+
+    localStorage.setItem(
+        "currentUser",
+        JSON.stringify(currentUser)
+    );
+
+
+    passwordInput.value = "";
+
+    startApp();
 
 }
 
 
 /* =========================================================
-   7. 가입
+   6. 가입
 ========================================================= */
 
 function registerMember() {
 
     const guild =
-        document.getElementById("guildSelect").value;
+        document.getElementById(
+            "guildSelect"
+        ).value;
 
     const nickname =
-        document.getElementById("nicknameInput")
-            .value
-            .trim();
+        document.getElementById(
+            "nicknameInput"
+        ).value.trim();
 
     const password =
-        document.getElementById("passwordInput")
-            .value
-            .trim();
+        document.getElementById(
+            "passwordInput"
+        ).value.trim();
+
 
     if (!nickname || !password) {
 
@@ -1048,19 +2102,22 @@ function registerMember() {
 
     }
 
+
     if (!members[guild]) {
 
         members[guild] = [];
 
     }
 
-    const alreadyExists =
+
+    const exists =
         members[guild].some(
-            member =>
-                member.nickname === nickname
+            m =>
+                m.nickname === nickname
         );
 
-    if (alreadyExists) {
+
+    if (exists) {
 
         alert(
             "이미 등록된 닉네임입니다."
@@ -1070,10 +2127,13 @@ function registerMember() {
 
     }
 
+
     /*
-     * 리퓨티는 무조건 관리자
+     * 리퓨티만 관리자
      */
+
     let role = "임시";
+
 
     if (nickname === "리퓨티") {
 
@@ -1083,37 +2143,36 @@ function registerMember() {
     else {
 
         /*
-         * 관리자가 미리 등록한
-         * 기존 길드원 명단과 비교
+         * 기존 길드원 명단 비교
          */
+
         const roster =
             getGuildRoster();
 
         const guildRoster =
             roster[guild] || [];
 
-        const registeredMember =
-            guildRoster.find(
+
+        const found =
+            guildRoster.some(
                 item =>
                     item.nickname === nickname
             );
 
-        if (registeredMember) {
+
+        if (found) {
 
             role = "길드원";
 
         }
         else {
 
-            /*
-             * 명단에 없는 닉네임
-             * 임시 가입 여부 확인
-             */
             const temporary =
                 confirm(
                     "등록된 길드원 명단에서 닉네임을 찾을 수 없습니다.\n\n" +
                     "임시 길드원으로 가입하시겠습니까?"
                 );
+
 
             if (!temporary) {
 
@@ -1126,6 +2185,7 @@ function registerMember() {
         }
 
     }
+
 
     const member = {
 
@@ -1145,9 +2205,7 @@ function registerMember() {
             role,
 
         joinDate:
-            new Date()
-                .toISOString()
-                .slice(0,10),
+            today(),
 
         raid:
             {},
@@ -1160,9 +2218,14 @@ function registerMember() {
 
     };
 
-    members[guild].push(member);
+
+    members[guild].push(
+        member
+    );
+
 
     saveMembers();
+
 
     currentUser = {
 
@@ -1174,14 +2237,19 @@ function registerMember() {
 
     };
 
+
     localStorage.setItem(
         "currentUser",
-        JSON.stringify(currentUser)
+        JSON.stringify(
+            currentUser
+        )
     );
+
 
     document.getElementById(
         "passwordInput"
     ).value = "";
+
 
     alert(
         role === "관리자"
@@ -1191,94 +2259,25 @@ function registerMember() {
                 : "임시 길드원으로 가입되었습니다."
     );
 
-    startApp();
-
-}
-
-/* =========================================================
-   8. 로그인
-========================================================= */
-
-function login() {
-
-    const guild =
-        document.getElementById("guildSelect").value;
-
-    const nicknameInput =
-        document.getElementById("nicknameInput");
-
-    const passwordInput =
-        document.getElementById("passwordInput");
-
-    const nickname =
-        nicknameInput.value.trim();
-
-    const password =
-        passwordInput.value.trim();
-
-    const guildMembers =
-        members[guild] || [];
-
-    const member =
-        guildMembers.find(
-            m =>
-                m.nickname === nickname &&
-                m.password === password
-        );
-
-    if (!member) {
-
-        /*
-         * 로그인 실패 시
-         * 입력한 비밀번호를 즉시 초기화
-         */
-        passwordInput.value = "";
-
-        document.getElementById(
-            "loginMessage"
-        ).textContent =
-            "길드, 닉네임 또는 비밀번호를 확인해주세요.";
-
-        return;
-
-    }
-
-    document.getElementById(
-        "loginMessage"
-    ).textContent = "";
-
-    currentUser = {
-
-        guild:
-            guild,
-
-        nickname:
-            member.nickname
-
-    };
-
-    localStorage.setItem(
-        "currentUser",
-        JSON.stringify(currentUser)
-    );
-
-    passwordInput.value = "";
 
     startApp();
 
 }
 
+
 /* =========================================================
-   9. 앱 시작
+   7. 앱 시작
 ========================================================= */
 
 function startApp() {
 
-    document.getElementById("loginScreen").style.display =
-        "none";
+    document.getElementById(
+        "loginScreen"
+    ).style.display = "none";
 
-    document.getElementById("app").style.display =
-        "block";
+    document.getElementById(
+        "app"
+    ).style.display = "flex";
 
 
     const member =
@@ -1293,30 +2292,35 @@ function startApp() {
 
     }
 
-document.getElementById("currentGuild").textContent =
-    member.guild;
 
-document.getElementById("currentGuild").style.cursor =
-    "pointer";
-
-document.getElementById("currentGuild").onclick =
-    function() {
-
-        sessionStorage.setItem(
-            "goHomeAfterReload",
-            "true"
-        );
-
-        location.reload();
-
-    };
+    document.getElementById(
+        "currentGuild"
+    ).textContent =
+        member.guild;
 
 
-    document.getElementById("currentNickname").textContent =
+    document.getElementById(
+        "sideGuildName"
+    ).textContent =
+        member.guild;
+
+
+    document.getElementById(
+        "currentNickname"
+    ).textContent =
         member.nickname;
 
-    document.getElementById("currentRole").textContent =
-        ` [${member.role}]`;
+
+    document.getElementById(
+        "currentRole"
+    ).textContent =
+        member.role;
+
+
+    document.getElementById(
+        "homeGuildName"
+    ).textContent =
+        member.guild;
 
 
     buildMenu();
@@ -1325,19 +2329,23 @@ document.getElementById("currentGuild").onclick =
 
     updateMembers();
 
+    updateRaid();
+
+    updateRelic();
+
     updatePersonal();
 
     updateNotice();
 
-    showFirstAvailableScreen();
-    
     updateOperation();
+
+    showFirstAvailableScreen();
 
 }
 
 
 /* =========================================================
-   10. 현재 사용자
+   8. 현재 회원
 ========================================================= */
 
 function getCurrentMember() {
@@ -1349,26 +2357,29 @@ function getCurrentMember() {
     }
 
 
-    const guildMembers =
+    const list =
         members[currentUser.guild] || [];
 
 
-    return guildMembers.find(
-        member =>
-            member.nickname === currentUser.nickname
+    return list.find(
+        m =>
+            m.nickname ===
+            currentUser.nickname
     );
 
 }
 
 
 /* =========================================================
-   11. 메뉴 생성
+   9. 메뉴
 ========================================================= */
 
 function buildMenu() {
 
     const menu =
-        document.getElementById("menu");
+        document.getElementById(
+            "menu"
+        );
 
     menu.innerHTML = "";
 
@@ -1383,12 +2394,10 @@ function buildMenu() {
     MENU_ORDER.forEach(
         screen => {
 
-            const allowed =
-                SCREEN_PERMISSION[screen]
-                .includes(member.role);
-
-
-            if (!allowed) {
+            if (
+                !SCREEN_PERMISSION[screen]
+                    .includes(member.role)
+            ) {
 
                 return;
 
@@ -1396,22 +2405,27 @@ function buildMenu() {
 
 
             const button =
-                document.createElement("button");
+                document.createElement(
+                    "button"
+                );
 
 
             button.textContent =
                 SCREEN_NAME[screen];
 
 
-            button.onclick =
-                () => showScreen(screen);
-
-
             button.dataset.screen =
                 screen;
 
 
-            menu.appendChild(button);
+            button.onclick =
+                () =>
+                    showScreen(screen);
+
+
+            menu.appendChild(
+                button
+            );
 
         }
     );
@@ -1420,7 +2434,7 @@ function buildMenu() {
 
 
 /* =========================================================
-   12. 화면 이동
+   10. 화면 이동
 ========================================================= */
 
 function showScreen(screen) {
@@ -1434,10 +2448,12 @@ function showScreen(screen) {
 
     if (
         !SCREEN_PERMISSION[screen]
-        .includes(member.role)
+            .includes(member.role)
     ) {
 
-        alert("접근 권한이 없습니다.");
+        alert(
+            "접근 권한이 없습니다."
+        );
 
         return;
 
@@ -1447,8 +2463,10 @@ function showScreen(screen) {
     document
         .querySelectorAll(".screen")
         .forEach(
-            element =>
-                element.classList.remove("active")
+            screenElement =>
+                screenElement
+                    .classList
+                    .remove("active")
         );
 
 
@@ -1461,11 +2479,15 @@ function showScreen(screen) {
     if (!target) return;
 
 
-    target.classList.add("active");
+    target.classList.add(
+        "active"
+    );
 
 
     document
-        .querySelectorAll("#menu button")
+        .querySelectorAll(
+            "#menu button"
+        )
         .forEach(
             button => {
 
@@ -1478,71 +2500,47 @@ function showScreen(screen) {
         );
 
 
-    /*
-       화면별 데이터 갱신
-    */
-
-    if (screen === "home") {
-
+    if (screen === "home")
         updateHome();
 
-    }
-
-    if (screen === "members") {
-
+    if (screen === "members")
         updateMembers();
 
-    }
-
-    if (screen === "raid") {
-
+    if (screen === "raid")
         updateRaid();
 
-    }
-
-    if (screen === "relic") {
-
+    if (screen === "relic")
         updateRelic();
 
-    }
+    if (screen === "operation")
+        updateOperation();
 
-    if (screen === "personal") {
-
+    if (screen === "personal")
         updatePersonal();
 
-    }
-
-    if (screen === "notice") {
-
+    if (screen === "notice")
         updateNotice();
 
-    }
-    
-    if (screen === "operation") {
-
-    updateOperation();
-
-}
 }
 
 
 /* =========================================================
-   13. 첫 화면
+   11. 첫 화면
 ========================================================= */
 
 function showFirstAvailableScreen() {
+
+    const member =
+        getCurrentMember();
+
 
     for (
         const screen of MENU_ORDER
     ) {
 
-        const member =
-            getCurrentMember();
-
-
         if (
             SCREEN_PERMISSION[screen]
-            .includes(member.role)
+                .includes(member.role)
         ) {
 
             showScreen(screen);
@@ -1557,7 +2555,7 @@ function showFirstAvailableScreen() {
 
 
 /* =========================================================
-   14. 홈
+   12. 홈
 ========================================================= */
 
 function updateHome() {
@@ -1568,85 +2566,807 @@ function updateHome() {
     if (!member) return;
 
 
-    const guildMembers =
+    const list =
         members[member.guild] || [];
 
 
     document.getElementById(
         "homeMemberCount"
     ).textContent =
-        `${guildMembers.length}명`;
+        `${list.length}명`;
 
 
-    /*
-       실제 길드 순위 / 시즌 데이터가 연결되면
-       이 부분만 교체하면 됩니다.
-    */
-
-    document.getElementById(
-        "homeGuildRank"
-    ).textContent =
-        "-";
+    const data =
+        raidData[member.guild];
 
 
-    document.getElementById(
-        "homeSeason"
-    ).textContent =
-        "-";
+    if (data) {
+
+        document.getElementById(
+            "homeGuildRank"
+        ).textContent =
+            data.guildRank
+                ? `${data.guildRank}위`
+                : "-";
+
+
+        document.getElementById(
+            "homeSeason"
+        ).textContent =
+            data.season
+                ? data.season
+                : "-";
+
+
+        document.getElementById(
+            "homeSeasonName"
+        ).textContent =
+            data.seasonName ||
+            "토벌 시즌 정보";
+
+    }
+    else {
+
+        document.getElementById(
+            "homeGuildRank"
+        ).textContent =
+            "-";
+
+        document.getElementById(
+            "homeSeason"
+        ).textContent =
+            "-";
+
+        document.getElementById(
+            "homeSeasonName"
+        ).textContent =
+            "토벌 화면에서 이미지를 인식해주세요.";
+
+    }
 
 
     const notices =
         getNotices();
 
 
-    const recent =
-        notices.slice(0, 1);
-
-
-    const list =
+    const area =
         document.getElementById(
-            "homeNoticeList"
+            "homeNotice"
         );
 
 
-    list.innerHTML = "";
+    if (!notices.length) {
 
-
-    if (recent.length === 0) {
-
-        list.innerHTML =
-            "<div>등록된 공지가 없습니다.</div>";
+        area.innerHTML =
+            `<div class="notice-item">
+                등록된 공지가 없습니다.
+            </div>`;
 
         return;
 
     }
 
 
-    recent.forEach(
-        notice => {
+    /*
+     * 홈에는 가장 최근 공지 1개만
+     */
 
-            const item =
-                document.createElement("div");
-
-
-            item.className =
-                "notice-item";
-
-item.innerHTML = `
-    <div>
-        <strong>
-            ${escapeHtml(notice.title)}
-        </strong>
-    </div>
-`;
-
-            item.onclick =
-                () => showScreen("notice");
+    const notice =
+        notices[0];
 
 
-            list.appendChild(item);
+    area.innerHTML = `
+
+        <div
+            class="notice-item"
+            onclick="showScreen('notice')"
+        >
+
+            <strong>
+                ${escapeHtml(notice.title)}
+            </strong>
+
+            <p>
+                ${escapeHtml(notice.content)}
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   13. 토벌
+========================================================= */
+
+function updateRaid() {
+
+    const member =
+        getCurrentMember();
+
+
+    if (!member) return;
+
+
+    const data =
+        raidData[member.guild];
+
+
+    if (!data) {
+
+        document.getElementById(
+            "raidSeason"
+        ).textContent =
+            "시즌 -";
+
+
+        document.getElementById(
+            "raidSeasonName"
+        ).textContent =
+            "-";
+
+
+        document.getElementById(
+            "raidGuildRank"
+        ).textContent =
+            "-";
+
+
+        document.getElementById(
+            "raidParticipants"
+        ).textContent =
+            "-";
+
+
+        document.getElementById(
+            "bossGrid"
+        ).innerHTML = `
+
+            <div class="card">
+                아직 인식된 토벌 데이터가 없습니다.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "raidSeason"
+    ).textContent =
+        `시즌 ${data.season || "-"}`;
+
+
+    document.getElementById(
+        "raidSeasonName"
+    ).textContent =
+        data.seasonName || "-";
+
+
+    document.getElementById(
+        "raidGuildRank"
+    ).textContent =
+        data.guildRank
+            ? `${data.guildRank}위`
+            : "-";
+
+
+    document.getElementById(
+        "raidParticipants"
+    ).textContent =
+        data.participants
+            ? `${data.participants}명`
+            : "-";
+
+
+    renderBosses(
+        data.bosses || []
+    );
+
+}
+
+
+/* =========================================================
+   보스 출력
+========================================================= */
+
+function renderBosses(bosses) {
+
+    const grid =
+        document.getElementById(
+            "bossGrid"
+        );
+
+
+    if (!bosses.length) {
+
+        grid.innerHTML =
+            `<div>
+                보스 정보가 없습니다.
+            </div>`;
+
+        return;
+
+    }
+
+
+    grid.innerHTML =
+        bosses.map(
+            (boss, index) => `
+
+                <div class="card boss-card">
+
+                    <div
+                        class="boss-image ${
+                            index === 1
+                                ? "boss-two"
+                                : index === 2
+                                    ? "boss-three"
+                                    : ""
+                        }"
+                    >
+
+                        <div>
+
+                            <div class="boss-name">
+                                ${escapeHtml(
+                                    boss.name || "보스"
+                                )}
+                            </div>
+
+                            ${
+                                boss.level
+                                    ? `
+                                    <span class="boss-level">
+                                        ${boss.level}레벨
+                                    </span>
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+                    <div class="boss-body">
+
+                        <div class="boss-row">
+
+                            <span>
+                                현재 HP
+                            </span>
+
+                            <strong>
+                                ${
+                                    boss.currentHp ||
+                                    "-"
+                                }
+                                ${
+                                    boss.hpPercent
+                                        ? `(${boss.hpPercent}%)`
+                                        : ""
+                                }
+                            </strong>
+
+                        </div>
+
+                        <div class="boss-row">
+
+                            <span>
+                                총 누적 피해량
+                            </span>
+
+                            <strong>
+                                ${
+                                    boss.totalDamage ||
+                                    "-"
+                                }
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `
+        ).join("");
+
+}
+
+
+/* =========================================================
+   14. 토벌 이미지 인식
+========================================================= */
+
+async function recognizeRaidImage(event) {
+
+    const file =
+        event.target.files[0];
+
+
+    if (!file) return;
+
+
+    const status =
+        document.getElementById(
+            "ocrStatus"
+        );
+
+
+    status.textContent =
+        "📷 이미지를 분석하고 있습니다... 잠시만 기다려주세요.";
+
+
+    try {
+
+        const result =
+            await Tesseract.recognize(
+                file,
+                "kor+eng",
+                {
+                    logger: info => {
+
+                        if (
+                            info.status ===
+                            "recognizing text"
+                        ) {
+
+                            status.textContent =
+                                `📷 이미지 인식 중... ${Math.round(
+                                    info.progress * 100
+                                )}%`;
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+        const text =
+            result.data.text;
+
+
+        const parsed =
+            parseRaidOCR(text);
+
+
+        saveRaidData(
+            parsed
+        );
+
+
+        status.textContent =
+            "✅ 토벌 정보 인식 및 저장이 완료되었습니다.";
+
+
+        updateRaid();
+
+        updateHome();
+
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "❌ 이미지 인식에 실패했습니다.";
+
+        alert(
+            "이미지 인식에 실패했습니다.\n" +
+            "게임 화면이 잘 보이는 캡처 이미지를 사용해주세요."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   OCR 결과 분석
+========================================================= */
+
+function parseRaidOCR(text) {
+
+    /*
+     * OCR 결과에 따라 일부 숫자가 다르게 읽힐 수 있으므로
+     * 주요 패턴을 찾아 저장
+     */
+
+
+    const data = {
+
+        season: null,
+
+        seasonName:
+            "비상하는 운명의 시즌",
+
+        guildRank: null,
+
+        participants: null,
+
+        bosses: []
+
+    };
+
+
+    /*
+     * 시즌
+     * 예: 시즌 34-2
+     */
+
+    let match =
+        text.match(
+            /시즌\s*([0-9]{1,3}\s*-\s*[0-9]{1,3})/
+        );
+
+
+    if (match) {
+
+        data.season =
+            match[1]
+                .replace(/\s/g, "");
+
+    }
+
+
+    /*
+     * 길드 순위
+     */
+
+    match =
+        text.match(
+            /길드\s*순위\s*([0-9,]+)\s*위/
+        );
+
+
+    if (match) {
+
+        data.guildRank =
+            match[1]
+                .replace(/,/g, "");
+
+    }
+
+
+    /*
+     * 참여 인원
+     */
+
+    match =
+        text.match(
+            /참여\s*현황\s*([0-9]+)\s*명/
+        );
+
+
+    if (!match) {
+
+        match =
+            text.match(
+                /참여\s*([0-9]+)\s*명/
+            );
+
+    }
+
+
+    if (match) {
+
+        data.participants =
+            match[1];
+
+    }
+
+
+    /*
+     * 알려진 화면의 보스 이름을 기준으로 탐색
+     */
+
+    const bossNames = [
+
+        "영원한 시간 속 공허의 기계신",
+
+        "운명의 대천사",
+
+        "덩어리진 감초바다의 심연"
+
+    ];
+
+
+    bossNames.forEach(
+        (name, index) => {
+
+            if (
+                text.includes(
+                    name
+                )
+            ) {
+
+                data.bosses.push({
+
+                    name:
+                        name,
+
+                    level:
+                        findBossLevel(
+                            text,
+                            name
+                        ),
+
+                    currentHp:
+                        findCurrentHp(
+                            text,
+                            name
+                        ),
+
+                    hpPercent:
+                        findHpPercent(
+                            text,
+                            name
+                        ),
+
+                    totalDamage:
+                        findTotalDamage(
+                            text,
+                            name
+                        )
+
+                });
+
+            }
 
         }
+    );
+
+
+    /*
+     * OCR이 보스 이름을 제대로 인식하지 못했을 경우
+     * 화면의 순서대로 숫자 정보를 보조 처리
+     */
+
+    if (
+        data.bosses.length === 0
+    ) {
+
+        const levels =
+            [
+                ...text.matchAll(
+                    /([0-9]{2,4})\s*레벨/g
+                )
+            ]
+            .map(
+                m => m[1]
+            );
+
+
+        const damages =
+            [
+                ...text.matchAll(
+                    /([0-9]{8,3}(?:,[0-9]{3})+)/g
+                )
+            ]
+            .map(
+                m => m[1]
+            );
+
+
+        for (
+            let i = 0;
+            i < Math.min(
+                levels.length,
+                3
+            );
+            i++
+        ) {
+
+            data.bosses.push({
+
+                name:
+                    `보스 ${i + 1}`,
+
+                level:
+                    levels[i] || null,
+
+                currentHp:
+                    null,
+
+                hpPercent:
+                    null,
+
+                totalDamage:
+                    damages[i] || null
+
+            });
+
+        }
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   OCR 보조 함수
+========================================================= */
+
+function findBossLevel(
+    text,
+    bossName
+) {
+
+    const index =
+        text.indexOf(
+            bossName
+        );
+
+
+    const area =
+        index >= 0
+            ? text.slice(
+                index,
+                index + 200
+            )
+            : text;
+
+
+    const match =
+        area.match(
+            /([0-9]{2,4})\s*레벨/
+        );
+
+
+    return match
+        ? match[1]
+        : null;
+
+}
+
+
+function findHpPercent(
+    text,
+    bossName
+) {
+
+    const index =
+        text.indexOf(
+            bossName
+        );
+
+
+    const area =
+        index >= 0
+            ? text.slice(
+                index,
+                index + 500
+            )
+            : text;
+
+
+    const match =
+        area.match(
+            /\(([0-9]{1,3})%\)/
+        );
+
+
+    return match
+        ? match[1]
+        : null;
+
+}
+
+
+function findCurrentHp(
+    text,
+    bossName
+) {
+
+    const index =
+        text.indexOf(
+            bossName
+        );
+
+
+    const area =
+        index >= 0
+            ? text.slice(
+                index,
+                index + 500
+            )
+            : text;
+
+
+    const match =
+        area.match(
+            /([0-9]{6,}(?:,[0-9]{3})*)\s*\([0-9]{1,3}%\)/
+        );
+
+
+    return match
+        ? match[1]
+        : null;
+
+}
+
+
+function findTotalDamage(
+    text,
+    bossName
+) {
+
+    const index =
+        text.indexOf(
+            bossName
+        );
+
+
+    const area =
+        index >= 0
+            ? text.slice(
+                index,
+                index + 700
+            )
+            : text;
+
+
+    const matches =
+        [
+            ...area.matchAll(
+                /([0-9]{8,}(?:,[0-9]{3})*)/g
+            )
+        ];
+
+
+    if (!matches.length)
+        return null;
+
+
+    return matches[
+        matches.length - 1
+    ][1];
+
+}
+
+
+/* =========================================================
+   토벌 데이터 저장
+========================================================= */
+
+function saveRaidData(data) {
+
+    const member =
+        getCurrentMember();
+
+
+    if (!member) return;
+
+
+    raidData[
+        member.guild
+    ] = {
+
+        ...data,
+
+        updatedAt:
+            new Date()
+                .toISOString()
+
+    };
+
+
+    localStorage.setItem(
+        "guildRaidData",
+        JSON.stringify(
+            raidData
+        )
     );
 
 }
@@ -1661,6 +3381,7 @@ function updateMembers() {
     const member =
         getCurrentMember();
 
+
     if (!member) return;
 
 
@@ -1668,6 +3389,49 @@ function updateMembers() {
         document.getElementById(
             "memberList"
         );
+
+
+    const adminArea =
+        document.getElementById(
+            "memberAdminArea"
+        );
+
+
+    /*
+     * 관리자 / 운영진만 관리 가능
+     */
+
+    if (
+        member.role === "관리자" ||
+        member.role === "운영진"
+    ) {
+
+        adminArea.innerHTML = `
+
+            <h3>
+                👥 기존 길드원 등록
+            </h3>
+
+            <p>
+                한 줄에 한 명씩 입력하면
+                여러 명을 한꺼번에 등록할 수 있습니다.
+            </p>
+
+            <button
+                class="btn btn-primary"
+                onclick="addExistingGuildMember()"
+            >
+                ➕ 길드원 일괄 등록
+            </button>
+
+        `;
+
+    }
+    else {
+
+        adminArea.innerHTML = "";
+
+    }
 
 
     const guildMembers =
@@ -1681,7 +3445,9 @@ function updateMembers() {
         target => {
 
             const row =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
 
             row.className =
@@ -1699,14 +3465,16 @@ function updateMembers() {
                 badgeClass =
                     "badge-admin";
 
-            } else if (
+            }
+            else if (
                 target.role === "운영진"
             ) {
 
                 badgeClass =
                     "badge-staff";
 
-            } else if (
+            }
+            else if (
                 target.role === "임시"
             ) {
 
@@ -1717,21 +3485,36 @@ function updateMembers() {
 
 
             row.innerHTML = `
-                <div>
-                    <strong>
-                        ${escapeHtml(target.nickname)}
-                    </strong>
 
-                    <span class="badge ${badgeClass}">
+                <div>
+
+                    <span class="member-name">
+
+                        ${escapeHtml(
+                            target.nickname
+                        )}
+
+                    </span>
+
+                    <span
+                        class="badge ${badgeClass}"
+                    >
                         ${target.role}
                     </span>
 
                     <br>
 
-                    <small>
-                        가입일: ${target.joinDate}
-                    </small>
+                    <span class="member-date">
+
+                        가입일:
+                        ${escapeHtml(
+                            target.joinDate || "-"
+                        )}
+
+                    </span>
+
                 </div>
+
             `;
 
 
@@ -1741,7 +3524,9 @@ function updateMembers() {
             ) {
 
                 const button =
-                    document.createElement("button");
+                    document.createElement(
+                        "button"
+                    );
 
 
                 button.className =
@@ -1754,15 +3539,21 @@ function updateMembers() {
 
                 button.onclick =
                     () =>
-                        editMember(target.id);
+                        editMember(
+                            target.id
+                        );
 
 
-                row.appendChild(button);
+                row.appendChild(
+                    button
+                );
 
             }
 
 
-            list.appendChild(row);
+            list.appendChild(
+                row
+            );
 
         }
     );
@@ -1771,13 +3562,14 @@ function updateMembers() {
 
 
 /* =========================================================
-   16. 길드원 정보 수정
+   16. 기존 길드원 일괄 등록
 ========================================================= */
 
-function editMember(id) {
+function addExistingGuildMember() {
 
     const admin =
         getCurrentMember();
+
 
     if (
         !admin ||
@@ -1787,23 +3579,340 @@ function editMember(id) {
         )
     ) {
 
-        alert("권한이 없습니다.");
+        alert(
+            "관리자 또는 운영진만 사용할 수 있습니다."
+        );
+
         return;
 
     }
 
-    const guildMembers =
+
+    const input =
+        prompt(
+            "기존 길드원의 닉네임을 입력해주세요.\n\n" +
+            "한 줄에 한 명씩 입력하면 됩니다.\n\n" +
+            "예)\n" +
+            "홍길동\n" +
+            "철수\n" +
+            "영희"
+        );
+
+
+    if (input === null)
+        return;
+
+
+    const names =
+        input
+            .split(/\r?\n/)
+            .map(
+                name =>
+                    name.trim()
+            )
+            .filter(
+                name =>
+                    name !== ""
+            );
+
+
+    if (!names.length) {
+
+        alert(
+            "등록할 닉네임이 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    const roster =
+        getGuildRoster();
+
+
+    const guild =
+        admin.guild;
+
+
+    if (!roster[guild]) {
+
+        roster[guild] = [];
+
+    }
+
+
+    let added = 0;
+    let duplicated = 0;
+
+
+    names.forEach(
+        name => {
+
+            const exists =
+                roster[guild].some(
+                    item =>
+                        item.nickname === name
+                );
+
+
+            if (exists) {
+
+                duplicated++;
+
+                return;
+
+            }
+
+
+            roster[guild].push({
+
+                nickname:
+                    name,
+
+                joinDate:
+                    today()
+
+            });
+
+
+            added++;
+
+        }
+    );
+
+
+    saveGuildRoster(
+        roster
+    );
+
+
+    updateMembers();
+
+
+    alert(
+        `${added}명이 기존 길드원 명단에 등록되었습니다.` +
+        (
+            duplicated
+                ? `\n이미 등록된 닉네임: ${duplicated}명`
+                : ""
+        )
+    );
+
+}
+
+
+/* =========================================================
+   17. 가입대기
+========================================================= */
+
+function updateOperation() {
+
+    const member =
+        getCurrentMember();
+
+
+    if (!member) return;
+
+
+    const list =
+        members[member.guild] || [];
+
+
+    const pending =
+        list.filter(
+            m =>
+                m.role === "임시"
+        );
+
+
+    const area =
+        document.getElementById(
+            "pendingMemberList"
+        );
+
+
+    if (!pending.length) {
+
+        area.innerHTML = `
+
+            <div
+                style="
+                    padding:15px;
+                    color:#8198aa;
+                    background:#f7fcff;
+                    border-radius:12px;
+                "
+            >
+                현재 가입대기 중인 회원이 없습니다.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    area.innerHTML =
+        pending.map(
+            target => `
+
+                <div
+                    class="member-row"
+                    style="margin-top:10px;"
+                >
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                target.nickname
+                            )}
+                        </strong>
+
+                        <span
+                            class="badge badge-temp"
+                        >
+                            가입대기
+                        </span>
+
+                        <br>
+
+                        <span class="member-date">
+                            가입일:
+                            ${escapeHtml(
+                                target.joinDate
+                            )}
+                        </span>
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="
+                            approvePendingMember(
+                                '${target.id}'
+                            )
+                        "
+                    >
+                        가입 승인
+                    </button>
+
+                </div>
+
+            `
+        ).join("");
+
+}
+
+
+/* =========================================================
+   가입 승인
+========================================================= */
+
+function approvePendingMember(id) {
+
+    const admin =
+        getCurrentMember();
+
+
+    if (
+        !admin ||
+        (
+            admin.role !== "관리자" &&
+            admin.role !== "운영진"
+        )
+    ) {
+
+        alert(
+            "권한이 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    const list =
         members[admin.guild] || [];
 
+
     const target =
-        guildMembers.find(
-            m => m.id === id
+        list.find(
+            m =>
+                m.id === id
         );
+
 
     if (!target) return;
 
+
+    target.role =
+        "길드원";
+
+
+    saveMembers();
+
+
+    updateOperation();
+
+    updateMembers();
+
+    updateHome();
+
+
+    alert(
+        `${target.nickname}님이 정식 길드원으로 승인되었습니다.`
+    );
+
+}
+
+
+/* =========================================================
+   18. 길드원 정보 수정
+========================================================= */
+
+function editMember(id) {
+
+    const admin =
+        getCurrentMember();
+
+
+    if (
+        !admin ||
+        (
+            admin.role !== "관리자" &&
+            admin.role !== "운영진"
+        )
+    ) {
+
+        alert(
+            "권한이 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    const list =
+        members[admin.guild] || [];
+
+
+    const target =
+        list.find(
+            m =>
+                m.id === id
+        );
+
+
+    if (!target) return;
+
+
     const oldNickname =
         target.nickname;
+
 
     const nickname =
         prompt(
@@ -1811,27 +3920,33 @@ function editMember(id) {
             target.nickname
         );
 
-    if (nickname === null) return;
+
+    if (nickname === null)
+        return;
+
 
     const newNickname =
         nickname.trim();
 
+
     if (!newNickname) {
 
-        alert("닉네임을 입력해주세요.");
+        alert(
+            "닉네임을 입력해주세요."
+        );
+
         return;
 
     }
 
-    /*
-     * 다른 사람과 닉네임 중복 방지
-     */
+
     const duplicate =
-        guildMembers.some(
+        list.some(
             m =>
                 m.id !== target.id &&
                 m.nickname === newNickname
         );
+
 
     if (duplicate) {
 
@@ -1843,127 +3958,63 @@ function editMember(id) {
 
     }
 
+
     const joinDate =
         prompt(
             "가입일 (YYYY-MM-DD)",
-            target.joinDate || ""
+            target.joinDate
         );
 
-    if (joinDate === null) return;
+
+    if (joinDate === null)
+        return;
+
 
     target.nickname =
         newNickname;
 
+
     target.joinDate =
         joinDate.trim();
 
+
     /*
-     * 본인의 닉네임을 변경한 경우
-     * 로그인 정보도 변경
+     * 본인 닉네임 수정
      */
+
     if (
         currentUser &&
-        currentUser.guild === admin.guild &&
-        currentUser.nickname === oldNickname
+        currentUser.nickname ===
+            oldNickname &&
+        currentUser.guild ===
+            admin.guild
     ) {
 
         currentUser.nickname =
             newNickname;
 
+
         localStorage.setItem(
             "currentUser",
-            JSON.stringify(currentUser)
+            JSON.stringify(
+                currentUser
+            )
         );
 
     }
+
 
     saveMembers();
 
     updateMembers();
 
-    updatePersonal();
-
-    /*
-     * 상단 로그인 정보도 갱신
-     */
-    const current =
-        getCurrentMember();
-
-    if (current) {
-
-        document.getElementById(
-            "currentNickname"
-        ).textContent =
-            current.nickname;
-
-        document.getElementById(
-            "currentRole"
-        ).textContent =
-            ` [${current.role}]`;
-
-    }
-
-}
-
-/* =========================================================
-   17. 토벌
-========================================================= */
-
-function updateRaid() {
-
-    const member =
-        getCurrentMember();
-
-
-    const content =
-        document.getElementById(
-            "raidContent"
-        );
-
-
-    if (
-        member.role === "관리자" ||
-        member.role === "운영진"
-    ) {
-
-        const guildMembers =
-            members[member.guild] || [];
-
-
-        content.innerHTML =
-            guildMembers.map(
-                m => `
-                    <div class="member-row">
-                        <span>
-                            ${escapeHtml(m.nickname)}
-                        </span>
-                        <span>
-                            전체 토벌 데이터
-                        </span>
-                    </div>
-                `
-            ).join("");
-
-    } else {
-
-        content.innerHTML = `
-            <div class="member-row">
-                <span>
-                    ${escapeHtml(member.nickname)}
-                </span>
-                <span>
-                    나의 토벌 데이터
-                </span>
-            </div>
-        `;
-
-    }
+    startApp();
 
 }
 
 
 /* =========================================================
-   18. 유물
+   19. 유물
 ========================================================= */
 
 function updateRelic() {
@@ -1972,7 +4023,10 @@ function updateRelic() {
         getCurrentMember();
 
 
-    const content =
+    if (!member) return;
+
+
+    const area =
         document.getElementById(
             "relicContent"
         );
@@ -1983,35 +4037,53 @@ function updateRelic() {
         member.role === "운영진"
     ) {
 
-        const guildMembers =
+        const list =
             members[member.guild] || [];
 
 
-        content.innerHTML =
-            guildMembers.map(
-                m => `
-                    <div class="member-row">
-                        <span>
-                            ${escapeHtml(m.nickname)}
-                        </span>
+        area.innerHTML =
+            list.map(
+                target => `
+
+                    <div
+                        class="member-row"
+                        style="margin-bottom:8px;"
+                    >
+
+                        <strong>
+                            ${escapeHtml(
+                                target.nickname
+                            )}
+                        </strong>
+
                         <span>
                             전체 유물 데이터
                         </span>
+
                     </div>
+
                 `
             ).join("");
 
-    } else {
+    }
+    else {
 
-        content.innerHTML = `
+        area.innerHTML = `
+
             <div class="member-row">
-                <span>
-                    ${escapeHtml(member.nickname)}
-                </span>
+
+                <strong>
+                    ${escapeHtml(
+                        member.nickname
+                    )}
+                </strong>
+
                 <span>
                     나의 유물 데이터
                 </span>
+
             </div>
+
         `;
 
     }
@@ -2020,7 +4092,7 @@ function updateRelic() {
 
 
 /* =========================================================
-   19. 개인
+   20. 개인
 ========================================================= */
 
 function updatePersonal() {
@@ -2041,7 +4113,7 @@ function updatePersonal() {
 
 
 /* =========================================================
-   20. 공지 데이터
+   21. 공지
 ========================================================= */
 
 function getNotices() {
@@ -2055,10 +4127,6 @@ function getNotices() {
 }
 
 
-/* =========================================================
-   21. 공지 화면
-========================================================= */
-
 function updateNotice() {
 
     const list =
@@ -2071,53 +4139,52 @@ function updateNotice() {
         getNotices();
 
 
-    list.innerHTML = "";
-
-
-    if (notices.length === 0) {
+    if (!notices.length) {
 
         list.innerHTML = `
+
             <div class="card">
                 등록된 공지사항이 없습니다.
             </div>
+
         `;
 
-    } else {
+    }
+    else {
 
-        notices.forEach(
-            notice => {
+        /*
+         * 공지사항 화면은 제목만 표시
+         */
 
-                const item =
-                    document.createElement("div");
+        list.innerHTML =
+            notices.map(
+                notice => `
 
+                    <div
+                        class="card"
+                        style="
+                            margin-bottom:10px;
+                            cursor:pointer;
+                        "
+                        onclick="
+                            alert(
+                                '${escapeJs(
+                                    notice.content
+                                )}'
+                            )
+                        "
+                    >
 
-                item.className =
-                    "card";
+                        <strong>
+                            ${escapeHtml(
+                                notice.title
+                            )}
+                        </strong>
 
+                    </div>
 
-                item.style.marginBottom =
-                    "10px";
-
-
-                item.innerHTML = `
-                    <h3>
-                        ${escapeHtml(notice.title)}
-                    </h3>
-
-                    <small>
-                        ${notice.date}
-                    </small>
-
-                    <p>
-                        ${escapeHtml(notice.content)}
-                    </p>
-                `;
-
-
-                list.appendChild(item);
-
-            }
-        );
+                `
+            ).join("");
 
     }
 
@@ -2132,9 +4199,6 @@ function updateNotice() {
         );
 
 
-    adminArea.innerHTML = "";
-
-
     if (
         member &&
         (
@@ -2143,44 +4207,42 @@ function updateNotice() {
         )
     ) {
 
-        const button =
-            document.createElement("button");
+        adminArea.innerHTML = `
 
+            <button
+                class="btn btn-primary"
+                onclick="createNotice()"
+            >
+                ➕ 공지 작성
+            </button>
 
-        button.className =
-            "btn btn-primary";
+        `;
 
+    }
+    else {
 
-        button.textContent =
-            "공지 작성";
-
-
-        button.onclick =
-            createNotice;
-
-
-        adminArea.appendChild(button);
+        adminArea.innerHTML = "";
 
     }
 
 }
 
 
-/* =========================================================
-   22. 공지 작성
-========================================================= */
-
 function createNotice() {
 
     const title =
-        prompt("공지 제목");
+        prompt(
+            "공지 제목"
+        );
 
 
     if (!title) return;
 
 
     const content =
-        prompt("공지 내용");
+        prompt(
+            "공지 내용"
+        );
 
 
     if (!content) return;
@@ -2199,16 +4261,16 @@ function createNotice() {
             content,
 
         date:
-            new Date()
-                .toISOString()
-                .slice(0,10)
+            today()
 
     });
 
 
     localStorage.setItem(
         "guildNotices",
-        JSON.stringify(notices)
+        JSON.stringify(
+            notices
+        )
     );
 
 
@@ -2220,7 +4282,7 @@ function createNotice() {
 
 
 /* =========================================================
-   23. 테마 변경
+   22. 테마
 ========================================================= */
 
 function changeTheme(theme) {
@@ -2246,10 +4308,6 @@ function changeTheme(theme) {
 }
 
 
-/* =========================================================
-   24. 테마 불러오기
-========================================================= */
-
 function loadTheme() {
 
     const theme =
@@ -2274,7 +4332,7 @@ function loadTheme() {
 
 
 /* =========================================================
-   25. 닉네임 변경
+   23. 닉네임 / 비밀번호
 ========================================================= */
 
 function changeNickname() {
@@ -2283,37 +4341,43 @@ function changeNickname() {
         getCurrentMember();
 
 
-    const newNickname =
+    const value =
         prompt(
             "새 닉네임",
             member.nickname
         );
 
 
+    if (!value) return;
+
+
+    const newNickname =
+        value.trim();
+
+
     if (
-        !newNickname ||
-        newNickname === member.nickname
-    ) {
-
-        return;
-
-    }
+        newNickname ===
+        member.nickname
+    ) return;
 
 
-    const guildMembers =
+    const list =
         members[member.guild];
 
 
     const duplicate =
-        guildMembers.some(
+        list.some(
             m =>
-                m.nickname === newNickname
+                m.nickname ===
+                newNickname
         );
 
 
     if (duplicate) {
 
-        alert("이미 사용 중인 닉네임입니다.");
+        alert(
+            "이미 사용 중인 닉네임입니다."
+        );
 
         return;
 
@@ -2321,11 +4385,11 @@ function changeNickname() {
 
 
     member.nickname =
-        newNickname.trim();
+        newNickname;
 
 
     currentUser.nickname =
-        member.nickname;
+        newNickname;
 
 
     saveMembers();
@@ -2333,7 +4397,9 @@ function changeNickname() {
 
     localStorage.setItem(
         "currentUser",
-        JSON.stringify(currentUser)
+        JSON.stringify(
+            currentUser
+        )
     );
 
 
@@ -2342,25 +4408,23 @@ function changeNickname() {
 }
 
 
-/* =========================================================
-   26. 비밀번호 변경
-========================================================= */
-
 function changePassword() {
 
     const member =
         getCurrentMember();
 
 
-    const newPassword =
-        prompt("새 비밀번호");
+    const password =
+        prompt(
+            "새 비밀번호"
+        );
 
 
-    if (!newPassword) return;
+    if (!password) return;
 
 
     member.password =
-        newPassword;
+        password;
 
 
     saveMembers();
@@ -2374,66 +4438,31 @@ function changePassword() {
 
 
 /* =========================================================
-   27. 저장
+   24. 저장
 ========================================================= */
 
 function saveMembers() {
 
     localStorage.setItem(
         "guildMembers",
-        JSON.stringify(members)
+        JSON.stringify(
+            members
+        )
     );
 
 }
 
 
 /* =========================================================
-   28. 로그아웃
-========================================================= */
-
-function logout() {
-
-    currentUser = null;
-
-    localStorage.removeItem(
-        "currentUser"
-    );
-
-
-    document.getElementById(
-        "app"
-    ).style.display = "none";
-
-
-    showLogin();
-
-}
-
-
-/* =========================================================
-   29. HTML 문자 보호
-========================================================= */
-
-function escapeHtml(value) {
-
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-}
-
-/* =========================================================
-   추가 기능
-   기존 길드원 등록 / 권한 관리
+   25. 기존 길드원 명단
 ========================================================= */
 
 function getGuildRoster() {
 
     return JSON.parse(
-        localStorage.getItem("guildRoster")
+        localStorage.getItem(
+            "guildRoster"
+        )
     ) || {};
 
 }
@@ -2443,255 +4472,119 @@ function saveGuildRoster(roster) {
 
     localStorage.setItem(
         "guildRoster",
-        JSON.stringify(roster)
-    );
-
-}
-
-
-/*
- * 관리자가 기존 길드원 명단을 등록
- */
-function addExistingGuildMember() {
-
-    const admin = getCurrentMember();
-
-    if (
-        !admin ||
-        (
-            admin.role !== "관리자" &&
-            admin.role !== "운영진"
+        JSON.stringify(
+            roster
         )
-    ) {
-        alert("관리자 또는 운영진만 사용할 수 있습니다.");
-        return;
-    }
-
-    const input = prompt(
-        "기존 길드원의 닉네임을 입력해주세요.\n\n" +
-        "한 줄에 한 명씩 입력하면 여러 명을 한꺼번에 등록할 수 있습니다.\n\n" +
-        "예)\n" +
-        "홍길동\n" +
-        "철수\n" +
-        "영희\n" +
-        "김길드원"
     );
 
-    if (input === null) return;
-
-    const names = input
-        .split(/\r?\n/)
-        .map(name => name.trim())
-        .filter(name => name !== "");
-
-    if (names.length === 0) {
-
-        alert("등록할 닉네임이 없습니다.");
-        return;
-
-    }
-
-    const roster = getGuildRoster();
-    const guild = admin.guild;
-
-    if (!roster[guild]) {
-        roster[guild] = [];
-    }
-
-    const today =
-        new Date()
-            .toISOString()
-            .slice(0, 10);
-
-    let added = [];
-    let duplicated = [];
-
-    names.forEach(name => {
-
-        const exists =
-            roster[guild].some(
-                item => item.nickname === name
-            );
-
-        if (exists) {
-
-            duplicated.push(name);
-            return;
-
-        }
-
-        roster[guild].push({
-
-            nickname: name,
-
-            joinDate: today
-
-        });
-
-        added.push(name);
-
-    });
-
-    saveGuildRoster(roster);
-
-    updateOperation();
-
-    let message =
-        `${added.length}명이 등록되었습니다.`;
-
-    if (duplicated.length > 0) {
-
-        message +=
-            `\n\n이미 등록된 닉네임 ${duplicated.length}명:\n` +
-            duplicated.join("\n");
-
-    }
-
-    alert(message);
-
 }
 
-/*
- * 운영 화면
- */
-function updateOperation() {
 
-    const screen =
-        document.getElementById(
-            "screen-operation"
-        );
+/* =========================================================
+   26. 로그아웃
+========================================================= */
 
-    if (!screen) return;
+function logout() {
 
-    const member =
-        getCurrentMember();
+    currentUser = null;
 
-    if (!member) return;
 
-    /*
-     * 운영 화면 전체를 다시 구성하지 않고
-     * 현재 테마 선택 영역 아래에 관리 기능 추가
-     */
-    let area =
-        document.getElementById(
-            "operationMemberArea"
-        );
+    localStorage.removeItem(
+        "currentUser"
+    );
 
-    if (!area) {
 
-        area =
-            document.createElement("div");
+    document.getElementById(
+        "app"
+    ).style.display =
+        "none";
 
-        area.id =
-            "operationMemberArea";
 
-        area.className =
-            "card";
-
-        screen.appendChild(area);
-
-    }
-
-    area.innerHTML = `
-
-        <h3>👥 기존 길드원 관리</h3>
-
-        <p>
-            등록된 길드원 명단과 신규 가입자의 닉네임을
-            자동으로 비교합니다.
-        </p>
-
-        <button
-            class="btn btn-primary"
-            onclick="addExistingGuildMember()"
-        >
-            ➕ 기존 길드원 등록
-        </button>
-
-        <div
-            id="existingGuildMemberList"
-            style="margin-top:15px;"
-        ></div>
-
-    `;
-
-    renderExistingGuildMemberList();
+    showLogin();
 
 }
 
 
-function renderExistingGuildMemberList() {
+/* =========================================================
+   27. 길드명 클릭 → 새로고침 후 홈
+========================================================= */
 
-    const area =
-        document.getElementById(
-            "existingGuildMemberList"
-        );
-
-    if (!area) return;
-
-    const member =
-        getCurrentMember();
-
-    if (!member) return;
-
-    const roster =
-        getGuildRoster();
-
-    const list =
-        roster[member.guild] || [];
-
-    if (!list.length) {
-
-        area.innerHTML = `
-            <div class="notice">
-                등록된 기존 길드원이 없습니다.
-            </div>
-        `;
-
-        return;
-
-    }
-
-    area.innerHTML =
-        list.map(
-            item => `
-
-                <div class="member-row">
-
-                    <div>
-                        <strong>
-                            ${escapeHtml(item.nickname)}
-                        </strong>
-
-                        <br>
-
-                        <small>
-                            가입일:
-                            ${escapeHtml(
-                                item.joinDate || "-"
-                            )}
-                        </small>
-                    </div>
-
-                </div>
-
-            `
-        ).join("");
-
-}
 function goHome() {
 
-    // 현재 로그인 정보는 유지
-    // 화면만 새로고침 후 홈으로 이동
     sessionStorage.setItem(
         "goHomeAfterReload",
         "true"
     );
 
+
     location.reload();
 
 }
+
+
+/* =========================================================
+   28. 유틸
+========================================================= */
+
+function today() {
+
+    return new Date()
+        .toISOString()
+        .slice(0,10);
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+function escapeJs(value) {
+
+    return String(value)
+        .replaceAll(
+            "\\",
+            "\\\\"
+        )
+        .replaceAll(
+            "'",
+            "\\'"
+        )
+        .replaceAll(
+            "\n",
+            "\\n"
+        )
+        .replaceAll(
+            "\r",
+            "\\r"
+        );
+
+}
+
 </script>
 
 </body>
-</html>
+   </html>
