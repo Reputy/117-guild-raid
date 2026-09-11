@@ -862,8 +862,8 @@ const MENU_ORDER = [
     "champ",
     "personal",
     "operation",
-    "notice",
-    "ranking"
+    "ranking",
+    "notice"
 ];
 
 
@@ -911,16 +911,12 @@ const SCREEN_PERMISSION = {
 
     raid: [
         "관리자",
-        "운영진",
-        "길드원",
-        "임시"
+        "운영진"
     ],
 
     relic: [
         "관리자",
-        "운영진",
-        "길드원",
-        "임시"
+        "운영진"
     ],
 
     champ: [
@@ -940,20 +936,19 @@ const SCREEN_PERMISSION = {
         "운영진"
     ],
 
+    ranking: [
+        "관리자",
+        "운영진"
+    ],
+
     notice: [
         "관리자",
         "운영진",
         "길드원",
         "임시"
-    ],
-
-    ranking: [
-        "관리자",
-        "운영진"
     ]
 
 };
-
 
 /* =========================================================
    4. 데이터
@@ -1019,20 +1014,24 @@ function registerMember() {
         document.getElementById("guildSelect").value;
 
     const nickname =
-        document.getElementById("nicknameInput").value.trim();
+        document.getElementById("nicknameInput")
+            .value
+            .trim();
 
     const password =
-        document.getElementById("passwordInput").value.trim();
-
+        document.getElementById("passwordInput")
+            .value
+            .trim();
 
     if (!nickname || !password) {
 
-        alert("닉네임과 비밀번호를 입력해주세요.");
+        alert(
+            "닉네임과 비밀번호를 입력해주세요."
+        );
 
         return;
 
     }
-
 
     if (!members[guild]) {
 
@@ -1040,45 +1039,78 @@ function registerMember() {
 
     }
 
-
     const alreadyExists =
         members[guild].some(
             member =>
                 member.nickname === nickname
         );
 
-
     if (alreadyExists) {
 
-        alert("이미 등록된 닉네임입니다.");
+        alert(
+            "이미 등록된 닉네임입니다."
+        );
 
         return;
 
     }
 
-
     /*
-       리퓨티만 관리자
-    */
-
+     * 리퓨티는 무조건 관리자
+     */
     let role = "임시";
 
     if (nickname === "리퓨티") {
 
         role = "관리자";
 
-    } else {
+    }
+    else {
 
         /*
-           최초 기본 상태는 임시.
-           이후 등록된 길드원 명단과 비교하는
-           기능을 이 부분에 확장합니다.
-        */
+         * 관리자가 미리 등록한
+         * 기존 길드원 명단과 비교
+         */
+        const roster =
+            getGuildRoster();
 
-        role = "임시";
+        const guildRoster =
+            roster[guild] || [];
+
+        const registeredMember =
+            guildRoster.find(
+                item =>
+                    item.nickname === nickname
+            );
+
+        if (registeredMember) {
+
+            role = "길드원";
+
+        }
+        else {
+
+            /*
+             * 명단에 없는 닉네임
+             * 임시 가입 여부 확인
+             */
+            const temporary =
+                confirm(
+                    "등록된 길드원 명단에서 닉네임을 찾을 수 없습니다.\n\n" +
+                    "임시 길드원으로 가입하시겠습니까?"
+                );
+
+            if (!temporary) {
+
+                return;
+
+            }
+
+            role = "임시";
+
+        }
 
     }
-
 
     const member = {
 
@@ -1098,7 +1130,9 @@ function registerMember() {
             role,
 
         joinDate:
-            new Date().toISOString().slice(0,10),
+            new Date()
+                .toISOString()
+                .slice(0,10),
 
         raid:
             {},
@@ -1111,11 +1145,9 @@ function registerMember() {
 
     };
 
-
     members[guild].push(member);
 
     saveMembers();
-
 
     currentUser = {
 
@@ -1127,24 +1159,26 @@ function registerMember() {
 
     };
 
-
     localStorage.setItem(
         "currentUser",
         JSON.stringify(currentUser)
     );
 
+    document.getElementById(
+        "passwordInput"
+    ).value = "";
 
     alert(
         role === "관리자"
-        ? "관리자로 가입되었습니다."
-        : "가입되었습니다. 현재 권한은 임시입니다."
+            ? "관리자로 가입되었습니다."
+            : role === "길드원"
+                ? "정식 길드원으로 가입되었습니다."
+                : "임시 길드원으로 가입되었습니다."
     );
-
 
     startApp();
 
 }
-
 
 /* =========================================================
    8. 로그인
@@ -1155,16 +1189,20 @@ function login() {
     const guild =
         document.getElementById("guildSelect").value;
 
+    const nicknameInput =
+        document.getElementById("nicknameInput");
+
+    const passwordInput =
+        document.getElementById("passwordInput");
+
     const nickname =
-        document.getElementById("nicknameInput").value.trim();
+        nicknameInput.value.trim();
 
     const password =
-        document.getElementById("passwordInput").value.trim();
-
+        passwordInput.value.trim();
 
     const guildMembers =
         members[guild] || [];
-
 
     const member =
         guildMembers.find(
@@ -1173,16 +1211,26 @@ function login() {
                 m.password === password
         );
 
-
     if (!member) {
 
-        document.getElementById("loginMessage").textContent =
+        /*
+         * 로그인 실패 시
+         * 입력한 비밀번호를 즉시 초기화
+         */
+        passwordInput.value = "";
+
+        document.getElementById(
+            "loginMessage"
+        ).textContent =
             "길드, 닉네임 또는 비밀번호를 확인해주세요.";
 
         return;
 
     }
 
+    document.getElementById(
+        "loginMessage"
+    ).textContent = "";
 
     currentUser = {
 
@@ -1190,21 +1238,20 @@ function login() {
             guild,
 
         nickname:
-            nickname
+            member.nickname
 
     };
-
 
     localStorage.setItem(
         "currentUser",
         JSON.stringify(currentUser)
     );
 
+    passwordInput.value = "";
 
     startApp();
 
 }
-
 
 /* =========================================================
    9. 앱 시작
@@ -1253,6 +1300,8 @@ function startApp() {
     updateNotice();
 
     showFirstAvailableScreen();
+    
+    updateOperation();
 
 }
 
@@ -1438,7 +1487,12 @@ function showScreen(screen) {
         updateNotice();
 
     }
+    
+    if (screen === "operation") {
 
+    updateOperation();
+
+}
 }
 
 
@@ -1549,10 +1603,24 @@ function updateHome() {
                 "notice-item";
 
 
-            item.innerHTML = `
-                <strong>${escapeHtml(notice.title)}</strong>
-                <small>${notice.date}</small>
-            `;
+           item.innerHTML = `
+    <div>
+        <strong>
+            ${escapeHtml(notice.title)}
+        </strong>
+
+        <small>
+            ${escapeHtml(notice.date)}
+        </small>
+    </div>
+
+    <p style="
+        margin:8px 0 0;
+        white-space:pre-wrap;
+    ">
+        ${escapeHtml(notice.content)}
+    </p>
+`;
 
 
             item.onclick =
@@ -1694,31 +1762,31 @@ function editMember(id) {
     const admin =
         getCurrentMember();
 
-
     if (
-        admin.role !== "관리자" &&
-        admin.role !== "운영진"
+        !admin ||
+        (
+            admin.role !== "관리자" &&
+            admin.role !== "운영진"
+        )
     ) {
 
         alert("권한이 없습니다.");
-
         return;
 
     }
 
-
     const guildMembers =
-        members[admin.guild];
-
+        members[admin.guild] || [];
 
     const target =
         guildMembers.find(
             m => m.id === id
         );
 
-
     if (!target) return;
 
+    const oldNickname =
+        target.nickname;
 
     const nickname =
         prompt(
@@ -1726,42 +1794,64 @@ function editMember(id) {
             target.nickname
         );
 
-
     if (nickname === null) return;
 
+    const newNickname =
+        nickname.trim();
+
+    if (!newNickname) {
+
+        alert("닉네임을 입력해주세요.");
+        return;
+
+    }
+
+    /*
+     * 다른 사람과 닉네임 중복 방지
+     */
+    const duplicate =
+        guildMembers.some(
+            m =>
+                m.id !== target.id &&
+                m.nickname === newNickname
+        );
+
+    if (duplicate) {
+
+        alert(
+            "이미 사용 중인 닉네임입니다."
+        );
+
+        return;
+
+    }
 
     const joinDate =
         prompt(
             "가입일 (YYYY-MM-DD)",
-            target.joinDate
+            target.joinDate || ""
         );
-
 
     if (joinDate === null) return;
 
-
     target.nickname =
-        nickname.trim();
+        newNickname;
 
     target.joinDate =
         joinDate.trim();
 
-
-    saveMembers();
-
-
     /*
-       현재 본인 닉네임을 수정한 경우
-       로그인 정보도 같이 변경
-    */
-
+     * 본인의 닉네임을 변경한 경우
+     * 로그인 정보도 변경
+     */
     if (
-        currentUser.nickname ===
-        target.nickname
+        currentUser &&
+        currentUser.guild === admin.guild &&
+        currentUser.nickname === oldNickname
     ) {
 
         currentUser.nickname =
-            target.nickname;
+            newNickname;
 
         localStorage.setItem(
             "currentUser",
@@ -1770,11 +1860,33 @@ function editMember(id) {
 
     }
 
+    saveMembers();
 
     updateMembers();
 
-}
+    updatePersonal();
 
+    /*
+     * 상단 로그인 정보도 갱신
+     */
+    const current =
+        getCurrentMember();
+
+    if (current) {
+
+        document.getElementById(
+            "currentNickname"
+        ).textContent =
+            current.nickname;
+
+        document.getElementById(
+            "currentRole"
+        ).textContent =
+            ` [${current.role}]`;
+
+    }
+
+}
 
 /* =========================================================
    17. 토벌
@@ -2296,6 +2408,236 @@ function escapeHtml(value) {
 
 }
 
+/* =========================================================
+   추가 기능
+   기존 길드원 등록 / 권한 관리
+========================================================= */
+
+function getGuildRoster() {
+
+    return JSON.parse(
+        localStorage.getItem("guildRoster")
+    ) || {};
+
+}
+
+
+function saveGuildRoster(roster) {
+
+    localStorage.setItem(
+        "guildRoster",
+        JSON.stringify(roster)
+    );
+
+}
+
+
+/*
+ * 관리자가 기존 길드원 명단을 등록
+ */
+function addExistingGuildMember() {
+
+    const admin =
+        getCurrentMember();
+
+    if (
+        !admin ||
+        (
+            admin.role !== "관리자" &&
+            admin.role !== "운영진"
+        )
+    ) {
+
+        alert("관리자 또는 운영진만 사용할 수 있습니다.");
+        return;
+
+    }
+
+    const nickname =
+        prompt("등록할 기존 길드원 닉네임");
+
+    if (!nickname) return;
+
+    const name =
+        nickname.trim();
+
+    if (!name) return;
+
+    const roster =
+        getGuildRoster();
+
+    const guild =
+        admin.guild;
+
+    if (!roster[guild]) {
+
+        roster[guild] = [];
+
+    }
+
+    if (
+        roster[guild].some(
+            item => item.nickname === name
+        )
+    ) {
+
+        alert("이미 기존 길드원 명단에 등록되어 있습니다.");
+        return;
+
+    }
+
+    roster[guild].push({
+
+        nickname:
+            name,
+
+        joinDate:
+            prompt(
+                "가입일 (YYYY-MM-DD)\n모르면 비워두세요.",
+                ""
+            ) || ""
+
+    });
+
+    saveGuildRoster(roster);
+
+    alert(
+        `"${name}" 님을 기존 길드원 명단에 등록했습니다.`
+    );
+
+    updateOperation();
+
+}
+
+
+/*
+ * 운영 화면
+ */
+function updateOperation() {
+
+    const screen =
+        document.getElementById(
+            "screen-operation"
+        );
+
+    if (!screen) return;
+
+    const member =
+        getCurrentMember();
+
+    if (!member) return;
+
+    /*
+     * 운영 화면 전체를 다시 구성하지 않고
+     * 현재 테마 선택 영역 아래에 관리 기능 추가
+     */
+    let area =
+        document.getElementById(
+            "operationMemberArea"
+        );
+
+    if (!area) {
+
+        area =
+            document.createElement("div");
+
+        area.id =
+            "operationMemberArea";
+
+        area.className =
+            "card";
+
+        screen.appendChild(area);
+
+    }
+
+    area.innerHTML = `
+
+        <h3>👥 기존 길드원 관리</h3>
+
+        <p>
+            등록된 길드원 명단과 신규 가입자의 닉네임을
+            자동으로 비교합니다.
+        </p>
+
+        <button
+            class="btn btn-primary"
+            onclick="addExistingGuildMember()"
+        >
+            ➕ 기존 길드원 등록
+        </button>
+
+        <div
+            id="existingGuildMemberList"
+            style="margin-top:15px;"
+        ></div>
+
+    `;
+
+    renderExistingGuildMemberList();
+
+}
+
+
+function renderExistingGuildMemberList() {
+
+    const area =
+        document.getElementById(
+            "existingGuildMemberList"
+        );
+
+    if (!area) return;
+
+    const member =
+        getCurrentMember();
+
+    if (!member) return;
+
+    const roster =
+        getGuildRoster();
+
+    const list =
+        roster[member.guild] || [];
+
+    if (!list.length) {
+
+        area.innerHTML = `
+            <div class="notice">
+                등록된 기존 길드원이 없습니다.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    area.innerHTML =
+        list.map(
+            item => `
+
+                <div class="member-row">
+
+                    <div>
+                        <strong>
+                            ${escapeHtml(item.nickname)}
+                        </strong>
+
+                        <br>
+
+                        <small>
+                            가입일:
+                            ${escapeHtml(
+                                item.joinDate || "-"
+                            )}
+                        </small>
+                    </div>
+
+                </div>
+
+            `
+        ).join("");
+
+}
 </script>
 
 </body>
