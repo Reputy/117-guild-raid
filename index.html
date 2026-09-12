@@ -3439,7 +3439,38 @@ function updateMembers() {
 
 
     list.innerHTML = "";
+    if (
+    member.role === "관리자" ||
+    member.role === "운영진"
+) {
 
+    const addArea =
+        document.createElement("div");
+
+    addArea.className = "card";
+
+    addArea.style.marginBottom = "15px";
+
+    addArea.innerHTML = `
+
+        <h3>👥 기존 길드원 등록</h3>
+
+        <p>
+            기존 길드원의 닉네임을 한 줄에 한 명씩 입력하세요.
+        </p>
+
+        <button
+            class="btn btn-primary"
+            onclick="addExistingGuildMember()"
+        >
+            ➕ 길드원 일괄 등록
+        </button>
+
+    `;
+
+    list.appendChild(addArea);
+
+}
 
     guildMembers.forEach(
         target => {
@@ -3708,93 +3739,127 @@ function addExistingGuildMember() {
 
 function updateOperation() {
 
+    const screen =
+        document.getElementById(
+            "screen-operation"
+        );
+
+    if (!screen) return;
+
     const member =
         getCurrentMember();
 
-
     if (!member) return;
 
+    /*
+     * 운영 화면에서는 가입대기만 표시
+     */
 
-    const list =
-        members[member.guild] || [];
-
-
-    const pending =
-        list.filter(
-            m =>
-                m.role === "임시"
+    let area =
+        document.getElementById(
+            "operationMemberArea"
         );
 
+    if (!area) {
+
+        area =
+            document.createElement("div");
+
+        area.id =
+            "operationMemberArea";
+
+        area.className =
+            "card";
+
+        screen.appendChild(area);
+
+    }
+
+    area.innerHTML = `
+
+        <h3>⏳ 가입대기</h3>
+
+        <p>
+            기존 길드원 명단에 등록되지 않은 닉네임으로
+            임시 가입한 회원입니다.
+        </p>
+
+        <div
+            id="pendingMemberList"
+            style="margin-top:15px;"
+        ></div>
+
+    `;
+
+    renderPendingMemberList();
+
+}
+
+function renderPendingMemberList() {
 
     const area =
         document.getElementById(
             "pendingMemberList"
         );
 
+    if (!area) return;
 
-    if (!pending.length) {
+    const admin =
+        getCurrentMember();
+
+    if (!admin) return;
+
+    const guildMembers =
+        members[admin.guild] || [];
+
+    const pending =
+        guildMembers.filter(
+            member =>
+                member.role === "임시"
+        );
+
+    if (pending.length === 0) {
 
         area.innerHTML = `
-
-            <div
-                style="
-                    padding:15px;
-                    color:#8198aa;
-                    background:#f7fcff;
-                    border-radius:12px;
-                "
-            >
+            <div class="notice">
                 현재 가입대기 중인 회원이 없습니다.
             </div>
-
         `;
 
         return;
 
     }
 
-
     area.innerHTML =
         pending.map(
-            target => `
+            member => `
 
-                <div
-                    class="member-row"
-                    style="margin-top:10px;"
-                >
+                <div class="member-row">
 
                     <div>
 
                         <strong>
-                            ${escapeHtml(
-                                target.nickname
-                            )}
+                            ${escapeHtml(member.nickname)}
                         </strong>
 
-                        <span
-                            class="badge badge-temp"
-                        >
+                        <span class="badge badge-temp">
                             가입대기
                         </span>
 
                         <br>
 
-                        <span class="member-date">
+                        <small>
                             가입일:
                             ${escapeHtml(
-                                target.joinDate
+                                member.joinDate || "-"
                             )}
-                        </span>
+                        </small>
 
                     </div>
 
                     <button
                         class="btn btn-primary"
-                        onclick="
-                            approvePendingMember(
-                                '${target.id}'
-                            )
-                        "
+                        onclick="approvePendingMember('${member.id}')"
                     >
                         가입 승인
                     </button>
@@ -3805,7 +3870,6 @@ function updateOperation() {
         ).join("");
 
 }
-
 
 /* =========================================================
    가입 승인
@@ -4587,4 +4651,4 @@ function escapeJs(value) {
 </script>
 
 </body>
-   </html>
+</html>
