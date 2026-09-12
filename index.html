@@ -3148,7 +3148,7 @@ function parseRaidOCR(text) {
         const damages =
             [
                 ...text.matchAll(
-                    /([0-9]{8,3}(?:,[0-9]{3})+)/g
+                    /([0-9]{8,}(?:,[0-9]{3})+)/g
                 )
             ]
             .map(
@@ -3439,39 +3439,7 @@ function updateMembers() {
 
 
     list.innerHTML = "";
-    if (
-    member.role === "관리자" ||
-    member.role === "운영진"
-) {
-
-    const addArea =
-        document.createElement("div");
-
-    addArea.className = "card";
-
-    addArea.style.marginBottom = "15px";
-
-    addArea.innerHTML = `
-
-        <h3>👥 기존 길드원 등록</h3>
-
-        <p>
-            기존 길드원의 닉네임을 한 줄에 한 명씩 입력하세요.
-        </p>
-
-        <button
-            class="btn btn-primary"
-            onclick="addExistingGuildMember()"
-        >
-            ➕ 길드원 일괄 등록
-        </button>
-
-    `;
-
-    list.appendChild(addArea);
-
-}
-
+    
     guildMembers.forEach(
         target => {
 
