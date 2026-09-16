@@ -4270,1556 +4270,10 @@ function editRelic(id){
 }
 
 
-/* =========================================================
-   챌프 관리
-========================================================= */
-
-function updateChamp(){
-
-    const member =
-        getCurrentMember();
-
-    if(!member)
-        return;
-
-
-    const area =
-        document.getElementById(
-            "champContent"
-        );
-
-
-    const list =
-        members[member.guild] || [];
-
-
-    if(
-        member.role === "관리자" ||
-        member.role === "운영진"
-    ){
-
-        area.innerHTML = `
-
-            <div class="toolbar">
-
-                <button
-                    class="btn btn-primary"
-                    onclick="editChampForMember()"
-                >
-                    ➕ 챌프 점수 등록/수정
-                </button>
-
-            </div>
-
-            <div class="table-wrap">
-
-                <table class="data-table">
-
-                    <thead>
-
-                        <tr>
-                            <th>닉네임</th>
-                            <th>챌프 점수</th>
-                            <th>수정</th>
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        ${
-                            list.map(
-                                target => `
-
-                                    <tr>
-
-                                        <td>
-                                            ${escapeHtml(
-                                                target.nickname
-                                            )}
-                                        </td>
-
-                                        <td>
-                                            ${escapeHtml(
-                                                getChampScore(
-                                                    target
-                                                )
-                                            )}
-                                        </td>
-
-                                        <td>
-
-                                            <button
-                                                class="btn btn-secondary btn-small"
-                                                onclick="editChamp('${target.id}')"
-                                            >
-                                                수정
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
-
-                                `
-                            ).join("")
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        `;
-
-    }
-    else{
-
-        area.innerHTML = `
-
-            <div class="score-box">
-
-                <div class="stat-title">
-                    🏆 나의 챌프 점수
-                </div>
-
-                <div class="score-value">
-                    ${escapeHtml(
-                        getChampScore(member)
-                    )}
-                </div>
-
-            </div>
-
-        `;
-
-    }
-
-}
-
-
-function getChampScore(member){
-
-    if(
-        member.champion &&
-        member.champion.score !== undefined
-    ){
-
-        return formatNumber(
-            member.champion.score
-        );
-
-    }
-
-
-    const guild =
-        member.guild;
-
-
-    if(
-        champData[guild] &&
-        champData[guild][member.nickname] !== undefined
-    ){
-
-        return formatNumber(
-            champData[guild][member.nickname]
-        );
-
-    }
-
-
-    return "-";
-
-}
-
-
-function editChampForMember(){
-
-    const admin =
-        getCurrentMember();
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    ){
-
-        alert("권한이 없습니다.");
-
-        return;
-
-    }
-
-
-    const nickname =
-        prompt(
-            "챌프 점수를 입력할 회원 닉네임"
-        );
-
-
-    if(!nickname)
-        return;
-
-
-    const target =
-        members[admin.guild]
-            .find(
-                m =>
-                    m.nickname ===
-                    nickname.trim()
-            );
-
-
-    if(!target){
-
-        alert(
-            "해당 회원을 찾을 수 없습니다."
-        );
-
-        return;
-
-    }
-
-
-    editChamp(
-        target.id
-    );
-
-}
-
-
-function editChamp(id){
-
-    const admin =
-        getCurrentMember();
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    ){
-
-        alert(
-            "권한이 없습니다."
-        );
-
-        return;
-
-    }
-
-
-    const target =
-        members[admin.guild]
-            .find(
-                m =>
-                    m.id === id
-            );
-
-
-    if(!target)
-        return;
-
-
-    const current =
-        target.champion?.score || "";
-
-
-    const value =
-        prompt(
-            `${target.nickname} 챌프 점수`,
-            current
-        );
-
-
-    if(value === null)
-        return;
-
-
-    if(!target.champion)
-        target.champion = {};
-
-
-    target.champion.score =
-        value.trim();
-
-
-    if(!champData[admin.guild])
-        champData[admin.guild] = {};
-
-
-    champData[admin.guild][target.nickname] =
-        value.trim();
-
-
-    saveJSON(
-        "guildMembers",
-        members
-    );
-
-    saveJSON(
-        "guildChampData",
-        champData
-    );
-
-
-    updateChamp();
-
-    updatePersonal();
-
-}
-
-
-/* =========================================================
-   개인
-========================================================= */
-
-function updatePersonal(){
-
-    const member =
-        getCurrentMember();
-
-    if(!member)
-        return;
-
-
-    document.getElementById(
-        "personalNickname"
-    ).textContent =
-        member.nickname;
-
-
-    document.getElementById(
-        "personalRelic"
-    ).textContent =
-        getRelicScore(member);
-
-
-    document.getElementById(
-        "personalChamp"
-    ).textContent =
-        getChampScore(member);
-
-
-    const raid =
-        member.raid || {};
-
-
-    document.getElementById(
-        "personalRaidDamage"
-    ).textContent =
-        raid.damage
-            ? formatNumber(raid.damage)
-            : "-";
-
-}
-
-
-/* =========================================================
-   가입대기
-========================================================= */
-
-function updateOperation(){
-
-    renderPendingMemberList();
-
-}
-
-
-function renderPendingMemberList(){
-
-    const area =
-        document.getElementById(
-            "pendingMemberList"
-        );
-
-
-    if(!area)
-        return;
-
-
-    const admin =
-        getCurrentMember();
-
-
-    if(!admin)
-        return;
-
-
-    const pending =
-        (
-            members[admin.guild] || []
-        ).filter(
-            member =>
-                member.role === "임시"
-        );
-
-
-    if(!pending.length){
-
-        area.innerHTML =
-            `<div class="empty">
-                현재 가입대기 중인 회원이 없습니다.
-            </div>`;
-
-        return;
-
-    }
-
-
-    area.innerHTML =
-        pending.map(
-            member => `
-
-                <div class="member-row">
-
-                    <div>
-
-                        <strong>
-                            ${escapeHtml(
-                                member.nickname
-                            )}
-                        </strong>
-
-                        <span class="badge badge-temp">
-                            가입대기
-                        </span>
-
-                        <br>
-
-                        <small>
-                            가입일:
-                            ${escapeHtml(
-                                member.joinDate || "-"
-                            )}
-                        </small>
-
-                    </div>
-
-                    <div class="member-actions">
-
-                        <button
-                            class="btn btn-success btn-small"
-                            onclick="approvePendingMember('${member.id}')"
-                        >
-                            승인
-                        </button>
-
-                        <button
-                            class="btn btn-danger btn-small"
-                            onclick="rejectPendingMember('${member.id}')"
-                        >
-                            거부
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `
-        ).join("");
-
-}
-
-
-/* =========================================================
-   가입 승인
-========================================================= */
-
-function approvePendingMember(id){
-
-    const admin =
-        getCurrentMember();
-
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    ){
-
-        alert(
-            "권한이 없습니다."
-        );
-
-        return;
-
-    }
-
-
-    const list =
-        members[admin.guild] || [];
-
-
-    const target =
-        list.find(
-            m =>
-                m.id === id
-        );
-
-
-    if(!target)
-        return;
-
-
-    target.role =
-        "길드원";
-
-
-    saveJSON(
-        "guildMembers",
-        members
-    );
-
-
-    updateAll();
-
-
-    alert(
-        `${target.nickname}님이 정식 길드원으로 승인되었습니다.`
-    );
-
-}
-
-
-/* =========================================================
-   가입 거부
-========================================================= */
-
-function rejectPendingMember(id){
-
-    const admin =
-        getCurrentMember();
-
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    ){
-
-        alert(
-            "권한이 없습니다."
-        );
-
-        return;
-
-    }
-
-
-    const list =
-        members[admin.guild] || [];
-
-
-    const target =
-        list.find(
-            m =>
-                m.id === id
-        );
-
-
-    if(!target)
-        return;
-
-
-    if(
-        !confirm(
-            `${target.nickname}님의 가입을 거부하시겠습니까?`
-        )
-    )
-        return;
-
-
-    members[admin.guild] =
-        list.filter(
-            m =>
-                m.id !== id
-        );
-
-
-    saveJSON(
-        "guildMembers",
-        members
-    );
-
-
-    updateAll();
-
-}
-
-
-/* =========================================================
-   공지 CRUD
-========================================================= */
-
-function getGuildNotices(guild){
-
-    return guildNotices
-        .filter(
-            notice =>
-                notice.guild === guild
-        )
-        .sort(
-            (a,b) =>
-                String(b.date || "")
-                    .localeCompare(
-                        String(a.date || "")
-                    )
-        );
-
-}
-
-
-function updateNotice(){
-
-    const member =
-        getCurrentMember();
-
-    if(!member)
-        return;
-
-
-    const list =
-        document.getElementById(
-            "noticeList"
-        );
-
-
-    const adminArea =
-        document.getElementById(
-            "noticeAdminArea"
-        );
-
-
-    const notices =
-        getGuildNotices(
-            member.guild
-        );
-
-
-    if(
-        ["관리자","운영진"]
-            .includes(member.role)
-    ){
-
-        adminArea.innerHTML = `
-
-            <div class="card">
-
-                <button
-                    class="btn btn-primary"
-                    onclick="createNotice()"
-                >
-                    ➕ 공지 작성
-                </button>
-
-            </div>
-
-        `;
-
-    }
-    else{
-
-        adminArea.innerHTML = "";
-
-    }
-
-
-    if(!notices.length){
-
-        list.innerHTML =
-            `<div class="card">
-                <div class="empty">
-                    등록된 공지사항이 없습니다.
-                </div>
-            </div>`;
-
-        return;
-
-    }
-
-
-    list.innerHTML =
-        notices.map(
-            notice => `
-
-                <div
-                    class="card"
-                    style="margin-bottom:10px"
-                >
-
-                    <div
-                        style="
-                            display:flex;
-                            justify-content:space-between;
-                            gap:10px;
-                            align-items:flex-start;
-                        "
-                    >
-
-                        <div>
-
-                            <h3 style="margin-bottom:5px">
-                                ${escapeHtml(
-                                    notice.title
-                                )}
-                            </h3>
-
-                            <small style="color:#8aa0b0">
-                                ${escapeHtml(
-                                    notice.date || "-"
-                                )}
-                            </small>
-
-                        </div>
-
-                        ${
-                            ["관리자","운영진"]
-                                .includes(member.role)
-                                ? `
-                                <div class="member-actions">
-
-                                    <button
-                                        class="btn btn-secondary btn-small"
-                                        onclick="editNotice('${notice.id}')"
-                                    >
-                                        수정
-                                    </button>
-
-                                    <button
-                                        class="btn btn-danger btn-small"
-                                        onclick="deleteNotice('${notice.id}')"
-                                    >
-                                        삭제
-                                    </button>
-
-                                </div>
-                                `
-                                : ""
-                        }
-
-                    </div>
-
-                    <hr style="border:0;border-top:1px solid #edf3f7;margin:15px 0">
-
-                    <div style="white-space:pre-wrap;line-height:1.6">
-                        ${escapeHtml(notice.content)}
-                    </div>
-
-                </div>
-
-            `
-        ).join("");
-
-}
-
-
-function createNotice(){
-
-    const admin =
-        getCurrentMember();
-
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    ){
-
-        alert(
-            "권한이 없습니다."
-        );
-
-        return;
-
-    }
-
-
-    const title =
-        prompt(
-            "공지 제목"
-        );
-
-
-    if(!title?.trim())
-        return;
-
-
-    const content =
-        prompt(
-            "공지 내용"
-        );
-
-
-    if(!content?.trim())
-        return;
-
-
-    guildNotices.unshift({
-
-        id:createId(),
-
-        guild:admin.guild,
-
-        title:title.trim(),
-
-        content:content.trim(),
-
-        date:today()
-
-    });
-
-
-    saveJSON(
-        "guildNotices",
-        guildNotices
-    );
-
-
-    updateNotice();
-
-    updateHome();
-
-}
-
-
-function editNotice(id){
-
-    const admin =
-        getCurrentMember();
-
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    )
-        return;
-
-
-    const notice =
-        guildNotices.find(
-            n =>
-                n.id === id &&
-                n.guild === admin.guild
-        );
-
-
-    if(!notice)
-        return;
-
-
-    const title =
-        prompt(
-            "공지 제목",
-            notice.title
-        );
-
-
-    if(title === null)
-        return;
-
-
-    const content =
-        prompt(
-            "공지 내용",
-            notice.content
-        );
-
-
-    if(content === null)
-        return;
-
-
-    notice.title =
-        title.trim();
-
-    notice.content =
-        content.trim();
-
-    notice.date =
-        today();
-
-
-    saveJSON(
-        "guildNotices",
-        guildNotices
-    );
-
-
-    updateNotice();
-
-    updateHome();
-
-}
-
-
-function deleteNotice(id){
-
-    const admin =
-        getCurrentMember();
-
-
-    if(
-        !admin ||
-        !["관리자","운영진"]
-            .includes(admin.role)
-    )
-        return;
-
-
-    const notice =
-        guildNotices.find(
-            n =>
-                n.id === id &&
-                n.guild === admin.guild
-        );
-
-
-    if(!notice)
-        return;
-
-
-    if(
-        !confirm(
-            "이 공지를 삭제하시겠습니까?"
-        )
-    )
-        return;
-
-
-    guildNotices =
-        guildNotices.filter(
-            n =>
-                n.id !== id
-        );
-
-
-    saveJSON(
-        "guildNotices",
-        guildNotices
-    );
-
-
-    updateNotice();
-
-    updateHome();
-
-}
-
-
-/* =========================================================
-   통합랭킹
-========================================================= */
-
-function updateRanking(){
-
-    const area =
-        document.getElementById(
-            "rankingContent"
-        );
-
-
-    if(!area)
-        return;
-
-
-    const member =
-        getCurrentMember();
-
-
-    if(!member)
-        return;
-
-
-    /*
-     * 길드별 종합 점수
-     *
-     * 토벌 순위:
-     * 낮을수록 높은 점수
-     *
-     * 유물/챌프:
-     * 길드원 점수 합계
-     */
-
-    const guilds =
-        new Set([
-            ...Object.keys(members),
-            ...Object.keys(raidData)
-        ]);
-
-
-    const rankings =
-        [...guilds]
-            .map(
-                guild => {
-
-                    const guildMembers =
-                        members[guild] || [];
-
-
-                    const raid =
-                        raidData[guild];
-
-
-                    const rank =
-                        Number(
-                            raid?.guildRank
-                        );
-
-
-                    const raidScore =
-                        rank > 0
-                            ? Math.max(
-                                0,
-                                100000 - rank
-                            )
-                            : 0;
-
-
-                    const relic =
-                        guildMembers.reduce(
-                            (sum,m) =>
-                                sum +
-                                numericValue(
-                                    m.relic?.score
-                                ),
-                            0
-                        );
-
-
-                    const champ =
-                        guildMembers.reduce(
-                            (sum,m) =>
-                                sum +
-                                numericValue(
-                                    m.champion?.score
-                                ),
-                            0
-                        );
-
-
-                    const total =
-                        raidScore +
-                        relic +
-                        champ;
-
-
-                    return {
-
-                        guild,
-
-                        members:
-                            guildMembers.length,
-
-                        raidRank:
-                            rank || null,
-
-                        relic,
-
-                        champ,
-
-                        total
-
-                    };
-
-                }
-            )
-            .sort(
-                (a,b) =>
-                    b.total -
-                    a.total
-            );
-
-
-    if(!rankings.length){
-
-        area.innerHTML =
-            `<div class="empty">
-                아직 통합랭킹 데이터가 없습니다.
-            </div>`;
-
-        return;
-
-    }
-
-
-    area.innerHTML = `
-
-        <div class="table-wrap">
-
-            <table class="data-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>순위</th>
-                        <th>길드</th>
-                        <th>길드원</th>
-                        <th>토벌 순위</th>
-                        <th>유물</th>
-                        <th>챌프</th>
-                        <th>종합점수</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${
-                        rankings.map(
-                            (item,index) => `
-
-                                <tr>
-
-                                    <td>
-
-                                        <span class="
-                                            rank-number
-                                            ${
-                                                index === 0
-                                                    ? "rank-1"
-                                                    : index === 1
-                                                        ? "rank-2"
-                                                        : index === 2
-                                                            ? "rank-3"
-                                                            : ""
-                                            }
-                                        ">
-                                            ${index+1}
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            ${escapeHtml(
-                                                item.guild
-                                            )}
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        ${item.members}명
-                                    </td>
-
-                                    <td>
-                                        ${
-                                            item.raidRank
-                                                ? `${formatNumber(item.raidRank)}위`
-                                                : "-"
-                                        }
-                                    </td>
-
-                                    <td>
-                                        ${formatNumber(item.relic)}
-                                    </td>
-
-                                    <td>
-                                        ${formatNumber(item.champ)}
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            ${formatNumber(item.total)}
-                                        </strong>
-                                    </td>
-
-                                </tr>
-
-                            `
-                        ).join("")
-                    }
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================================
-   테마
-========================================================= */
-
-function changeTheme(theme){
-
-    const themes =
-        [
-            "spring",
-            "summer",
-            "autumn",
-            "winter"
-        ];
-
-
-    if(!themes.includes(theme))
-        return;
-
-
-    document.body.classList.remove(
-        ...themes.map(
-            item =>
-                `theme-${item}`
-        )
-    );
-
-
-    document.body.classList.add(
-        `theme-${theme}`
-    );
-
-
-    localStorage.setItem(
-        "selectedTheme",
-        theme
-    );
-
-}
-
-
-function loadTheme(){
-
-    const theme =
-        localStorage.getItem(
-            "selectedTheme"
-        ) || "summer";
-
-
-    changeTheme(
-        themesafe(theme)
-    );
-
-}
-
-
-function themesafe(theme){
-
-    return [
-        "spring",
-        "summer",
-        "autumn",
-        "winter"
-    ].includes(theme)
-        ? theme
-        : "summer";
-
-}
-
-
-/* =========================================================
-   닉네임 / 비밀번호
-========================================================= */
-
-function changeNickname(){
-
-    const member =
-        getCurrentMember();
-
-
-    if(!member)
-        return;
-
-
-    const value =
-        prompt(
-            "새 닉네임",
-            member.nickname
-        );
-
-
-    if(value === null)
-        return;
-
-
-    const newNickname =
-        value.trim();
-
-
-    if(!newNickname)
-        return;
-
-
-    if(
-        newNickname !== member.nickname &&
-        members[member.guild]
-            .some(
-                m =>
-                    m.nickname === newNickname
-            )
-    ){
-
-        alert(
-            "이미 사용 중인 닉네임입니다."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * 다른 회원의 닉네임과
-     * 유물/챌프 키를 같이 변경
-     */
-
-    const oldNickname =
-        member.nickname;
-
-
-    member.nickname =
-        newNickname;
-
-
-    if(
-        relicData[member.guild] &&
-        relicData[member.guild][oldNickname] !== undefined
-    ){
-
-        relicData[member.guild][newNickname] =
-            relicData[member.guild][oldNickname];
-
-        delete relicData[member.guild][oldNickname];
-
-    }
-
-
-    if(
-        champData[member.guild] &&
-        champData[member.guild][oldNickname] !== undefined
-    ){
-
-        champData[member.guild][newNickname] =
-            champData[member.guild][oldNickname];
-
-        delete champData[member.guild][oldNickname];
-
-    }
-
-
-    currentUser.nickname =
-        newNickname;
-
-
-    /*
-     * 리퓨티는 항상 관리자
-     */
-
-    if(newNickname === "리퓨티")
-        member.role = "관리자";
-
-
-    saveJSON(
-        "guildMembers",
-        members
-    );
-
-    saveJSON(
-        "currentUser",
-        currentUser
-    );
-
-    saveJSON(
-        "guildRelicData",
-        relicData
-    );
-
-    saveJSON(
-        "guildChampData",
-        champData
-    );
-
-
-    startApp();
-
-}
-
-
-function changePassword(){
-
-    const member =
-        getCurrentMember();
-
-
-    if(!member)
-        return;
-
-
-    const oldPassword =
-        prompt(
-            "현재 비밀번호"
-        );
-
-
-    if(oldPassword !== member.password){
-
-        alert(
-            "현재 비밀번호가 올바르지 않습니다."
-        );
-
-        return;
-
-    }
-
-
-    const newPassword =
-        prompt(
-            "새 비밀번호"
-        );
-
-
-    if(!newPassword)
-        return;
-
-
-    member.password =
-        newPassword;
-
-
-    saveJSON(
-        "guildMembers",
-        members
-    );
-
-
-    alert(
-        "비밀번호가 변경되었습니다."
-    );
-
-}
-
-
-/* =========================================================
-   로그아웃
-========================================================= */
-
-function logout(){
-
-    currentUser =
-        null;
-
-
-    localStorage.removeItem(
-        "currentUser"
-    );
-
-
-    document.getElementById(
-        "app"
-    ).style.display =
-        "none";
-
-
-    document.getElementById(
-        "passwordInput"
-    ).value = "";
-
-
-    showLogin();
-
-}
-
-
-/* =========================================================
-   유틸
-========================================================= */
-
-function createId(){
-
-    return (
-        Date.now().toString(36) +
-        Math.random()
-            .toString(36)
-            .slice(2)
-    );
-
-}
-
-
-function today(){
-
-    return new Date()
-        .toISOString()
-        .slice(0,10);
-
-}
-
-
-function numericValue(value){
-
-    if(
-        value === null ||
-        value === undefined ||
-        value === ""
-    )
-        return 0;
-
-
-    const number =
-        Number(
-            String(value)
-                .replace(/,/g,"")
-                .replace(/[^\d.-]/g,"")
-        );
-
-
-    return Number.isFinite(number)
-        ? number
-        : 0;
-
-}
-
-
-function formatNumber(value){
-
-    const number =
-        numericValue(value);
-
-
-    return number.toLocaleString(
-        "ko-KR"
-    );
-
-}
-
-
-function getBadgeClass(role){
-
-    if(role === "관리자")
-        return "badge-admin";
-
-    if(role === "운영진")
-        return "badge-staff";
-
-    if(role === "임시")
-        return "badge-temp";
-
-    return "badge-member";
-
-}
-
-
-function escapeHtml(value){
-
-    return String(
-        value ?? ""
-    )
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-
-}
 <!-- =========================================================
-     챌프 OCR 비교 시스템 v1
+     챌프 관리 + OCR 비교 시스템
      기존 챌프 점수 / localStorage 호환
-========================================================= -->
+     ========================================================= -->
 
 <style>
 .champ-ocr-wrap{
@@ -5834,6 +4288,7 @@ function escapeHtml(value){
     gap:10px;
 }
 
+.champ-ocr-toolbar input,
 .champ-ocr-toolbar select,
 .champ-ocr-toolbar button,
 .champ-upload-box input{
@@ -5844,6 +4299,7 @@ function escapeHtml(value){
     padding:8px 12px;
     background:#fff;
     color:#173b63;
+    box-sizing:border-box;
 }
 
 .champ-boss-tabs{
@@ -5891,6 +4347,7 @@ function escapeHtml(value){
     color:#7190ad;
     font-size:13px;
     margin-bottom:12px;
+    line-height:1.5;
 }
 
 .champ-file-list{
@@ -5922,7 +4379,7 @@ function escapeHtml(value){
 
 .champ-result-table{
     width:100%;
-    min-width:760px;
+    min-width:820px;
     border-collapse:collapse;
 }
 
@@ -5961,6 +4418,7 @@ function escapeHtml(value){
 
 .champ-unknown{
     color:#999;
+    font-weight:700;
 }
 
 .champ-edit-input{
@@ -5969,6 +4427,7 @@ function escapeHtml(value){
     border:1px solid #ccdce7;
     border-radius:6px;
     text-align:right;
+    box-sizing:border-box;
 }
 
 .champ-saved-set{
@@ -5987,6 +4446,7 @@ function escapeHtml(value){
 .champ-small{
     font-size:12px;
     color:#7190ad;
+    line-height:1.5;
 }
 
 .champ-loading{
@@ -5997,7 +4457,24 @@ function escapeHtml(value){
     border-radius:10px;
 }
 
+.champ-ocr-error{
+    color:#d84b4b;
+    font-size:12px;
+    font-weight:700;
+}
+
+.champ-effect-badge{
+    display:inline-block;
+    margin-left:5px;
+    padding:2px 6px;
+    border-radius:5px;
+    background:#eef5fa;
+    color:#60788b;
+    font-size:10px;
+}
+
 @media(max-width:700px){
+
     .champ-ocr-toolbar{
         grid-template-columns:1fr;
     }
@@ -6017,16 +4494,20 @@ function escapeHtml(value){
     .champ-upload-box{
         padding:12px;
     }
+
+    .champ-result-table{
+        min-width:760px;
+    }
 }
 </style>
 
 <script>
 
 /* =========================================================
-   챌프 OCR 설정
+   챌프 기본 설정
 ========================================================= */
 
-const CHAMP_OCR_VERSION = 1;
+const CHAMP_OCR_VERSION = 2;
 
 const CHAMP_BOSSES = [
     { id:"A", name:"A 보스" },
@@ -6035,11 +4516,13 @@ const CHAMP_BOSSES = [
     { id:"D", name:"D 보스" }
 ];
 
-/*
- * 반드시 비교해야 하는 기본 장착효과.
- * OCR 화면에 다른 효과가 발견되면 자동으로 추가한다.
- */
+
+/* =========================================================
+   기본 장착효과
+========================================================= */
+
 const CHAMP_STAT_LABELS = [
+
     "공격력",
     "체력",
     "공격속도",
@@ -6050,148 +4533,8 @@ const CHAMP_STAT_LABELS = [
     "이로운 효과 증가",
     "해로운 효과 감소",
     "피해감소 무시"
+
 ];
-
-let champOCRState = {
-    boss:"A",
-    season:"",
-    baselineFiles:[],
-    compareFiles:[],
-    baselineResults:[],
-    compareResults:[]
-};
-
-
-/* =========================================================
-   기존 데이터와 충돌하지 않는 챌프 OCR 저장공간
-========================================================= */
-
-function getChampOCRRoot(guild){
-
-    if(!champData[guild])
-        champData[guild] = {};
-
-    if(!champData[guild]._ocrSets)
-        champData[guild]._ocrSets = {};
-
-    return champData[guild]._ocrSets;
-}
-
-
-function saveChampOCRData(guild, data){
-
-    const root =
-        getChampOCRRoot(guild);
-
-    root[data.season || "default"] = data;
-
-    saveJSON(
-        "guildChampData",
-        champData
-    );
-}
-
-
-/* =========================================================
-   시즌 처리
-========================================================= */
-
-function champNormalizeSeason(value){
-
-    value =
-        String(value || "")
-            .trim()
-            .replace(/\s/g,"");
-
-    if(!value)
-        return "";
-
-    const m =
-        value.match(
-            /(?:시즌)?(\d{1,3})[-~](\d{1,3})/
-        );
-
-    if(m)
-        return `${m[1]}-${m[2]}`;
-
-    const n =
-        value.match(
-            /(?:시즌)?(\d{1,3})/
-        );
-
-    return n ? n[1] : value;
-}
-
-
-function champIntegratedSeason(season){
-
-    const m =
-        champNormalizeSeason(season)
-            .match(/^(\d+)-(\d+)$/);
-
-    if(!m)
-        return season || "";
-
-    return m[1];
-}
-
-
-function champGeneralSeason(season){
-
-    const m =
-        champNormalizeSeason(season)
-            .match(/^(\d+)-(\d+)$/);
-
-    if(!m)
-        return "";
-
-    return m[2];
-}
-
-
-/* =========================================================
-   OCR 텍스트 정리
-========================================================= */
-
-function champNormalizeOCR(text){
-
-    return String(text || "")
-        .replace(/\r/g,"\n")
-        .replace(/％/g,"%")
-        .replace(/[：:]/g,":")
-        .replace(/[−–—]/g,"-")
-        .replace(/[|]/g,"1")
-        .replace(/\u00a0/g," ")
-        .replace(/[ \t]+/g," ")
-        .trim();
-}
-
-
-/* =========================================================
-   숫자 파싱
-========================================================= */
-
-function champParseNumber(value){
-
-    if(value === null || value === undefined)
-        return null;
-
-    let s =
-        String(value)
-            .replace(/,/g,"")
-            .replace(/[％%]/g,"")
-            .replace(/[^\d.+-]/g,"");
-
-    if(!s)
-        return null;
-
-    const n =
-        Number(s);
-
-    return Number.isFinite(n)
-        ? n
-        : null;
-}
 
 
 /* =========================================================
@@ -6202,8 +4545,7 @@ const CHAMP_STAT_ALIASES = {
 
     "공격력":[
         "공격력",
-        "공격 력",
-        "공격"
+        "공격 력"
     ],
 
     "체력":[
@@ -6220,8 +4562,8 @@ const CHAMP_STAT_ALIASES = {
     "치명타 확률":[
         "치명타 확률",
         "치명타확률",
-        "치명타 율",
-        "치명타율"
+        "치명타율",
+        "치명타 율"
     ],
 
     "쿨타임":[
@@ -6244,14 +4586,12 @@ const CHAMP_STAT_ALIASES = {
 
     "이로운 효과 증가":[
         "이로운 효과 증가",
-        "이로운효과증가",
-        "이로운 효과"
+        "이로운효과증가"
     ],
 
     "해로운 효과 감소":[
         "해로운 효과 감소",
-        "해로운효과감소",
-        "해로운 효과"
+        "해로운효과감소"
     ],
 
     "피해감소 무시":[
@@ -6264,135 +4604,402 @@ const CHAMP_STAT_ALIASES = {
 
 
 /* =========================================================
-   효과명 찾기
+   OCR 상태
 ========================================================= */
 
-function champFindStatLabel(line){
+let champOCRState = {
 
-    const clean =
-        String(line || "")
-            .replace(/\s/g,"")
-            .toLowerCase();
+    boss:"A",
 
-    for(
-        const stat of CHAMP_STAT_LABELS
+    season:"",
+
+    baselineFiles:[],
+
+    compareFiles:[],
+
+    baselineResults:[],
+
+    compareResults:[]
+
+};
+
+
+/* =========================================================
+   기존 champData와 OCR 데이터 분리
+========================================================= */
+
+function getChampOCRRoot(guild){
+
+    if(!champData[guild])
+        champData[guild] = {};
+
+    if(
+        !champData[guild]._ocrSets ||
+        typeof champData[guild]._ocrSets !== "object"
     ){
 
-        const aliases =
-            CHAMP_STAT_ALIASES[stat] || [stat];
-
-        for(
-            const alias of aliases
-        ){
-
-            const a =
-                alias
-                    .replace(/\s/g,"")
-                    .toLowerCase();
-
-            if(clean.includes(a))
-                return stat;
-
-        }
+        champData[guild]._ocrSets = {};
 
     }
 
-    return null;
+    return champData[guild]._ocrSets;
+
 }
 
 
 /* =========================================================
-   OCR 값 찾기
+   시즌 정규화
 ========================================================= */
 
-function champFindValue(line){
+function champNormalizeSeason(value){
 
-    /*
-     * 32.9%
-     * +32.9%
-     * 32%
-     * 32.9
-     */
+    let text =
+        String(value || "")
+            .trim()
+            .replace(/\s+/g,"");
+
+    if(!text)
+        return "";
+
+    text =
+        text.replace(/^시즌/i,"");
+
+    const range =
+        text.match(
+            /^(\d{1,3})[-~](\d{1,3})$/
+        );
+
+    if(range){
+
+        return `${range[1]}-${range[2]}`;
+
+    }
+
+    const single =
+        text.match(
+            /^(\d{1,3})$/
+        );
+
+    if(single)
+        return single[1];
+
+    return text;
+
+}
+
+
+/* =========================================================
+   통합 시즌
+   예: 34-2 → 34
+========================================================= */
+
+function champIntegratedSeason(season){
+
+    const normalized =
+        champNormalizeSeason(season);
+
+    const match =
+        normalized.match(
+            /^(\d+)-(\d+)$/
+        );
+
+    return match
+        ? match[1]
+        : normalized;
+
+}
+
+
+/* =========================================================
+   일반 시즌
+   예: 34-2 → 2
+========================================================= */
+
+function champGeneralSeason(season){
+
+    const normalized =
+        champNormalizeSeason(season);
+
+    const match =
+        normalized.match(
+            /^(\d+)-(\d+)$/
+        );
+
+    return match
+        ? match[2]
+        : "";
+
+}
+
+
+/* =========================================================
+   OCR 텍스트 정리
+========================================================= */
+
+function champNormalizeOCR(text){
+
+    return String(text || "")
+
+        .replace(/\r/g,"\n")
+
+        .replace(/％/g,"%")
+
+        .replace(/[：:]/g,":")
+
+        .replace(/[−–—]/g,"-")
+
+        .replace(/\u00a0/g," ")
+
+        .replace(/[ \t]+/g," ")
+
+        .replace(/\n{2,}/g,"\n")
+
+        .trim();
+
+}
+
+
+/* =========================================================
+   숫자 파싱
+========================================================= */
+
+function champParseNumber(value){
+
+    if(
+        value === null ||
+        value === undefined
+    )
+        return null;
+
+    let text =
+        String(value)
+            .replace(/,/g,"")
+            .replace(/％/g,"%")
+            .replace(/[^\d.+-]/g,"");
+
+    if(!text)
+        return null;
+
+    const number =
+        Number(text);
+
+    return Number.isFinite(number)
+        ? number
+        : null;
+
+}
+
+
+/* =========================================================
+   한 줄의 숫자 찾기
+========================================================= */
+
+function champFindNumbers(line){
+
     const matches =
         String(line || "")
             .match(
                 /[-+]?\d+(?:[.,]\d+)?\s*%?/g
             );
 
-    if(!matches || !matches.length)
-        return null;
+    if(!matches)
+        return [];
 
-    /*
-     * 가장 마지막 숫자를 값으로 사용.
-     * 장착효과 문장에서 레벨 등이 같이 OCR될 경우
-     * 끝쪽 수치를 우선한다.
-     */
-    for(
-        let i = matches.length - 1;
-        i >= 0;
-        i--
-    ){
+    return matches
+        .map(
+            value =>
+                champParseNumber(value)
+        )
+        .filter(
+            value =>
+                value !== null
+        );
 
-        const n =
-            champParseNumber(matches[i]);
-
-        if(n !== null)
-            return n;
-
-    }
-
-    return null;
 }
 
 
 /* =========================================================
-   전체 장착효과 OCR 분석
+   효과명 찾기
+========================================================= */
+
+function champFindStatLabel(line){
+
+    const original =
+        String(line || "");
+
+    const clean =
+        original
+            .replace(/\s/g,"")
+            .toLowerCase();
+
+    /*
+     * 긴 효과명을 먼저 찾는다.
+     */
+    const stats =
+        Object.keys(
+            CHAMP_STAT_ALIASES
+        )
+        .sort(
+            (a,b) =>
+                b.length - a.length
+        );
+
+    for(
+        const stat of stats
+    ){
+
+        const aliases =
+            CHAMP_STAT_ALIASES[stat];
+
+        for(
+            const alias of aliases
+        ){
+
+            const normalizedAlias =
+                alias
+                    .replace(/\s/g,"")
+                    .toLowerCase();
+
+            if(
+                clean.includes(
+                    normalizedAlias
+                )
+            ){
+
+                return stat;
+
+            }
+
+        }
+
+    }
+
+    return null;
+
+}
+
+
+/* =========================================================
+   한 줄에서 값 찾기
+========================================================= */
+
+function champFindValue(line){
+
+    const numbers =
+        champFindNumbers(line);
+
+    if(!numbers.length)
+        return null;
+
+    /*
+     * 일반적인 장착효과 OCR에서는
+     * 효과명 뒤의 마지막 숫자가 실제 값이다.
+     */
+    return numbers[numbers.length - 1];
+
+}
+
+
+/* =========================================================
+   특정 라인의 효과값 추출
+========================================================= */
+
+function champExtractStatFromLines(
+    lines,
+    index,
+    stat
+){
+
+    /*
+     * 1차:
+     * 같은 줄에서 바로 찾기
+     */
+    const sameLine =
+        champFindValue(
+            lines[index]
+        );
+
+    if(sameLine !== null)
+        return sameLine;
+
+
+    /*
+     * 2차:
+     * 다음 1~3줄에서 숫자 찾기
+     */
+    for(
+        let offset = 1;
+        offset <= 3;
+        offset++
+    ){
+
+        const nextIndex =
+            index + offset;
+
+        if(
+            nextIndex >=
+            lines.length
+        )
+            break;
+
+        const value =
+            champFindValue(
+                lines[nextIndex]
+            );
+
+        if(value !== null)
+            return value;
+
+        /*
+         * 다른 효과명이 나오면
+         * 이 효과의 값은 없다고 판단.
+         */
+        const another =
+            champFindStatLabel(
+                lines[nextIndex]
+            );
+
+        if(
+            another &&
+            another !== stat
+        )
+            break;
+
+    }
+
+    return null;
+
+}
+
+
+/* =========================================================
+   OCR 효과 분석
 ========================================================= */
 
 function parseChampEffects(rawText){
 
     const text =
-        champNormalizeOCR(rawText);
+        champNormalizeOCR(
+            rawText
+        );
+
+    if(!text)
+        return {};
 
     const lines =
         text
             .split(/\n+/)
-            .map(v => v.trim())
+            .map(
+                line =>
+                    line.trim()
+            )
             .filter(Boolean);
 
     const effects = {};
 
-    /*
-     * 먼저 지정 효과 검색
-     */
-    for(
-        const line of lines
-    ){
-
-        const stat =
-            champFindStatLabel(line);
-
-        if(!stat)
-            continue;
-
-        const value =
-            champFindValue(line);
-
-        if(value === null)
-            continue;
-
-        effects[stat] = value;
-
-    }
-
 
     /*
-     * 여러 줄 OCR 때문에
-     *
-     * 공격력
-     * 32.9%
-     *
-     * 형태로 나뉘는 경우 처리
+     * 기본 효과 인식
      */
     for(
         let i=0;
@@ -6401,55 +5008,50 @@ function parseChampEffects(rawText){
     ){
 
         const stat =
-            champFindStatLabel(lines[i]);
+            champFindStatLabel(
+                lines[i]
+            );
 
         if(!stat)
             continue;
 
-        if(effects[stat] !== undefined)
+        const value =
+            champExtractStatFromLines(
+                lines,
+                i,
+                stat
+            );
+
+        if(value === null)
             continue;
 
-        for(
-            let j=i+1;
-            j<Math.min(lines.length,i+3);
-            j++
-        ){
-
-            const value =
-                champFindValue(lines[j]);
-
-            if(value !== null){
-
-                effects[stat] = value;
-                break;
-
-            }
-
-        }
+        effects[stat] =
+            value;
 
     }
 
 
     /*
-     * 화면에 있는 추가 효과도 가능한 한 인식
+     * 추가 효과 인식
      *
-     * "효과명 12.3%" 형태의 문장을 찾아서
-     * 기본 목록에 없는 효과를 추가한다.
+     * 예:
+     * 보스 추가 피해 12.5%
      */
     for(
         const line of lines
     ){
 
-        const value =
-            champFindValue(line);
-
-        if(value === null)
+        if(
+            !/%/.test(line)
+        )
             continue;
 
-        const percent =
-            /%/.test(line);
+        const value =
+            champFindValue(
+                line
+            );
 
-        if(!percent)
+        if(value === null)
             continue;
 
         let label =
@@ -6464,25 +5066,28 @@ function parseChampEffects(rawText){
                 )
                 .trim();
 
-        if(!label)
-            continue;
-
-        /*
-         * 너무 긴 OCR 문장/버튼/메뉴는 제외
-         */
         if(
             label.length < 2 ||
             label.length > 40
         )
             continue;
 
-        if(
-            CHAMP_STAT_LABELS.includes(label)
-        )
+        /*
+         * 이미 기본 효과라면 추가 등록하지 않는다.
+         */
+        const known =
+            champFindStatLabel(
+                label
+            );
+
+        if(known)
             continue;
 
+        /*
+         * UI/버튼/메뉴 같은 텍스트 제외
+         */
         if(
-            /^(장착효과|전체효과|확인|취소|닫기|강화|레벨)$/.
+            /^(장착효과|전체효과|확인|취소|닫기|강화|레벨|뒤로|다음|이전)$/.
                 test(label)
         )
             continue;
@@ -6491,7 +5096,8 @@ function parseChampEffects(rawText){
             effects[label] === undefined
         ){
 
-            effects[label] = value;
+            effects[label] =
+                value;
 
         }
 
@@ -6499,12 +5105,12 @@ function parseChampEffects(rawText){
 
 
     return effects;
+
 }
 
 
 /* =========================================================
-   OCR 1장 처리
-   - 순차 처리하여 모바일 메모리 사용량 최소화
+   OCR 파일 1장
 ========================================================= */
 
 async function champOCRFile(
@@ -6519,39 +5125,61 @@ async function champOCRFile(
             "champOCRProgress"
         );
 
+    const sideText =
+        side === "baseline"
+            ? "기준"
+            : "비교";
+
     if(progress){
 
         progress.textContent =
-            `📷 ${side} ${index}/${total}장 OCR 중...`;
+            `📷 ${sideText} ${index}/${total}장 OCR 준비 중...`;
 
     }
 
 
     try{
 
+        if(
+            typeof Tesseract ===
+            "undefined"
+        ){
+
+            throw new Error(
+                "Tesseract OCR 라이브러리가 없습니다."
+            );
+
+        }
+
+
         const result =
             await Tesseract.recognize(
                 file,
                 "kor+eng",
                 {
-                    logger: info => {
+                    logger:info => {
+
+                        if(
+                            !progress ||
+                            !info
+                        )
+                            return;
 
                         if(
                             info.status ===
                             "recognizing text"
                         ){
 
-                            const p =
+                            const percent =
                                 Math.round(
-                                    info.progress * 100
+                                    (
+                                        info.progress ||
+                                        0
+                                    ) * 100
                                 );
 
-                            if(progress){
-
-                                progress.textContent =
-                                    `📷 ${side} ${index}/${total}장 OCR 중... ${p}%`;
-
-                            }
+                            progress.textContent =
+                                `📷 ${sideText} ${index}/${total}장 OCR 중... ${percent}%`;
 
                         }
 
@@ -6564,15 +5192,27 @@ async function champOCRFile(
             result?.data?.text || "";
 
         const effects =
-            parseChampEffects(text);
+            parseChampEffects(
+                text
+            );
+
 
         return {
+
             index:index,
-            fileName:file.name,
+
+            fileName:
+                file.name,
+
             text:text,
+
             effects:effects,
+
+            error:false,
+
             recognizedAt:
                 new Date().toISOString()
+
         };
 
     }
@@ -6583,14 +5223,27 @@ async function champOCRFile(
             error
         );
 
+
         return {
+
             index:index,
-            fileName:file.name,
+
+            fileName:
+                file.name,
+
             text:"",
+
             effects:{},
+
             error:true,
+
+            errorMessage:
+                error?.message ||
+                "OCR 처리 실패",
+
             recognizedAt:
                 new Date().toISOString()
+
         };
 
     }
@@ -6599,7 +5252,7 @@ async function champOCRFile(
 
 
 /* =========================================================
-   5장 OCR
+   여러 장 OCR
 ========================================================= */
 
 async function processChampFiles(
@@ -6608,8 +5261,10 @@ async function processChampFiles(
 ){
 
     const arr =
-        Array.from(files || [])
-            .slice(0,5);
+        Array.from(
+            files || []
+        )
+        .slice(0,5);
 
     const results = [];
 
@@ -6627,25 +5282,30 @@ async function processChampFiles(
                 side
             );
 
-        results.push(result);
+        results.push(
+            result
+        );
 
         /*
-         * 모바일 메모리 보호.
-         * 브라우저가 처리할 수 있도록 한 장씩 넘긴다.
+         * 모바일 메모리/렌더링 보호
          */
         await new Promise(
             resolve =>
-                setTimeout(resolve,80)
+                setTimeout(
+                    resolve,
+                    80
+                )
         );
 
     }
 
     return results;
+
 }
 
 
 /* =========================================================
-   결과 비교
+   비교
 ========================================================= */
 
 function champCompareValue(
@@ -6661,11 +5321,15 @@ function champCompareValue(
     ){
 
         return {
+
             type:"unknown",
+
             diff:null
+
         };
 
     }
+
 
     const diff =
         Number(
@@ -6675,27 +5339,39 @@ function champCompareValue(
             ).toFixed(2)
         );
 
+
     if(diff > 0){
 
         return {
+
             type:"up",
+
             diff:diff
+
         };
 
     }
+
 
     if(diff < 0){
 
         return {
+
             type:"down",
+
             diff:diff
+
         };
 
     }
 
+
     return {
+
         type:"same",
+
         diff:0
+
     };
 
 }
@@ -6714,31 +5390,92 @@ function champFormatValue(value){
     )
         return "-";
 
-    return `${Number(value).toFixed(
-        Number(value) % 1 === 0 ? 0 : 2
+    const number =
+        Number(value);
+
+    if(
+        !Number.isFinite(number)
+    )
+        return "-";
+
+    return `${number.toLocaleString(
+        "ko-KR",
+        {
+            maximumFractionDigits:2
+        }
     )}%`;
+
 }
 
+
+/* =========================================================
+   변화 표시
+========================================================= */
 
 function champFormatDiff(diff){
 
     if(diff === null)
-        return "-";
+        return "확인 필요";
 
     if(diff === 0)
         return "= 동일";
 
-    const n =
+    const number =
         Math.abs(diff);
 
     const formatted =
-        Number(n).toFixed(
-            n % 1 === 0 ? 0 : 2
+        number.toLocaleString(
+            "ko-KR",
+            {
+                maximumFractionDigits:2
+            }
         );
 
     return diff > 0
         ? `▲ +${formatted}%`
         : `▼ -${formatted}%`;
+
+}
+
+
+/* =========================================================
+   모든 효과 항목
+========================================================= */
+
+function champGetAllStats(){
+
+    const set =
+        new Set(
+            CHAMP_STAT_LABELS
+        );
+
+
+    const allResults = [
+
+        ...(champOCRState.baselineResults || []),
+
+        ...(champOCRState.compareResults || [])
+
+    ];
+
+
+    allResults.forEach(
+        row => {
+
+            Object.keys(
+                row?.effects || {}
+            )
+            .forEach(
+                stat =>
+                    set.add(stat)
+            );
+
+        }
+    );
+
+
+    return Array.from(set);
+
 }
 
 
@@ -6749,22 +5486,33 @@ function champFormatDiff(diff){
 function champEditValue(
     side,
     photoIndex,
-    stat
+    encodedStat
 ){
+
+    const stat =
+        decodeURIComponent(
+            encodedStat
+        );
+
 
     const results =
         side === "baseline"
             ? champOCRState.baselineResults
             : champOCRState.compareResults;
 
+
     const row =
-        results[photoIndex];
+        results?.[photoIndex];
+
 
     if(!row)
         return;
 
+
     const oldValue =
-        row.effects?.[stat] ?? "";
+        row.effects?.[stat] ??
+        "";
+
 
     const input =
         prompt(
@@ -6772,11 +5520,16 @@ function champEditValue(
             oldValue
         );
 
+
     if(input === null)
         return;
 
+
     const value =
-        champParseNumber(input);
+        champParseNumber(
+            input
+        );
+
 
     if(value === null){
 
@@ -6788,242 +5541,22 @@ function champEditValue(
 
     }
 
+
     if(!row.effects)
         row.effects = {};
+
 
     row.effects[stat] =
         value;
 
+
     champRenderResults();
+
 }
 
 
 /* =========================================================
-   기본 효과 + 추가 효과 합치기
-========================================================= */
-
-function champGetAllStats(){
-
-    const set =
-        new Set(
-            CHAMP_STAT_LABELS
-        );
-
-    [
-        ...(champOCRState.baselineResults || []),
-        ...(champOCRState.compareResults || [])
-    ]
-        .forEach(
-            row => {
-
-                Object.keys(
-                    row.effects || {}
-                )
-                .forEach(
-                    key => set.add(key)
-                );
-
-            }
-        );
-
-    return Array.from(set);
-}
-
-
-/* =========================================================
-   결과 화면
-========================================================= */
-
-function champRenderResults(){
-
-    const area =
-        document.getElementById(
-            "champOCRResults"
-        );
-
-    if(!area)
-        return;
-
-    const base =
-        champOCRState.baselineResults || [];
-
-    const compare =
-        champOCRState.compareResults || [];
-
-    if(!base.length && !compare.length){
-
-        area.innerHTML =
-            `<div class="empty">
-                기준 사진 5장과 비교 사진 5장을 올리면
-                OCR 비교 결과가 표시됩니다.
-            </div>`;
-
-        return;
-
-    }
-
-    const max =
-        Math.max(
-            base.length,
-            compare.length
-        );
-
-    const stats =
-        champGetAllStats();
-
-    let html = `
-        <div class="card">
-
-            <h3>📊 장착효과 비교 결과</h3>
-
-            <p class="champ-small">
-                같은 번호의 기준 사진 ↔ 비교 사진을 자동으로 대조합니다.
-                값은 OCR 결과이며 직접 수정할 수 있습니다.
-            </p>
-
-            <div class="champ-result-wrap">
-
-                <table class="champ-result-table">
-
-                    <thead>
-                        <tr>
-                            <th>항목</th>
-    `;
-
-    for(
-        let i=0;
-        i<max;
-        i++
-    ){
-
-        html += `
-            <th>
-                ${i+1}번<br>
-                기준 → 비교
-            </th>
-        `;
-
-    }
-
-    html += `
-                        </tr>
-                    </thead>
-
-                    <tbody>
-    `;
-
-
-    for(
-        const stat of stats
-    ){
-
-        html += `
-            <tr>
-                <th>
-                    ${escapeHtml(stat)}
-                </th>
-        `;
-
-        for(
-            let i=0;
-            i<max;
-            i++
-        ){
-
-            const b =
-                base[i]?.effects?.[stat];
-
-            const c =
-                compare[i]?.effects?.[stat];
-
-            const result =
-                champCompareValue(
-                    b,
-                    c
-                );
-
-            let cls =
-                "champ-unknown";
-
-            if(result.type === "up")
-                cls = "champ-up";
-
-            if(result.type === "down")
-                cls = "champ-down";
-
-            if(result.type === "same")
-                cls = "champ-same";
-
-            html += `
-                <td>
-
-                    <div>
-                        ${champFormatValue(b)}
-                        →
-                        ${champFormatValue(c)}
-                    </div>
-
-                    <div class="${cls}">
-                        ${champFormatDiff(result.diff)}
-                    </div>
-
-                    <div style="margin-top:4px">
-
-                        <button
-                            class="btn btn-secondary btn-small"
-                            onclick="champEditValue('baseline',${i},'${escapeHtml(stat).replace(/'/g,"\\'")}')"
-                        >
-                            기준 수정
-                        </button>
-
-                        <button
-                            class="btn btn-secondary btn-small"
-                            onclick="champEditValue('compare',${i},'${escapeHtml(stat).replace(/'/g,"\\'")}')"
-                        >
-                            비교 수정
-                        </button>
-
-                    </div>
-
-                </td>
-            `;
-
-        }
-
-        html += `
-            </tr>
-        `;
-
-    }
-
-    html += `
-                    </tbody>
-
-                </table>
-
-            </div>
-
-            <div style="margin-top:12px">
-
-                <button
-                    class="btn btn-primary"
-                    onclick="saveCurrentChampOCRSet()"
-                >
-                    💾 현재 OCR 결과 저장
-                </button>
-
-            </div>
-
-        </div>
-    `;
-
-    area.innerHTML =
-        html;
-}
-
-
-/* =========================================================
-   기준/비교 파일 선택 표시
+   파일 목록 표시
 ========================================================= */
 
 function champShowFiles(
@@ -7036,32 +5569,49 @@ function champShowFiles(
             targetId
         );
 
+
     if(!area)
         return;
 
+
     const files =
         Array.from(
-            input.files || []
+            input?.files || []
         )
         .slice(0,5);
 
+
     area.innerHTML =
         files.length
+
             ? files.map(
-                (file,index) =>
-                    `<div class="champ-file-item">
-                        ${index+1}. ${escapeHtml(file.name)}
-                    </div>`
+                (file,index) => `
+
+                    <div class="champ-file-item">
+
+                        ${index+1}.
+                        ${escapeHtml(
+                            file.name
+                        )}
+
+                    </div>
+
+                `
             ).join("")
-            : `<div class="champ-small">
-                선택된 사진 없음
-            </div>`;
+
+            : `
+
+                <div class="champ-small">
+                    선택된 사진 없음
+                </div>
+
+            `;
 
 }
 
 
 /* =========================================================
-   기준 5장 OCR
+   기준 OCR
 ========================================================= */
 
 async function runChampBaselineOCR(){
@@ -7071,7 +5621,12 @@ async function runChampBaselineOCR(){
             "champBaselineInput"
         );
 
-    if(!input || !input.files.length){
+
+    if(
+        !input ||
+        !input.files ||
+        !input.files.length
+    ){
 
         alert(
             "기준 사진을 최대 5장 선택해주세요."
@@ -7081,32 +5636,41 @@ async function runChampBaselineOCR(){
 
     }
 
+
     const files =
-        Array.from(input.files)
-            .slice(0,5);
+        Array.from(
+            input.files
+        )
+        .slice(0,5);
+
 
     champOCRState.baselineFiles =
         files;
 
+
     champOCRState.baselineResults =
         [];
 
+
     champRenderResults();
+
 
     const button =
         document.getElementById(
             "champBaselineOCRBtn"
         );
 
+
     if(button)
         button.disabled = true;
+
 
     try{
 
         champOCRState.baselineResults =
             await processChampFiles(
                 files,
-                "기준"
+                "baseline"
             );
 
     }
@@ -7117,14 +5681,30 @@ async function runChampBaselineOCR(){
 
     }
 
+
     const progress =
         document.getElementById(
             "champOCRProgress"
         );
 
-    if(progress)
+
+    if(progress){
+
+        const failed =
+            champOCRState.baselineResults
+                .filter(
+                    row =>
+                        row.error
+                )
+                .length;
+
         progress.textContent =
-            "✅ 기준 사진 OCR 완료";
+            failed
+                ? `⚠️ 기준 OCR 완료 / ${failed}장 실패`
+                : "✅ 기준 사진 OCR 완료";
+
+    }
+
 
     champRenderResults();
 
@@ -7132,7 +5712,7 @@ async function runChampBaselineOCR(){
 
 
 /* =========================================================
-   비교 5장 OCR
+   비교 OCR
 ========================================================= */
 
 async function runChampCompareOCR(){
@@ -7142,7 +5722,12 @@ async function runChampCompareOCR(){
             "champCompareInput"
         );
 
-    if(!input || !input.files.length){
+
+    if(
+        !input ||
+        !input.files ||
+        !input.files.length
+    ){
 
         alert(
             "비교 사진을 최대 5장 선택해주세요."
@@ -7152,32 +5737,41 @@ async function runChampCompareOCR(){
 
     }
 
+
     const files =
-        Array.from(input.files)
-            .slice(0,5);
+        Array.from(
+            input.files
+        )
+        .slice(0,5);
+
 
     champOCRState.compareFiles =
         files;
 
+
     champOCRState.compareResults =
         [];
 
+
     champRenderResults();
+
 
     const button =
         document.getElementById(
             "champCompareOCRBtn"
         );
 
+
     if(button)
         button.disabled = true;
+
 
     try{
 
         champOCRState.compareResults =
             await processChampFiles(
                 files,
-                "비교"
+                "compare"
             );
 
     }
@@ -7188,14 +5782,30 @@ async function runChampCompareOCR(){
 
     }
 
+
     const progress =
         document.getElementById(
             "champOCRProgress"
         );
 
-    if(progress)
+
+    if(progress){
+
+        const failed =
+            champOCRState.compareResults
+                .filter(
+                    row =>
+                        row.error
+                )
+                .length;
+
         progress.textContent =
-            "✅ 비교 사진 OCR 완료";
+            failed
+                ? `⚠️ 비교 OCR 완료 / ${failed}장 실패`
+                : "✅ 비교 사진 OCR 완료";
+
+    }
+
 
     champRenderResults();
 
@@ -7203,7 +5813,72 @@ async function runChampCompareOCR(){
 
 
 /* =========================================================
-   현재 결과 저장
+   저장 데이터 생성
+========================================================= */
+
+function buildChampOCRSaveData(){
+
+    const season =
+        champNormalizeSeason(
+            document.getElementById(
+                "champOCRSeason"
+            )?.value ||
+            champOCRState.season
+        );
+
+
+    return {
+
+        version:
+            CHAMP_OCR_VERSION,
+
+        season:
+
+            season,
+
+        integratedSeason:
+
+            champIntegratedSeason(
+                season
+            ),
+
+        generalSeason:
+
+            champGeneralSeason(
+                season
+            ),
+
+        boss:
+
+            champOCRState.boss,
+
+        baseline:
+
+            JSON.parse(
+                JSON.stringify(
+                    champOCRState.baselineResults || []
+                )
+            ),
+
+        compare:
+
+            JSON.parse(
+                JSON.stringify(
+                    champOCRState.compareResults || []
+                )
+            ),
+
+        savedAt:
+
+            new Date().toISOString()
+
+    };
+
+}
+
+
+/* =========================================================
+   OCR 저장
 ========================================================= */
 
 function saveCurrentChampOCRSet(){
@@ -7211,19 +5886,26 @@ function saveCurrentChampOCRSet(){
     const member =
         getCurrentMember();
 
+
     if(!member){
 
-        alert("로그인 정보가 없습니다.");
+        alert(
+            "로그인 정보가 없습니다."
+        );
+
         return;
 
     }
+
 
     const season =
         champNormalizeSeason(
             document.getElementById(
                 "champOCRSeason"
-            )?.value
+            )?.value ||
+            champOCRState.season
         );
+
 
     if(!season){
 
@@ -7234,6 +5916,7 @@ function saveCurrentChampOCRSet(){
         return;
 
     }
+
 
     if(
         !champOCRState.baselineResults.length
@@ -7247,6 +5930,7 @@ function saveCurrentChampOCRSet(){
 
     }
 
+
     if(
         !champOCRState.compareResults.length
     ){
@@ -7259,50 +5943,43 @@ function saveCurrentChampOCRSet(){
 
     }
 
+
+    champOCRState.season =
+        season;
+
+
     const root =
         getChampOCRRoot(
             member.guild
         );
 
-    if(!root[season])
+
+    if(
+        !root[season] ||
+        typeof root[season] !== "object"
+    ){
+
         root[season] = {};
 
-    root[season][champOCRState.boss] = {
+    }
 
-        version:
-            CHAMP_OCR_VERSION,
 
-        season:
-            season,
+    root[season][
+        champOCRState.boss
+    ] =
+        buildChampOCRSaveData();
 
-        integratedSeason:
-            champIntegratedSeason(season),
-
-        generalSeason:
-            champGeneralSeason(season),
-
-        boss:
-            champOCRState.boss,
-
-        baseline:
-            champOCRState.baselineResults,
-
-        compare:
-            champOCRState.compareResults,
-
-        savedAt:
-            new Date().toISOString()
-
-    };
 
     saveJSON(
         "guildChampData",
         champData
     );
 
+
     alert(
         `시즌 ${season} / ${champOCRState.boss} 보스 OCR 비교 결과가 저장되었습니다.`
     );
+
 
     renderChampSavedSets();
 
@@ -7310,7 +5987,7 @@ function saveCurrentChampOCRSet(){
 
 
 /* =========================================================
-   저장된 기준 데이터 불러오기
+   저장 데이터 불러오기
 ========================================================= */
 
 function loadChampSavedSet(){
@@ -7318,15 +5995,19 @@ function loadChampSavedSet(){
     const member =
         getCurrentMember();
 
+
     if(!member)
         return;
+
 
     const season =
         champNormalizeSeason(
             document.getElementById(
                 "champOCRSeason"
-            )?.value
+            )?.value ||
+            champOCRState.season
         );
+
 
     if(!season){
 
@@ -7338,15 +6019,22 @@ function loadChampSavedSet(){
 
     }
 
+
+    champOCRState.season =
+        season;
+
+
     const root =
         getChampOCRRoot(
             member.guild
         );
 
+
     const saved =
-        root[season]?.[
+        root?.[season]?.[
             champOCRState.boss
         ];
+
 
     if(!saved){
 
@@ -7358,6 +6046,7 @@ function loadChampSavedSet(){
 
     }
 
+
     champOCRState.baselineResults =
         JSON.parse(
             JSON.stringify(
@@ -7365,10 +6054,7 @@ function loadChampSavedSet(){
             )
         );
 
-    /*
-     * 저장된 비교 데이터도 불러오지만
-     * 필요하면 새 비교 사진으로 덮어쓸 수 있다.
-     */
+
     champOCRState.compareResults =
         JSON.parse(
             JSON.stringify(
@@ -7376,22 +6062,28 @@ function loadChampSavedSet(){
             )
         );
 
+
     champRenderResults();
+
 
     const progress =
         document.getElementById(
             "champOCRProgress"
         );
 
-    if(progress)
+
+    if(progress){
+
         progress.textContent =
-            `✅ 저장된 기준/비교 OCR 결과를 불러왔습니다.`;
+            `✅ 시즌 ${season} / ${champOCRState.boss} 저장 데이터를 불러왔습니다.`;
+
+    }
 
 }
 
 
 /* =========================================================
-   저장 데이터 목록
+   저장 목록
 ========================================================= */
 
 function renderChampSavedSets(){
@@ -7401,33 +6093,51 @@ function renderChampSavedSets(){
             "champSavedSets"
         );
 
+
     if(!area)
         return;
+
 
     const member =
         getCurrentMember();
 
+
     if(!member)
         return;
+
 
     const root =
         getChampOCRRoot(
             member.guild
         );
 
+
     const rows = [];
 
-    Object.keys(root)
-        .sort()
-        .reverse()
+
+    Object.keys(root || {})
         .forEach(
             season => {
+
+                if(
+                    season === "default"
+                )
+                    return;
+
 
                 const seasonData =
                     root[season];
 
+
+                if(
+                    !seasonData ||
+                    typeof seasonData !== "object"
+                )
+                    return;
+
+
                 Object.keys(
-                    seasonData || {}
+                    seasonData
                 )
                 .forEach(
                     boss => {
@@ -7435,13 +6145,25 @@ function renderChampSavedSets(){
                         const data =
                             seasonData[boss];
 
-                        if(!data || !data.baseline)
+
+                        if(
+                            !data ||
+                            !Array.isArray(
+                                data.baseline
+                            )
+                        )
                             return;
 
+
                         rows.push({
+
                             season:season,
+
                             boss:boss,
-                            savedAt:data.savedAt
+
+                            savedAt:
+                                data.savedAt || ""
+
                         });
 
                     }
@@ -7450,81 +6172,173 @@ function renderChampSavedSets(){
             }
         );
 
+
+    rows.sort(
+        (a,b) => {
+
+            const seasonCompare =
+                String(b.season)
+                    .localeCompare(
+                        String(a.season),
+                        undefined,
+                        {
+                            numeric:true
+                        }
+                    );
+
+
+            if(
+                seasonCompare !== 0
+            )
+                return seasonCompare;
+
+
+            return String(a.boss)
+                .localeCompare(
+                    String(b.boss)
+                );
+
+        }
+    );
+
+
     if(!rows.length){
 
-        area.innerHTML =
-            `<div class="champ-small">
+        area.innerHTML = `
+
+            <div class="champ-small">
                 저장된 챌프 OCR 데이터가 없습니다.
-            </div>`;
+            </div>
+
+        `;
 
         return;
 
     }
 
+
     area.innerHTML =
         rows.map(
-            row => `
+            row => {
 
-                <div class="champ-saved-item">
+                const season =
+                    encodeURIComponent(
+                        row.season
+                    );
 
-                    <strong>
-                        시즌 ${escapeHtml(row.season)}
-                        /
-                        ${escapeHtml(row.boss)} 보스
-                    </strong>
+                const boss =
+                    encodeURIComponent(
+                        row.boss
+                    );
 
-                    <div class="champ-small">
-                        ${
-                            row.savedAt
-                                ? new Date(row.savedAt).toLocaleString()
-                                : ""
-                        }
+                return `
+
+                    <div class="champ-saved-item">
+
+                        <strong>
+                            시즌
+                            ${escapeHtml(
+                                row.season
+                            )}
+                            /
+                            ${escapeHtml(
+                                row.boss
+                            )} 보스
+                        </strong>
+
+                        <div class="champ-small">
+
+                            ${
+                                row.savedAt
+                                    ? escapeHtml(
+                                        new Date(
+                                            row.savedAt
+                                        ).toLocaleString(
+                                            "ko-KR"
+                                        )
+                                    )
+                                    : ""
+                            }
+
+                        </div>
+
+                        <div style="margin-top:7px">
+
+                            <button
+                                class="btn btn-secondary btn-small"
+                                onclick="champSelectSaved('${season}','${boss}')"
+                            >
+                                불러오기
+                            </button>
+
+                        </div>
+
                     </div>
 
-                    <div style="margin-top:7px">
+                `;
 
-                        <button
-                            class="btn btn-secondary btn-small"
-                            onclick="champSelectSaved('${escapeHtml(row.season)}','${escapeHtml(row.boss)}')"
-                        >
-                            불러오기
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `
-        ).join("");
+            }
+        )
+        .join("");
 
 }
 
 
+/* =========================================================
+   저장 항목 선택
+========================================================= */
+
 function champSelectSaved(
-    season,
-    boss
+    encodedSeason,
+    encodedBoss
 ){
+
+    const season =
+        decodeURIComponent(
+            encodedSeason
+        );
+
+
+    const boss =
+        decodeURIComponent(
+            encodedBoss
+        );
+
 
     champOCRState.boss =
         boss;
+
+
+    champOCRState.season =
+        season;
+
 
     const select =
         document.getElementById(
             "champBossSelect"
         );
 
+
     if(select)
         select.value =
             boss;
+
 
     const input =
         document.getElementById(
             "champOCRSeason"
         );
 
+
     if(input)
         input.value =
             season;
+
+
+    selectChampBoss(
+        boss
+    );
+
 
     loadChampSavedSet();
 
@@ -7537,8 +6351,20 @@ function champSelectSaved(
 
 function selectChampBoss(boss){
 
+    const exists =
+        CHAMP_BOSSES.some(
+            item =>
+                item.id === boss
+        );
+
+
+    if(!exists)
+        return;
+
+
     champOCRState.boss =
         boss;
+
 
     document
         .querySelectorAll(
@@ -7555,23 +6381,364 @@ function selectChampBoss(boss){
             }
         );
 
+
     const select =
         document.getElementById(
             "champBossSelect"
         );
 
+
     if(select)
         select.value =
             boss;
 
+
     champRenderResults();
+
     renderChampSavedSets();
 
 }
 
 
 /* =========================================================
-   챌프 OCR 화면
+   OCR 결과 렌더링
+========================================================= */
+
+function champRenderResults(){
+
+    const area =
+        document.getElementById(
+            "champOCRResults"
+        );
+
+
+    if(!area)
+        return;
+
+
+    const base =
+        champOCRState.baselineResults || [];
+
+
+    const compare =
+        champOCRState.compareResults || [];
+
+
+    if(
+        !base.length &&
+        !compare.length
+    ){
+
+        area.innerHTML = `
+
+            <div class="empty">
+                기준 사진과 비교 사진을 올리면
+                OCR 비교 결과가 표시됩니다.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const max =
+        Math.max(
+            base.length,
+            compare.length
+        );
+
+
+    const stats =
+        champGetAllStats();
+
+
+    let html = `
+
+        <div class="card">
+
+            <h3>
+                📊 장착효과 비교 결과
+            </h3>
+
+            <p class="champ-small">
+                같은 번호의 기준 사진 ↔ 비교 사진을
+                자동으로 대조합니다.
+                OCR 값은 직접 수정할 수 있습니다.
+            </p>
+
+            <div class="champ-result-wrap">
+
+                <table class="champ-result-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                항목
+                            </th>
+
+    `;
+
+
+    for(
+        let i=0;
+        i<max;
+        i++
+    ){
+
+        const baseFile =
+            base[i]?.fileName || "-";
+
+        const compareFile =
+            compare[i]?.fileName || "-";
+
+
+        html += `
+
+            <th>
+
+                ${i+1}번<br>
+
+                기준 → 비교
+
+                <div
+                    class="champ-small"
+                    style="margin-top:4px"
+                >
+                    ${escapeHtml(
+                        baseFile
+                    )}
+
+                    <br>
+
+                    →
+
+                    <br>
+
+                    ${escapeHtml(
+                        compareFile
+                    )}
+
+                </div>
+
+            </th>
+
+        `;
+
+    }
+
+
+    html += `
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+    `;
+
+
+    for(
+        const stat of stats
+    ){
+
+        const encodedStat =
+            encodeURIComponent(
+                stat
+            );
+
+
+        html += `
+
+            <tr>
+
+                <th>
+
+                    ${escapeHtml(
+                        stat
+                    )}
+
+                </th>
+
+        `;
+
+
+        for(
+            let i=0;
+            i<max;
+            i++
+        ){
+
+            const b =
+                base[i]?.effects?.[stat];
+
+
+            const c =
+                compare[i]?.effects?.[stat];
+
+
+            const result =
+                champCompareValue(
+                    b,
+                    c
+                );
+
+
+            let cls =
+                "champ-unknown";
+
+
+            if(
+                result.type === "up"
+            )
+                cls =
+                    "champ-up";
+
+
+            else if(
+                result.type === "down"
+            )
+                cls =
+                    "champ-down";
+
+
+            else if(
+                result.type === "same"
+            )
+                cls =
+                    "champ-same";
+
+
+            const baseError =
+                base[i]?.error;
+
+
+            const compareError =
+                compare[i]?.error;
+
+
+            html += `
+
+                <td>
+
+                    <div>
+
+                        ${champFormatValue(b)}
+
+                        →
+
+                        ${champFormatValue(c)}
+
+                    </div>
+
+                    <div
+                        class="${cls}"
+                        style="margin-top:3px"
+                    >
+
+                        ${champFormatDiff(
+                            result.diff
+                        )}
+
+                    </div>
+
+                    ${
+                        baseError ||
+                        compareError
+
+                            ? `
+
+                                <div
+                                    class="champ-ocr-error"
+                                    style="margin-top:4px"
+                                >
+                                    OCR 확인 필요
+                                </div>
+
+                            `
+
+                            : ""
+                    }
+
+                    <div
+                        style="margin-top:6px"
+                    >
+
+                        <button
+                            class="btn btn-secondary btn-small"
+                            onclick="champEditValue('baseline',${i},'${encodedStat}')"
+                        >
+                            기준 수정
+                        </button>
+
+                        <button
+                            class="btn btn-secondary btn-small"
+                            onclick="champEditValue('compare',${i},'${encodedStat}')"
+                        >
+                            비교 수정
+                        </button>
+
+                    </div>
+
+                </td>
+
+            `;
+
+        }
+
+
+        html += `
+
+            </tr>
+
+        `;
+
+    }
+
+
+    html += `
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div
+                style="
+                    margin-top:12px;
+                    display:flex;
+                    gap:8px;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <button
+                    class="btn btn-primary"
+                    onclick="saveCurrentChampOCRSet()"
+                >
+                    💾 현재 OCR 결과 저장
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    area.innerHTML =
+        html;
+
+}
+
+
+/* =========================================================
+   챌프 OCR 패널
 ========================================================= */
 
 function renderChampOCRPanel(){
@@ -7579,8 +6746,10 @@ function renderChampOCRPanel(){
     const member =
         getCurrentMember();
 
+
     if(!member)
         return "";
+
 
     return `
 
@@ -7588,12 +6757,19 @@ function renderChampOCRPanel(){
 
             <div class="card">
 
-                <h3>🏆 챌프 장착효과 OCR 비교</h3>
+                <h3>
+                    🏆 챌프 장착효과 OCR 비교
+                </h3>
 
                 <p class="champ-small">
-                    보스별 기준 사진 5장과 비교 사진 5장을
-                    같은 번호끼리 자동 대조합니다.
+
+                    보스별로 기준 사진 최대 5장과
+                    비교 사진 최대 5장을 등록합니다.
+
+                    같은 번호의 사진끼리 비교합니다.
+
                 </p>
+
 
                 <div class="champ-ocr-toolbar">
 
@@ -7601,36 +6777,52 @@ function renderChampOCRPanel(){
                         id="champOCRSeason"
                         type="text"
                         placeholder="시즌 예: 34-2"
-                        value="${escapeHtml(champOCRState.season || "")}"
-                        oninput="champOCRState.season=this.value"
+                        value="${escapeHtml(
+                            champOCRState.season || ""
+                        )}"
+                        oninput="
+                            champOCRState.season=this.value
+                        "
                     >
+
 
                     <select
                         id="champBossSelect"
-                        onchange="selectChampBoss(this.value)"
+                        onchange="
+                            selectChampBoss(this.value)
+                        "
                     >
 
                         ${
                             CHAMP_BOSSES.map(
-                                boss =>
-                                    `<option
+                                boss => `
+
+                                    <option
                                         value="${boss.id}"
                                         ${
-                                            boss.id === champOCRState.boss
+                                            boss.id ===
+                                            champOCRState.boss
                                                 ? "selected"
                                                 : ""
                                         }
                                     >
-                                        ${boss.id} 보스
-                                    </option>`
+                                        ${escapeHtml(
+                                            boss.id
+                                        )} 보스
+                                    </option>
+
+                                `
                             ).join("")
                         }
 
                     </select>
 
+
                     <button
                         class="btn btn-secondary"
-                        onclick="loadChampSavedSet()"
+                        onclick="
+                            loadChampSavedSet()
+                        "
                     >
                         📂 저장 결과 불러오기
                     </button>
@@ -7644,19 +6836,27 @@ function renderChampOCRPanel(){
 
                 ${
                     CHAMP_BOSSES.map(
-                        boss =>
-                            `<button
+                        boss => `
+
+                            <button
                                 type="button"
                                 class="champ-boss-tab ${
-                                    boss.id === champOCRState.boss
+                                    boss.id ===
+                                    champOCRState.boss
                                         ? "active"
                                         : ""
                                 }"
                                 data-boss="${boss.id}"
-                                onclick="selectChampBoss('${boss.id}')"
+                                onclick="
+                                    selectChampBoss('${boss.id}')
+                                "
                             >
-                                ${boss.id} 보스
-                            </button>`
+                                ${escapeHtml(
+                                    boss.id
+                                )} 보스
+                            </button>
+
+                        `
                     ).join("")
                 }
 
@@ -7665,15 +6865,19 @@ function renderChampOCRPanel(){
 
             <div class="champ-upload-grid">
 
+                <!-- 기준 -->
+
                 <div class="champ-upload-box">
 
                     <div class="champ-upload-title">
-                        📌 기준 사진 5장
+                        📌 기준 사진 최대 5장
                     </div>
 
                     <div class="champ-upload-desc">
-                        이후 계속 사용할 기준 장착효과입니다.
+                        이후 비교할 기준 장착효과입니다.
+                        보스별 / 시즌별로 저장됩니다.
                     </div>
+
 
                     <input
                         id="champBaselineInput"
@@ -7688,31 +6892,43 @@ function renderChampOCRPanel(){
                         "
                     >
 
-                    <div id="champBaselineFiles"
-                         class="champ-file-list">
-                    </div>
+
+                    <div
+                        id="champBaselineFiles"
+                        class="champ-file-list"
+                    ></div>
+
 
                     <button
                         id="champBaselineOCRBtn"
                         class="btn btn-primary"
-                        style="margin-top:10px;width:100%"
-                        onclick="runChampBaselineOCR()"
+                        style="
+                            margin-top:10px;
+                            width:100%;
+                        "
+                        onclick="
+                            runChampBaselineOCR()
+                        "
                     >
-                        📷 기준 5장 OCR
+                        📷 기준 사진 OCR
                     </button>
 
                 </div>
 
 
+                <!-- 비교 -->
+
                 <div class="champ-upload-box">
 
                     <div class="champ-upload-title">
-                        🔄 비교 사진 5장
+                        🔄 비교 사진 최대 5장
                     </div>
 
                     <div class="champ-upload-desc">
-                        기준 사진과 같은 번호끼리 비교합니다.
+                        기준 사진과 같은 번호끼리
+                        자동으로 비교합니다.
                     </div>
+
 
                     <input
                         id="champCompareInput"
@@ -7727,17 +6943,25 @@ function renderChampOCRPanel(){
                         "
                     >
 
-                    <div id="champCompareFiles"
-                         class="champ-file-list">
-                    </div>
+
+                    <div
+                        id="champCompareFiles"
+                        class="champ-file-list"
+                    ></div>
+
 
                     <button
                         id="champCompareOCRBtn"
                         class="btn btn-primary"
-                        style="margin-top:10px;width:100%"
-                        onclick="runChampCompareOCR()"
+                        style="
+                            margin-top:10px;
+                            width:100%;
+                        "
+                        onclick="
+                            runChampCompareOCR()
+                        "
                     >
-                        📷 비교 5장 OCR
+                        📷 비교 사진 OCR
                     </button>
 
                 </div>
@@ -7756,16 +6980,22 @@ function renderChampOCRPanel(){
             <div
                 id="champOCRResults"
             >
+
                 <div class="empty">
-                    기준 사진 5장과 비교 사진 5장을 올리면
+
+                    기준 사진과 비교 사진을 올리면
                     OCR 비교 결과가 표시됩니다.
+
                 </div>
+
             </div>
 
 
             <div class="card">
 
-                <h3>💾 저장된 챌프 OCR 데이터</h3>
+                <h3>
+                    💾 저장된 챌프 OCR 데이터
+                </h3>
 
                 <div
                     id="champSavedSets"
@@ -7782,7 +7012,213 @@ function renderChampOCRPanel(){
 
 
 /* =========================================================
-   기존 updateChamp를 OCR 포함 버전으로 대체
+   챌프 점수
+   기존 기능 유지
+========================================================= */
+
+function getChampScore(member){
+
+    if(
+        member?.champion &&
+        member.champion.score !== undefined
+    ){
+
+        return formatNumber(
+            member.champion.score
+        );
+
+    }
+
+
+    const guild =
+        member?.guild;
+
+
+    if(
+        guild &&
+        champData[guild] &&
+        champData[guild][member.nickname] !== undefined
+    ){
+
+        return formatNumber(
+            champData[guild][member.nickname]
+        );
+
+    }
+
+
+    return "-";
+
+}
+
+
+/* =========================================================
+   관리자 챌프 점수 입력
+========================================================= */
+
+function editChampForMember(){
+
+    const admin =
+        getCurrentMember();
+
+
+    if(
+        !admin ||
+        !["관리자","운영진"]
+            .includes(
+                admin.role
+            )
+    ){
+
+        alert(
+            "권한이 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    const nickname =
+        prompt(
+            "챌프 점수를 입력할 회원 닉네임"
+        );
+
+
+    if(!nickname)
+        return;
+
+
+    const target =
+        (members[admin.guild] || [])
+            .find(
+                m =>
+                    m.nickname ===
+                    nickname.trim()
+            );
+
+
+    if(!target){
+
+        alert(
+            "해당 회원을 찾을 수 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    editChamp(
+        target.id
+    );
+
+}
+
+
+/* =========================================================
+   챌프 점수 수정
+========================================================= */
+
+function editChamp(id){
+
+    const admin =
+        getCurrentMember();
+
+
+    if(
+        !admin ||
+        !["관리자","운영진"]
+            .includes(
+                admin.role
+            )
+    ){
+
+        alert(
+            "권한이 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    const target =
+        (members[admin.guild] || [])
+            .find(
+                m =>
+                    m.id === id
+            );
+
+
+    if(!target)
+        return;
+
+
+    const current =
+        target.champion?.score ??
+        "";
+
+
+    const value =
+        prompt(
+            `${target.nickname} 챌프 점수`,
+            current
+        );
+
+
+    if(value === null)
+        return;
+
+
+    const score =
+        value.trim();
+
+
+    if(!target.champion)
+        target.champion = {};
+
+
+    target.champion.score =
+        score;
+
+
+    /*
+     * 기존 닉네임 기반 점수 저장은
+     * 그대로 유지한다.
+     */
+    if(!champData[admin.guild])
+        champData[admin.guild] = {};
+
+
+    champData[admin.guild][
+        target.nickname
+    ] =
+        score;
+
+
+    saveJSON(
+        "guildMembers",
+        members
+    );
+
+
+    saveJSON(
+        "guildChampData",
+        champData
+    );
+
+
+    updateChamp();
+
+    updatePersonal();
+
+}
+
+
+/* =========================================================
+   챌프 전체 화면
+   ★ updateChamp 중복 선언 없이 이것 하나만 사용
 ========================================================= */
 
 function updateChamp(){
@@ -7790,20 +7226,28 @@ function updateChamp(){
     const member =
         getCurrentMember();
 
+
     if(!member)
         return;
+
 
     const area =
         document.getElementById(
             "champContent"
         );
 
+
     if(!area)
         return;
+
 
     const list =
         members[member.guild] || [];
 
+
+    /*
+     * 관리자 / 운영진
+     */
     if(
         member.role === "관리자" ||
         member.role === "운영진"
@@ -7822,6 +7266,7 @@ function updateChamp(){
 
             </div>
 
+
             <div class="table-wrap">
 
                 <table class="data-table">
@@ -7829,12 +7274,23 @@ function updateChamp(){
                     <thead>
 
                         <tr>
-                            <th>닉네임</th>
-                            <th>챌프 점수</th>
-                            <th>수정</th>
+
+                            <th>
+                                닉네임
+                            </th>
+
+                            <th>
+                                챌프 점수
+                            </th>
+
+                            <th>
+                                수정
+                            </th>
+
                         </tr>
 
                     </thead>
+
 
                     <tbody>
 
@@ -7862,7 +7318,7 @@ function updateChamp(){
 
                                             <button
                                                 class="btn btn-secondary btn-small"
-                                                onclick="editChamp('${target.id}')"
+                                                onclick="editChamp('${encodeURIComponent(target.id)}')"
                                             >
                                                 수정
                                             </button>
@@ -7881,11 +7337,57 @@ function updateChamp(){
 
             </div>
 
+
             <br>
+
 
             ${renderChampOCRPanel()}
 
         `;
+
+
+        /*
+         * 위에서 id를 encodeURIComponent로 넣었으므로
+         * editChamp에서 처리할 수 있도록 다시 연결.
+         */
+        area
+            .querySelectorAll(
+                "[onclick^=\"editChamp('\"]"
+            )
+            .forEach(
+                button => {
+
+                    const onclick =
+                        button.getAttribute(
+                            "onclick"
+                        );
+
+                    const match =
+                        onclick.match(
+                            /editChamp\('([^']+)'\)/
+                        );
+
+                    if(!match)
+                        return;
+
+                    const decoded =
+                        decodeURIComponent(
+                            match[1]
+                        );
+
+                    button.onclick =
+                        () =>
+                            editChamp(
+                                decoded
+                            );
+
+                    button.removeAttribute(
+                        "onclick"
+                    );
+
+                }
+            );
+
 
         renderChampSavedSets();
 
@@ -7893,10 +7395,9 @@ function updateChamp(){
     else{
 
         /*
-         * 기존 일반 회원 화면은 그대로 유지.
-         * 챌프 OCR은 관리자/운영진 영역에서 관리.
+         * 일반 회원
+         * 기존 화면 그대로 유지
          */
-
         area.innerHTML = `
 
             <div class="score-box">
@@ -7907,7 +7408,9 @@ function updateChamp(){
 
                 <div class="score-value">
                     ${escapeHtml(
-                        getChampScore(member)
+                        getChampScore(
+                            member
+                        )
                     )}
                 </div>
 
@@ -7921,7 +7424,7 @@ function updateChamp(){
 
 
 /* =========================================================
-   기존 시즌 데이터가 문자열이어도 안전하게 사용
+   OCR 시즌 목록
 ========================================================= */
 
 function getChampOCRSeasonList(){
@@ -7929,29 +7432,34 @@ function getChampOCRSeasonList(){
     const member =
         getCurrentMember();
 
+
     if(!member)
         return [];
+
 
     const root =
         getChampOCRRoot(
             member.guild
         );
 
-    return Object.keys(root)
-        .filter(
-            key =>
-                key !== "default"
-        )
-        .sort(
-            (a,b) =>
-                a.localeCompare(
-                    b,
-                    undefined,
-                    {
-                        numeric:true
-                    }
-                )
-        );
+
+    return Object.keys(
+        root || {}
+    )
+    .filter(
+        key =>
+            key !== "default"
+    )
+    .sort(
+        (a,b) =>
+            a.localeCompare(
+                b,
+                undefined,
+                {
+                    numeric:true
+                }
+            )
+    );
 
 }
 
