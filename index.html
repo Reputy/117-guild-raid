@@ -5816,6 +5816,2144 @@ function escapeHtml(value){
     .replaceAll("'","&#039;");
 
 }
+<!-- =========================================================
+     챌프 OCR 비교 시스템 v1
+     기존 챌프 점수 / localStorage 호환
+========================================================= -->
+
+<style>
+.champ-ocr-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.champ-ocr-toolbar{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+}
+
+.champ-ocr-toolbar select,
+.champ-ocr-toolbar button,
+.champ-upload-box input{
+    width:100%;
+    min-height:44px;
+    border-radius:10px;
+    border:1px solid #cfe1ef;
+    padding:8px 12px;
+    background:#fff;
+    color:#173b63;
+}
+
+.champ-boss-tabs{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+
+.champ-boss-tab{
+    border:1px solid #cfe1ef;
+    background:#fff;
+    border-radius:10px;
+    padding:11px 8px;
+    cursor:pointer;
+    font-weight:700;
+    color:#45647f;
+}
+
+.champ-boss-tab.active{
+    background:#2788d8;
+    color:#fff;
+    border-color:#2788d8;
+}
+
+.champ-upload-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.champ-upload-box{
+    border:2px dashed #cbdfea;
+    border-radius:14px;
+    padding:16px;
+    background:#fafdff;
+}
+
+.champ-upload-title{
+    font-weight:800;
+    font-size:17px;
+    margin-bottom:6px;
+}
+
+.champ-upload-desc{
+    color:#7190ad;
+    font-size:13px;
+    margin-bottom:12px;
+}
+
+.champ-file-list{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.champ-file-item{
+    background:#fff;
+    border:1px solid #e0ebf2;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:13px;
+}
+
+.champ-progress{
+    margin-top:10px;
+    color:#2788d8;
+    font-weight:700;
+    min-height:20px;
+}
+
+.champ-result-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+
+.champ-result-table{
+    width:100%;
+    min-width:760px;
+    border-collapse:collapse;
+}
+
+.champ-result-table th,
+.champ-result-table td{
+    border-bottom:1px solid #e4edf3;
+    padding:10px 8px;
+    text-align:center;
+    white-space:nowrap;
+}
+
+.champ-result-table th{
+    background:#f4f9fc;
+    color:#355a78;
+}
+
+.champ-result-table td:first-child,
+.champ-result-table th:first-child{
+    text-align:left;
+}
+
+.champ-up{
+    color:#e44747;
+    font-weight:800;
+}
+
+.champ-down{
+    color:#2676d4;
+    font-weight:800;
+}
+
+.champ-same{
+    color:#728497;
+    font-weight:700;
+}
+
+.champ-unknown{
+    color:#999;
+}
+
+.champ-edit-input{
+    width:90px;
+    padding:5px 6px;
+    border:1px solid #ccdce7;
+    border-radius:6px;
+    text-align:right;
+}
+
+.champ-saved-set{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+}
+
+.champ-saved-item{
+    border:1px solid #dbe8f0;
+    border-radius:10px;
+    padding:10px;
+    background:#fff;
+}
+
+.champ-small{
+    font-size:12px;
+    color:#7190ad;
+}
+
+.champ-loading{
+    padding:15px;
+    text-align:center;
+    color:#2788d8;
+    background:#eef8ff;
+    border-radius:10px;
+}
+
+@media(max-width:700px){
+    .champ-ocr-toolbar{
+        grid-template-columns:1fr;
+    }
+
+    .champ-boss-tabs{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .champ-upload-grid{
+        grid-template-columns:1fr;
+    }
+
+    .champ-saved-set{
+        grid-template-columns:1fr;
+    }
+
+    .champ-upload-box{
+        padding:12px;
+    }
+}
+</style>
+
+<script>
+
+/* =========================================================
+   챌프 OCR 설정
+========================================================= */
+
+const CHAMP_OCR_VERSION = 1;
+
+const CHAMP_BOSSES = [
+    { id:"A", name:"A 보스" },
+    { id:"B", name:"B 보스" },
+    { id:"C", name:"C 보스" },
+    { id:"D", name:"D 보스" }
+];
+
+/*
+ * 반드시 비교해야 하는 기본 장착효과.
+ * OCR 화면에 다른 효과가 발견되면 자동으로 추가한다.
+ */
+const CHAMP_STAT_LABELS = [
+    "공격력",
+    "체력",
+    "공격속도",
+    "치명타 확률",
+    "쿨타임",
+    "피해감소",
+    "치명타 피해감소",
+    "이로운 효과 증가",
+    "해로운 효과 감소",
+    "피해감소 무시"
+];
+
+let champOCRState = {
+    boss:"A",
+    season:"",
+    baselineFiles:[],
+    compareFiles:[],
+    baselineResults:[],
+    compareResults:[]
+};
+
+
+/* =========================================================
+   기존 데이터와 충돌하지 않는 챌프 OCR 저장공간
+========================================================= */
+
+function getChampOCRRoot(guild){
+
+    if(!champData[guild])
+        champData[guild] = {};
+
+    if(!champData[guild]._ocrSets)
+        champData[guild]._ocrSets = {};
+
+    return champData[guild]._ocrSets;
+}
+
+
+function saveChampOCRData(guild, data){
+
+    const root =
+        getChampOCRRoot(guild);
+
+    root[data.season || "default"] = data;
+
+    saveJSON(
+        "guildChampData",
+        champData
+    );
+}
+
+
+/* =========================================================
+   시즌 처리
+========================================================= */
+
+function champNormalizeSeason(value){
+
+    value =
+        String(value || "")
+            .trim()
+            .replace(/\s/g,"");
+
+    if(!value)
+        return "";
+
+    const m =
+        value.match(
+            /(?:시즌)?(\d{1,3})[-~](\d{1,3})/
+        );
+
+    if(m)
+        return `${m[1]}-${m[2]}`;
+
+    const n =
+        value.match(
+            /(?:시즌)?(\d{1,3})/
+        );
+
+    return n ? n[1] : value;
+}
+
+
+function champIntegratedSeason(season){
+
+    const m =
+        champNormalizeSeason(season)
+            .match(/^(\d+)-(\d+)$/);
+
+    if(!m)
+        return season || "";
+
+    return m[1];
+}
+
+
+function champGeneralSeason(season){
+
+    const m =
+        champNormalizeSeason(season)
+            .match(/^(\d+)-(\d+)$/);
+
+    if(!m)
+        return "";
+
+    return m[2];
+}
+
+
+/* =========================================================
+   OCR 텍스트 정리
+========================================================= */
+
+function champNormalizeOCR(text){
+
+    return String(text || "")
+        .replace(/\r/g,"\n")
+        .replace(/％/g,"%")
+        .replace(/[：:]/g,":")
+        .replace(/[−–—]/g,"-")
+        .replace(/[|]/g,"1")
+        .replace(/\u00a0/g," ")
+        .replace(/[ \t]+/g," ")
+        .trim();
+}
+
+
+/* =========================================================
+   숫자 파싱
+========================================================= */
+
+function champParseNumber(value){
+
+    if(value === null || value === undefined)
+        return null;
+
+    let s =
+        String(value)
+            .replace(/,/g,"")
+            .replace(/[％%]/g,"")
+            .replace(/[^\d.+-]/g,"");
+
+    if(!s)
+        return null;
+
+    const n =
+        Number(s);
+
+    return Number.isFinite(n)
+        ? n
+        : null;
+}
+
+
+/* =========================================================
+   OCR 효과명 별칭
+========================================================= */
+
+const CHAMP_STAT_ALIASES = {
+
+    "공격력":[
+        "공격력",
+        "공격 력",
+        "공격"
+    ],
+
+    "체력":[
+        "체력",
+        "최대 체력",
+        "생명력"
+    ],
+
+    "공격속도":[
+        "공격속도",
+        "공격 속도"
+    ],
+
+    "치명타 확률":[
+        "치명타 확률",
+        "치명타확률",
+        "치명타 율",
+        "치명타율"
+    ],
+
+    "쿨타임":[
+        "쿨타임",
+        "쿨 타임",
+        "재사용 대기시간",
+        "재사용대기시간"
+    ],
+
+    "피해감소":[
+        "피해감소",
+        "피해 감소"
+    ],
+
+    "치명타 피해감소":[
+        "치명타 피해감소",
+        "치명타 피해 감소",
+        "치명타피해감소"
+    ],
+
+    "이로운 효과 증가":[
+        "이로운 효과 증가",
+        "이로운효과증가",
+        "이로운 효과"
+    ],
+
+    "해로운 효과 감소":[
+        "해로운 효과 감소",
+        "해로운효과감소",
+        "해로운 효과"
+    ],
+
+    "피해감소 무시":[
+        "피해감소 무시",
+        "피해 감소 무시",
+        "피해감소무시"
+    ]
+
+};
+
+
+/* =========================================================
+   효과명 찾기
+========================================================= */
+
+function champFindStatLabel(line){
+
+    const clean =
+        String(line || "")
+            .replace(/\s/g,"")
+            .toLowerCase();
+
+    for(
+        const stat of CHAMP_STAT_LABELS
+    ){
+
+        const aliases =
+            CHAMP_STAT_ALIASES[stat] || [stat];
+
+        for(
+            const alias of aliases
+        ){
+
+            const a =
+                alias
+                    .replace(/\s/g,"")
+                    .toLowerCase();
+
+            if(clean.includes(a))
+                return stat;
+
+        }
+
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   OCR 값 찾기
+========================================================= */
+
+function champFindValue(line){
+
+    /*
+     * 32.9%
+     * +32.9%
+     * 32%
+     * 32.9
+     */
+    const matches =
+        String(line || "")
+            .match(
+                /[-+]?\d+(?:[.,]\d+)?\s*%?/g
+            );
+
+    if(!matches || !matches.length)
+        return null;
+
+    /*
+     * 가장 마지막 숫자를 값으로 사용.
+     * 장착효과 문장에서 레벨 등이 같이 OCR될 경우
+     * 끝쪽 수치를 우선한다.
+     */
+    for(
+        let i = matches.length - 1;
+        i >= 0;
+        i--
+    ){
+
+        const n =
+            champParseNumber(matches[i]);
+
+        if(n !== null)
+            return n;
+
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   전체 장착효과 OCR 분석
+========================================================= */
+
+function parseChampEffects(rawText){
+
+    const text =
+        champNormalizeOCR(rawText);
+
+    const lines =
+        text
+            .split(/\n+/)
+            .map(v => v.trim())
+            .filter(Boolean);
+
+    const effects = {};
+
+    /*
+     * 먼저 지정 효과 검색
+     */
+    for(
+        const line of lines
+    ){
+
+        const stat =
+            champFindStatLabel(line);
+
+        if(!stat)
+            continue;
+
+        const value =
+            champFindValue(line);
+
+        if(value === null)
+            continue;
+
+        effects[stat] = value;
+
+    }
+
+
+    /*
+     * 여러 줄 OCR 때문에
+     *
+     * 공격력
+     * 32.9%
+     *
+     * 형태로 나뉘는 경우 처리
+     */
+    for(
+        let i=0;
+        i<lines.length;
+        i++
+    ){
+
+        const stat =
+            champFindStatLabel(lines[i]);
+
+        if(!stat)
+            continue;
+
+        if(effects[stat] !== undefined)
+            continue;
+
+        for(
+            let j=i+1;
+            j<Math.min(lines.length,i+3);
+            j++
+        ){
+
+            const value =
+                champFindValue(lines[j]);
+
+            if(value !== null){
+
+                effects[stat] = value;
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+     * 화면에 있는 추가 효과도 가능한 한 인식
+     *
+     * "효과명 12.3%" 형태의 문장을 찾아서
+     * 기본 목록에 없는 효과를 추가한다.
+     */
+    for(
+        const line of lines
+    ){
+
+        const value =
+            champFindValue(line);
+
+        if(value === null)
+            continue;
+
+        const percent =
+            /%/.test(line);
+
+        if(!percent)
+            continue;
+
+        let label =
+            line
+                .replace(
+                    /[-+]?\d+(?:[.,]\d+)?\s*%?/g,
+                    ""
+                )
+                .replace(
+                    /^[\s:：\-+]+|[\s:：\-+]+$/g,
+                    ""
+                )
+                .trim();
+
+        if(!label)
+            continue;
+
+        /*
+         * 너무 긴 OCR 문장/버튼/메뉴는 제외
+         */
+        if(
+            label.length < 2 ||
+            label.length > 40
+        )
+            continue;
+
+        if(
+            CHAMP_STAT_LABELS.includes(label)
+        )
+            continue;
+
+        if(
+            /^(장착효과|전체효과|확인|취소|닫기|강화|레벨)$/.
+                test(label)
+        )
+            continue;
+
+        if(
+            effects[label] === undefined
+        ){
+
+            effects[label] = value;
+
+        }
+
+    }
+
+
+    return effects;
+}
+
+
+/* =========================================================
+   OCR 1장 처리
+   - 순차 처리하여 모바일 메모리 사용량 최소화
+========================================================= */
+
+async function champOCRFile(
+    file,
+    index,
+    total,
+    side
+){
+
+    const progress =
+        document.getElementById(
+            "champOCRProgress"
+        );
+
+    if(progress){
+
+        progress.textContent =
+            `📷 ${side} ${index}/${total}장 OCR 중...`;
+
+    }
+
+
+    try{
+
+        const result =
+            await Tesseract.recognize(
+                file,
+                "kor+eng",
+                {
+                    logger: info => {
+
+                        if(
+                            info.status ===
+                            "recognizing text"
+                        ){
+
+                            const p =
+                                Math.round(
+                                    info.progress * 100
+                                );
+
+                            if(progress){
+
+                                progress.textContent =
+                                    `📷 ${side} ${index}/${total}장 OCR 중... ${p}%`;
+
+                            }
+
+                        }
+
+                    }
+                }
+            );
+
+
+        const text =
+            result?.data?.text || "";
+
+        const effects =
+            parseChampEffects(text);
+
+        return {
+            index:index,
+            fileName:file.name,
+            text:text,
+            effects:effects,
+            recognizedAt:
+                new Date().toISOString()
+        };
+
+    }
+    catch(error){
+
+        console.error(
+            "챌프 OCR 실패:",
+            error
+        );
+
+        return {
+            index:index,
+            fileName:file.name,
+            text:"",
+            effects:{},
+            error:true,
+            recognizedAt:
+                new Date().toISOString()
+        };
+
+    }
+
+}
+
+
+/* =========================================================
+   5장 OCR
+========================================================= */
+
+async function processChampFiles(
+    files,
+    side
+){
+
+    const arr =
+        Array.from(files || [])
+            .slice(0,5);
+
+    const results = [];
+
+    for(
+        let i=0;
+        i<arr.length;
+        i++
+    ){
+
+        const result =
+            await champOCRFile(
+                arr[i],
+                i+1,
+                arr.length,
+                side
+            );
+
+        results.push(result);
+
+        /*
+         * 모바일 메모리 보호.
+         * 브라우저가 처리할 수 있도록 한 장씩 넘긴다.
+         */
+        await new Promise(
+            resolve =>
+                setTimeout(resolve,80)
+        );
+
+    }
+
+    return results;
+}
+
+
+/* =========================================================
+   결과 비교
+========================================================= */
+
+function champCompareValue(
+    baseline,
+    current
+){
+
+    if(
+        baseline === null ||
+        baseline === undefined ||
+        current === null ||
+        current === undefined
+    ){
+
+        return {
+            type:"unknown",
+            diff:null
+        };
+
+    }
+
+    const diff =
+        Number(
+            (
+                current -
+                baseline
+            ).toFixed(2)
+        );
+
+    if(diff > 0){
+
+        return {
+            type:"up",
+            diff:diff
+        };
+
+    }
+
+    if(diff < 0){
+
+        return {
+            type:"down",
+            diff:diff
+        };
+
+    }
+
+    return {
+        type:"same",
+        diff:0
+    };
+
+}
+
+
+/* =========================================================
+   값 표시
+========================================================= */
+
+function champFormatValue(value){
+
+    if(
+        value === null ||
+        value === undefined ||
+        value === ""
+    )
+        return "-";
+
+    return `${Number(value).toFixed(
+        Number(value) % 1 === 0 ? 0 : 2
+    )}%`;
+}
+
+
+function champFormatDiff(diff){
+
+    if(diff === null)
+        return "-";
+
+    if(diff === 0)
+        return "= 동일";
+
+    const n =
+        Math.abs(diff);
+
+    const formatted =
+        Number(n).toFixed(
+            n % 1 === 0 ? 0 : 2
+        );
+
+    return diff > 0
+        ? `▲ +${formatted}%`
+        : `▼ -${formatted}%`;
+}
+
+
+/* =========================================================
+   수동 수정
+========================================================= */
+
+function champEditValue(
+    side,
+    photoIndex,
+    stat
+){
+
+    const results =
+        side === "baseline"
+            ? champOCRState.baselineResults
+            : champOCRState.compareResults;
+
+    const row =
+        results[photoIndex];
+
+    if(!row)
+        return;
+
+    const oldValue =
+        row.effects?.[stat] ?? "";
+
+    const input =
+        prompt(
+            `${side === "baseline" ? "기준" : "비교"} ${photoIndex+1}번\n${stat}\n값을 입력하세요. (%)`,
+            oldValue
+        );
+
+    if(input === null)
+        return;
+
+    const value =
+        champParseNumber(input);
+
+    if(value === null){
+
+        alert(
+            "숫자를 입력해주세요.\n예: 32.9"
+        );
+
+        return;
+
+    }
+
+    if(!row.effects)
+        row.effects = {};
+
+    row.effects[stat] =
+        value;
+
+    champRenderResults();
+}
+
+
+/* =========================================================
+   기본 효과 + 추가 효과 합치기
+========================================================= */
+
+function champGetAllStats(){
+
+    const set =
+        new Set(
+            CHAMP_STAT_LABELS
+        );
+
+    [
+        ...(champOCRState.baselineResults || []),
+        ...(champOCRState.compareResults || [])
+    ]
+        .forEach(
+            row => {
+
+                Object.keys(
+                    row.effects || {}
+                )
+                .forEach(
+                    key => set.add(key)
+                );
+
+            }
+        );
+
+    return Array.from(set);
+}
+
+
+/* =========================================================
+   결과 화면
+========================================================= */
+
+function champRenderResults(){
+
+    const area =
+        document.getElementById(
+            "champOCRResults"
+        );
+
+    if(!area)
+        return;
+
+    const base =
+        champOCRState.baselineResults || [];
+
+    const compare =
+        champOCRState.compareResults || [];
+
+    if(!base.length && !compare.length){
+
+        area.innerHTML =
+            `<div class="empty">
+                기준 사진 5장과 비교 사진 5장을 올리면
+                OCR 비교 결과가 표시됩니다.
+            </div>`;
+
+        return;
+
+    }
+
+    const max =
+        Math.max(
+            base.length,
+            compare.length
+        );
+
+    const stats =
+        champGetAllStats();
+
+    let html = `
+        <div class="card">
+
+            <h3>📊 장착효과 비교 결과</h3>
+
+            <p class="champ-small">
+                같은 번호의 기준 사진 ↔ 비교 사진을 자동으로 대조합니다.
+                값은 OCR 결과이며 직접 수정할 수 있습니다.
+            </p>
+
+            <div class="champ-result-wrap">
+
+                <table class="champ-result-table">
+
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+    `;
+
+    for(
+        let i=0;
+        i<max;
+        i++
+    ){
+
+        html += `
+            <th>
+                ${i+1}번<br>
+                기준 → 비교
+            </th>
+        `;
+
+    }
+
+    html += `
+                        </tr>
+                    </thead>
+
+                    <tbody>
+    `;
+
+
+    for(
+        const stat of stats
+    ){
+
+        html += `
+            <tr>
+                <th>
+                    ${escapeHtml(stat)}
+                </th>
+        `;
+
+        for(
+            let i=0;
+            i<max;
+            i++
+        ){
+
+            const b =
+                base[i]?.effects?.[stat];
+
+            const c =
+                compare[i]?.effects?.[stat];
+
+            const result =
+                champCompareValue(
+                    b,
+                    c
+                );
+
+            let cls =
+                "champ-unknown";
+
+            if(result.type === "up")
+                cls = "champ-up";
+
+            if(result.type === "down")
+                cls = "champ-down";
+
+            if(result.type === "same")
+                cls = "champ-same";
+
+            html += `
+                <td>
+
+                    <div>
+                        ${champFormatValue(b)}
+                        →
+                        ${champFormatValue(c)}
+                    </div>
+
+                    <div class="${cls}">
+                        ${champFormatDiff(result.diff)}
+                    </div>
+
+                    <div style="margin-top:4px">
+
+                        <button
+                            class="btn btn-secondary btn-small"
+                            onclick="champEditValue('baseline',${i},'${escapeHtml(stat).replace(/'/g,"\\'")}')"
+                        >
+                            기준 수정
+                        </button>
+
+                        <button
+                            class="btn btn-secondary btn-small"
+                            onclick="champEditValue('compare',${i},'${escapeHtml(stat).replace(/'/g,"\\'")}')"
+                        >
+                            비교 수정
+                        </button>
+
+                    </div>
+
+                </td>
+            `;
+
+        }
+
+        html += `
+            </tr>
+        `;
+
+    }
+
+    html += `
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div style="margin-top:12px">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="saveCurrentChampOCRSet()"
+                >
+                    💾 현재 OCR 결과 저장
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    area.innerHTML =
+        html;
+}
+
+
+/* =========================================================
+   기준/비교 파일 선택 표시
+========================================================= */
+
+function champShowFiles(
+    input,
+    targetId
+){
+
+    const area =
+        document.getElementById(
+            targetId
+        );
+
+    if(!area)
+        return;
+
+    const files =
+        Array.from(
+            input.files || []
+        )
+        .slice(0,5);
+
+    area.innerHTML =
+        files.length
+            ? files.map(
+                (file,index) =>
+                    `<div class="champ-file-item">
+                        ${index+1}. ${escapeHtml(file.name)}
+                    </div>`
+            ).join("")
+            : `<div class="champ-small">
+                선택된 사진 없음
+            </div>`;
+
+}
+
+
+/* =========================================================
+   기준 5장 OCR
+========================================================= */
+
+async function runChampBaselineOCR(){
+
+    const input =
+        document.getElementById(
+            "champBaselineInput"
+        );
+
+    if(!input || !input.files.length){
+
+        alert(
+            "기준 사진을 최대 5장 선택해주세요."
+        );
+
+        return;
+
+    }
+
+    const files =
+        Array.from(input.files)
+            .slice(0,5);
+
+    champOCRState.baselineFiles =
+        files;
+
+    champOCRState.baselineResults =
+        [];
+
+    champRenderResults();
+
+    const button =
+        document.getElementById(
+            "champBaselineOCRBtn"
+        );
+
+    if(button)
+        button.disabled = true;
+
+    try{
+
+        champOCRState.baselineResults =
+            await processChampFiles(
+                files,
+                "기준"
+            );
+
+    }
+    finally{
+
+        if(button)
+            button.disabled = false;
+
+    }
+
+    const progress =
+        document.getElementById(
+            "champOCRProgress"
+        );
+
+    if(progress)
+        progress.textContent =
+            "✅ 기준 사진 OCR 완료";
+
+    champRenderResults();
+
+}
+
+
+/* =========================================================
+   비교 5장 OCR
+========================================================= */
+
+async function runChampCompareOCR(){
+
+    const input =
+        document.getElementById(
+            "champCompareInput"
+        );
+
+    if(!input || !input.files.length){
+
+        alert(
+            "비교 사진을 최대 5장 선택해주세요."
+        );
+
+        return;
+
+    }
+
+    const files =
+        Array.from(input.files)
+            .slice(0,5);
+
+    champOCRState.compareFiles =
+        files;
+
+    champOCRState.compareResults =
+        [];
+
+    champRenderResults();
+
+    const button =
+        document.getElementById(
+            "champCompareOCRBtn"
+        );
+
+    if(button)
+        button.disabled = true;
+
+    try{
+
+        champOCRState.compareResults =
+            await processChampFiles(
+                files,
+                "비교"
+            );
+
+    }
+    finally{
+
+        if(button)
+            button.disabled = false;
+
+    }
+
+    const progress =
+        document.getElementById(
+            "champOCRProgress"
+        );
+
+    if(progress)
+        progress.textContent =
+            "✅ 비교 사진 OCR 완료";
+
+    champRenderResults();
+
+}
+
+
+/* =========================================================
+   현재 결과 저장
+========================================================= */
+
+function saveCurrentChampOCRSet(){
+
+    const member =
+        getCurrentMember();
+
+    if(!member){
+
+        alert("로그인 정보가 없습니다.");
+        return;
+
+    }
+
+    const season =
+        champNormalizeSeason(
+            document.getElementById(
+                "champOCRSeason"
+            )?.value
+        );
+
+    if(!season){
+
+        alert(
+            "시즌을 입력해주세요.\n예: 34-2"
+        );
+
+        return;
+
+    }
+
+    if(
+        !champOCRState.baselineResults.length
+    ){
+
+        alert(
+            "기준 사진 OCR 결과가 없습니다."
+        );
+
+        return;
+
+    }
+
+    if(
+        !champOCRState.compareResults.length
+    ){
+
+        alert(
+            "비교 사진 OCR 결과가 없습니다."
+        );
+
+        return;
+
+    }
+
+    const root =
+        getChampOCRRoot(
+            member.guild
+        );
+
+    if(!root[season])
+        root[season] = {};
+
+    root[season][champOCRState.boss] = {
+
+        version:
+            CHAMP_OCR_VERSION,
+
+        season:
+            season,
+
+        integratedSeason:
+            champIntegratedSeason(season),
+
+        generalSeason:
+            champGeneralSeason(season),
+
+        boss:
+            champOCRState.boss,
+
+        baseline:
+            champOCRState.baselineResults,
+
+        compare:
+            champOCRState.compareResults,
+
+        savedAt:
+            new Date().toISOString()
+
+    };
+
+    saveJSON(
+        "guildChampData",
+        champData
+    );
+
+    alert(
+        `시즌 ${season} / ${champOCRState.boss} 보스 OCR 비교 결과가 저장되었습니다.`
+    );
+
+    renderChampSavedSets();
+
+}
+
+
+/* =========================================================
+   저장된 기준 데이터 불러오기
+========================================================= */
+
+function loadChampSavedSet(){
+
+    const member =
+        getCurrentMember();
+
+    if(!member)
+        return;
+
+    const season =
+        champNormalizeSeason(
+            document.getElementById(
+                "champOCRSeason"
+            )?.value
+        );
+
+    if(!season){
+
+        alert(
+            "시즌을 입력해주세요."
+        );
+
+        return;
+
+    }
+
+    const root =
+        getChampOCRRoot(
+            member.guild
+        );
+
+    const saved =
+        root[season]?.[
+            champOCRState.boss
+        ];
+
+    if(!saved){
+
+        alert(
+            `저장된 시즌 ${season} / ${champOCRState.boss} 기준 데이터가 없습니다.`
+        );
+
+        return;
+
+    }
+
+    champOCRState.baselineResults =
+        JSON.parse(
+            JSON.stringify(
+                saved.baseline || []
+            )
+        );
+
+    /*
+     * 저장된 비교 데이터도 불러오지만
+     * 필요하면 새 비교 사진으로 덮어쓸 수 있다.
+     */
+    champOCRState.compareResults =
+        JSON.parse(
+            JSON.stringify(
+                saved.compare || []
+            )
+        );
+
+    champRenderResults();
+
+    const progress =
+        document.getElementById(
+            "champOCRProgress"
+        );
+
+    if(progress)
+        progress.textContent =
+            `✅ 저장된 기준/비교 OCR 결과를 불러왔습니다.`;
+
+}
+
+
+/* =========================================================
+   저장 데이터 목록
+========================================================= */
+
+function renderChampSavedSets(){
+
+    const area =
+        document.getElementById(
+            "champSavedSets"
+        );
+
+    if(!area)
+        return;
+
+    const member =
+        getCurrentMember();
+
+    if(!member)
+        return;
+
+    const root =
+        getChampOCRRoot(
+            member.guild
+        );
+
+    const rows = [];
+
+    Object.keys(root)
+        .sort()
+        .reverse()
+        .forEach(
+            season => {
+
+                const seasonData =
+                    root[season];
+
+                Object.keys(
+                    seasonData || {}
+                )
+                .forEach(
+                    boss => {
+
+                        const data =
+                            seasonData[boss];
+
+                        if(!data || !data.baseline)
+                            return;
+
+                        rows.push({
+                            season:season,
+                            boss:boss,
+                            savedAt:data.savedAt
+                        });
+
+                    }
+                );
+
+            }
+        );
+
+    if(!rows.length){
+
+        area.innerHTML =
+            `<div class="champ-small">
+                저장된 챌프 OCR 데이터가 없습니다.
+            </div>`;
+
+        return;
+
+    }
+
+    area.innerHTML =
+        rows.map(
+            row => `
+
+                <div class="champ-saved-item">
+
+                    <strong>
+                        시즌 ${escapeHtml(row.season)}
+                        /
+                        ${escapeHtml(row.boss)} 보스
+                    </strong>
+
+                    <div class="champ-small">
+                        ${
+                            row.savedAt
+                                ? new Date(row.savedAt).toLocaleString()
+                                : ""
+                        }
+                    </div>
+
+                    <div style="margin-top:7px">
+
+                        <button
+                            class="btn btn-secondary btn-small"
+                            onclick="champSelectSaved('${escapeHtml(row.season)}','${escapeHtml(row.boss)}')"
+                        >
+                            불러오기
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `
+        ).join("");
+
+}
+
+
+function champSelectSaved(
+    season,
+    boss
+){
+
+    champOCRState.boss =
+        boss;
+
+    const select =
+        document.getElementById(
+            "champBossSelect"
+        );
+
+    if(select)
+        select.value =
+            boss;
+
+    const input =
+        document.getElementById(
+            "champOCRSeason"
+        );
+
+    if(input)
+        input.value =
+            season;
+
+    loadChampSavedSet();
+
+}
+
+
+/* =========================================================
+   보스 변경
+========================================================= */
+
+function selectChampBoss(boss){
+
+    champOCRState.boss =
+        boss;
+
+    document
+        .querySelectorAll(
+            ".champ-boss-tab"
+        )
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "active",
+                    button.dataset.boss === boss
+                );
+
+            }
+        );
+
+    const select =
+        document.getElementById(
+            "champBossSelect"
+        );
+
+    if(select)
+        select.value =
+            boss;
+
+    champRenderResults();
+    renderChampSavedSets();
+
+}
+
+
+/* =========================================================
+   챌프 OCR 화면
+========================================================= */
+
+function renderChampOCRPanel(){
+
+    const member =
+        getCurrentMember();
+
+    if(!member)
+        return "";
+
+    return `
+
+        <div class="champ-ocr-wrap">
+
+            <div class="card">
+
+                <h3>🏆 챌프 장착효과 OCR 비교</h3>
+
+                <p class="champ-small">
+                    보스별 기준 사진 5장과 비교 사진 5장을
+                    같은 번호끼리 자동 대조합니다.
+                </p>
+
+                <div class="champ-ocr-toolbar">
+
+                    <input
+                        id="champOCRSeason"
+                        type="text"
+                        placeholder="시즌 예: 34-2"
+                        value="${escapeHtml(champOCRState.season || "")}"
+                        oninput="champOCRState.season=this.value"
+                    >
+
+                    <select
+                        id="champBossSelect"
+                        onchange="selectChampBoss(this.value)"
+                    >
+
+                        ${
+                            CHAMP_BOSSES.map(
+                                boss =>
+                                    `<option
+                                        value="${boss.id}"
+                                        ${
+                                            boss.id === champOCRState.boss
+                                                ? "selected"
+                                                : ""
+                                        }
+                                    >
+                                        ${boss.id} 보스
+                                    </option>`
+                            ).join("")
+                        }
+
+                    </select>
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="loadChampSavedSet()"
+                    >
+                        📂 저장 결과 불러오기
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="champ-boss-tabs">
+
+                ${
+                    CHAMP_BOSSES.map(
+                        boss =>
+                            `<button
+                                type="button"
+                                class="champ-boss-tab ${
+                                    boss.id === champOCRState.boss
+                                        ? "active"
+                                        : ""
+                                }"
+                                data-boss="${boss.id}"
+                                onclick="selectChampBoss('${boss.id}')"
+                            >
+                                ${boss.id} 보스
+                            </button>`
+                    ).join("")
+                }
+
+            </div>
+
+
+            <div class="champ-upload-grid">
+
+                <div class="champ-upload-box">
+
+                    <div class="champ-upload-title">
+                        📌 기준 사진 5장
+                    </div>
+
+                    <div class="champ-upload-desc">
+                        이후 계속 사용할 기준 장착효과입니다.
+                    </div>
+
+                    <input
+                        id="champBaselineInput"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onchange="
+                            champShowFiles(
+                                this,
+                                'champBaselineFiles'
+                            )
+                        "
+                    >
+
+                    <div id="champBaselineFiles"
+                         class="champ-file-list">
+                    </div>
+
+                    <button
+                        id="champBaselineOCRBtn"
+                        class="btn btn-primary"
+                        style="margin-top:10px;width:100%"
+                        onclick="runChampBaselineOCR()"
+                    >
+                        📷 기준 5장 OCR
+                    </button>
+
+                </div>
+
+
+                <div class="champ-upload-box">
+
+                    <div class="champ-upload-title">
+                        🔄 비교 사진 5장
+                    </div>
+
+                    <div class="champ-upload-desc">
+                        기준 사진과 같은 번호끼리 비교합니다.
+                    </div>
+
+                    <input
+                        id="champCompareInput"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onchange="
+                            champShowFiles(
+                                this,
+                                'champCompareFiles'
+                            )
+                        "
+                    >
+
+                    <div id="champCompareFiles"
+                         class="champ-file-list">
+                    </div>
+
+                    <button
+                        id="champCompareOCRBtn"
+                        class="btn btn-primary"
+                        style="margin-top:10px;width:100%"
+                        onclick="runChampCompareOCR()"
+                    >
+                        📷 비교 5장 OCR
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="champOCRProgress"
+                class="champ-progress"
+            >
+                준비되었습니다.
+            </div>
+
+
+            <div
+                id="champOCRResults"
+            >
+                <div class="empty">
+                    기준 사진 5장과 비교 사진 5장을 올리면
+                    OCR 비교 결과가 표시됩니다.
+                </div>
+            </div>
+
+
+            <div class="card">
+
+                <h3>💾 저장된 챌프 OCR 데이터</h3>
+
+                <div
+                    id="champSavedSets"
+                    class="champ-saved-set"
+                ></div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   기존 updateChamp를 OCR 포함 버전으로 대체
+========================================================= */
+
+function updateChamp(){
+
+    const member =
+        getCurrentMember();
+
+    if(!member)
+        return;
+
+    const area =
+        document.getElementById(
+            "champContent"
+        );
+
+    if(!area)
+        return;
+
+    const list =
+        members[member.guild] || [];
+
+    if(
+        member.role === "관리자" ||
+        member.role === "운영진"
+    ){
+
+        area.innerHTML = `
+
+            <div class="toolbar">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="editChampForMember()"
+                >
+                    ➕ 챌프 점수 등록/수정
+                </button>
+
+            </div>
+
+            <div class="table-wrap">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>닉네임</th>
+                            <th>챌프 점수</th>
+                            <th>수정</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${
+                            list.map(
+                                target => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${escapeHtml(
+                                                target.nickname
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapeHtml(
+                                                getChampScore(
+                                                    target
+                                                )
+                                            )}
+                                        </td>
+
+                                        <td>
+
+                                            <button
+                                                class="btn btn-secondary btn-small"
+                                                onclick="editChamp('${target.id}')"
+                                            >
+                                                수정
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                `
+                            ).join("")
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <br>
+
+            ${renderChampOCRPanel()}
+
+        `;
+
+        renderChampSavedSets();
+
+    }
+    else{
+
+        /*
+         * 기존 일반 회원 화면은 그대로 유지.
+         * 챌프 OCR은 관리자/운영진 영역에서 관리.
+         */
+
+        area.innerHTML = `
+
+            <div class="score-box">
+
+                <div class="stat-title">
+                    🏆 나의 챌프 점수
+                </div>
+
+                <div class="score-value">
+                    ${escapeHtml(
+                        getChampScore(member)
+                    )}
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   기존 시즌 데이터가 문자열이어도 안전하게 사용
+========================================================= */
+
+function getChampOCRSeasonList(){
+
+    const member =
+        getCurrentMember();
+
+    if(!member)
+        return [];
+
+    const root =
+        getChampOCRRoot(
+            member.guild
+        );
+
+    return Object.keys(root)
+        .filter(
+            key =>
+                key !== "default"
+        )
+        .sort(
+            (a,b) =>
+                a.localeCompare(
+                    b,
+                    undefined,
+                    {
+                        numeric:true
+                    }
+                )
+        );
+
+}
 
 </script>
 
