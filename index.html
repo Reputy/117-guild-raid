@@ -78,7 +78,7 @@ button{cursor:pointer}
 .btn:hover{transform:translateY(-1px)}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-secondary{background:#eaf6fc;color:var(--primary-dark)}
-.btn-danger{background:var(--danger);color:#fff}
+.btn-danger{background:#ef6873;color:#fff}
 .btn-small{padding:7px 10px;font-size:12px}
 
 /* 로그인 */
@@ -113,7 +113,16 @@ button{cursor:pointer}
 .guild-logo-icon{
     width:64px;height:64px;margin:auto;border-radius:20px;display:flex;
     align-items:center;justify-content:center;background:rgba(255,255,255,.18);font-size:34px;
+    cursor:pointer;position:relative;overflow:hidden;transition:.2s;
+    background-size:cover;background-position:center;
 }
+.guild-logo-icon:hover{transform:scale(1.05);background:rgba(255,255,255,.28)}
+.guild-logo-icon::after{
+    content:"변경";position:absolute;bottom:0;width:100%;font-size:9px;background:rgba(0,0,0,0.4);
+    color:#fff;opacity:0;transition:.2s;
+}
+.guild-logo-icon:hover::after{opacity:1}
+
 .guild-name{margin-top:10px;font-size:20px;font-weight:bold;word-break:keep-all}
 .menu{display:flex;flex-direction:column;gap:6px}
 .menu button{
@@ -294,7 +303,10 @@ table.comparison-table th {
 <div id="app" class="app" style="display:none">
     <aside class="sidebar">
         <div class="guild-logo">
-            <div class="guild-logo-icon">🏰</div>
+            <!-- 성 이미지 아이콘 (클릭 시 이미지 변경 가능) -->
+            <div id="guildLogoIcon" class="guild-logo-icon" onclick="triggerGuildLogoUpload()" title="클릭하여 성 이미지 변경">🏰</div>
+            <input type="file" id="guildLogoImageInput" accept="image/*" style="display:none" onchange="handleGuildLogoUpload(event)">
+            
             <div id="sideGuildName" class="guild-name">117번째우정</div>
         </div>
         <nav id="menu" class="menu"></nav>
@@ -680,6 +692,7 @@ let guildCuts = loadJSON("guildCuts", {
 let raidData = loadJSON("guildRaidData", {});
 let rankingData = loadJSON("guildRankingData", {});
 let relicScoreData = loadJSON("guildRelicScoreData", {});
+let guildLogos = loadJSON("guildLogos", {}); // 길드별 성 이미지 저장소
 
 // 챌프 분석 데이터 저장소 (기준 5장, 내 사진 5장)
 let refExtractedData = [];
@@ -795,6 +808,7 @@ function startApp(){
     document.getElementById("currentRole").textContent = member.role;
     document.getElementById("homeGuildName").textContent = member.guild;
 
+    applyGuildLogoUI(member.guild);
     buildMenu();
     updateAll();
     showScreen("home");
@@ -804,6 +818,42 @@ function getCurrentMember(){
     if(!currentUser) return null;
     const list = members[currentUser.guild] || [];
     return list.find(m => m.nickname === currentUser.nickname);
+}
+
+/* 길드 성 이미지 업로드 및 적용 함수 */
+function triggerGuildLogoUpload() {
+    document.getElementById("guildLogoImageInput").click();
+}
+
+function handleGuildLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageUrl = e.target.result;
+        const member = getCurrentMember();
+        if(!member) return;
+
+        guildLogos[member.guild] = imageUrl;
+        saveJSON("guildLogos", guildLogos);
+        applyGuildLogoUI(member.guild);
+        alert("길드 성 이미지가 성공적으로 변경되었습니다!");
+    };
+    reader.readAsDataURL(file);
+    event.target.value = "";
+}
+
+function applyGuildLogoUI(guildName) {
+    const logoIcon = document.getElementById("guildLogoIcon");
+    const savedImage = guildLogos[guildName];
+    if (savedImage) {
+        logoIcon.style.backgroundImage = `url(${savedImage})`;
+        logoIcon.textContent = ""; // 이모지 제거하고 커스텀 이미지 적용
+    } else {
+        logoIcon.style.backgroundImage = "none";
+        logoIcon.textContent = "🏰"; // 기본 성 이모지
+    }
 }
 
 function buildMenu(){
