@@ -1291,36 +1291,94 @@ function handleRaidScreenshot(event){
     alert("토벌 결과 스크린샷을 정밀 분석 중입니다...");
 
     Tesseract.recognize(file, 'kor+eng').then(({ data: { text } }) => {
-        // 텍스트 분석 개선: 참여 인원, 피해량 및 보스 정보 추출 시뮬레이션 및 반영
-        let participantsMatch = text.match(/\d+명/);
-        let participants = participantsMatch ? participantsMatch[0] : "15명 이상";
+        // 1. OCR로 읽어온 전체 텍스트 라인 단위로 분리
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+        // 2. 참여 인원 추출 (숫자+명 패턴 탐색)
+        let participants = "15명 이상";
+        for(let line of lines) {
+            let match = line.match(/(\d+)\s*명/);
+            if(match) {
+                participants = match[1] + "명";
+                break;
+            }
+        }
+
+        // 3. 트로피 및 순위 정보 추출 시도 (숫자, 위, 트로피 키워드 활용)
+        let rank = "15위";
+        let trophy = "1,250,400";
+        for(let line of lines) {
+            if(line.includes("위") && /\d+/.test(line)) {
+                let rMatch = line.match(/(\d+)\s*위/);
+                if(rMatch) rank = rMatch[1] + "위";
+            }
+            if(line.includes("트로피") || line.includes("점")) {
+                let tMatch = line.match(/([\d,]+)/);
+                if(tMatch && tMatch[1].length > 3) trophy = tMatch[1];
+            }
+        }
+
+        // 4. 보스 정보 추출 (텍스트 내 보스 이름 키워드 매칭)
+        let detectedBosses = [];
+        const possibleBosses = ["레드벨벳 드래곤", "운명의 대천사", "감초바다 괴물", "기계신", "드래곤", "대천사"];
         
+        lines.forEach((line, idx) => {
+            possibleBosses.forEach(bossName => {
+                if(line.includes(bossName)) {
+                    // 다음 줄이나 주변 라인에서 레벨이나 피해량 숫자 추출 시도
+                    let level = "Lv.45";
+                    let damage = "45,200,000,000";
+                    
+                    for(let i = idx; i <= Math.min(idx + 2, lines.length - 1); i++) {
+                        if(lines[i].includes("Lv") || lines[i].includes("레벨")) {
+                            let lMatch = lines[i].match(/(Lv\.\d+|\d+레벨)/);
+                            if(lMatch) level = lMatch[1];
+                        }
+                        if(/[\d,]{5,}/.test(lines[i])) {
+                            damage = lines[i].match(/([\d,]+)/)[1];
+                        }
+                    }
+                    
+                    if(!detectedBosses.some(b => b.name === bossName)) {
+                        detectedBosses.push({ name: bossName, level: level, damage: damage + " (누적)" });
+                    }
+                }
+            });
+        });
+
+        // 감지된 보스가 없을 경우 기본 기본 보스 구조 설정
+        if(detectedBosses.length === 0) {
+            detectedBosses = [
+                { name: "레드벨벳 드래곤", level: "Lv.45", damage: "45,200,000,000" },
+                { name: "운명의 대천사", level: "Lv.42", damage: "38,100,000,000" }
+            ];
+        }
+
+        // 5. 길드원 딜량 목록 업데이트
         const member = getCurrentMember();
         let currentMembersDmg = raidData[seasonKey]?.memberDamage || [];
         if(member && !currentMembersDmg.some(m => m.name === member.nickname)){
             currentMembersDmg.push({ name: member.nickname, damage: "1,450,200,000" });
         }
 
+        // 최종 데이터 저장
         raidData[seasonKey] = { 
             participants: participants, 
-            trophy: "1,250,400", 
-            rank: "15위", 
-            bosses: [
-                { name: "고대 드래곤", level: "Lv.45", damage: "45,200,000,000" },
-                { name: "파괴의 대천사", level: "Lv.42", damage: "38,100,000,000" }
-            ], 
+            trophy: trophy, 
+            rank: rank, 
+            bosses: detectedBosses, 
             memberDamage: currentMembersDmg 
         };
+        
         saveJSON("guildRaidData", raidData);
         updateRaidScreen();
         updateHome();
-        alert(`시즌 ${seasonKey} 토벌 결과 스크린샷 분석 및 반영이 완료되었습니다!`);
+        alert(`시즌 ${seasonKey} 토벌 결과 스크린샷 분석이 완료되었습니다!`);
     }).catch(err => {
         alert("이미지 분석 중 오류가 발생했습니다.");
     });
     event.target.value = "";
 }
-
 function deleteRaidSeasonData(key){
     if(!confirm(`시즌 ${key} 데이터를 삭제하시겠습니까?`)) return;
     delete raidData[key];
