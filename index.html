@@ -813,31 +813,39 @@ function showLogin(){
     document.getElementById("app").style.display = "none";
 }
 
-function login(){
+async function handleLogin() {
     const guild = document.getElementById("guildSelect").value;
     const nickname = document.getElementById("nicknameInput").value.trim();
-    const passwordInput = document.getElementById("passwordInput");
-    const password = passwordInput.value.trim();
-    const msgEl = document.getElementById("loginMessage");
+    const password = document.getElementById("passwordInput").value.trim();
+    const messageEl = document.getElementById("loginMessage");
 
-    if(!nickname || !password){
-        msgEl.textContent = "닉네임과 비밀번호를 모두 입력해주세요.";
+    if (!nickname || !password) {
+        messageEl.textContent = "닉네임과 비밀번호를 입력해주세요.";
         return;
     }
-    const list = members[guild] || [];
-    const member = list.find(m => m.nickname === nickname && m.password === password);
 
-    if(!member){
-        passwordInput.value = "";
-        msgEl.textContent = "길드, 닉네임 또는 비밀번호를 확인해주세요.";
-        return;
+    try {
+        // 스마트폰에서 돌아가고 있는 로컬 서버로 요청 전송
+        const response = await fetch('http://localhost:3000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guild, nickname, password })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            messageEl.textContent = "";
+            alert(result.message);
+            // 로그인 성공 시 메인 화면으로 이동하거나 앱 실행 함수 호출
+            startMainApp(result.user); 
+        } else {
+            messageEl.textContent = result.message;
+        }
+    } catch (error) {
+        console.error(error);
+        messageEl.textContent = "서버에 연결할 수 없습니다. 서버가 켜져 있는지 확인하세요.";
     }
-    if(member.nickname === "리퓨티") member.role = "관리자";
-    currentUser = { guild, nickname: member.nickname };
-    saveJSON("currentUser", currentUser);
-    passwordInput.value = "";
-    msgEl.textContent = "";
-    startApp();
 }
 
 function logout(){
@@ -846,33 +854,41 @@ function logout(){
     showLogin();
 }
 
-function registerMember(){
-    const guild = document.getElementById("guildSelect").value;
-    const nickname = document.getElementById("nicknameInput").value.trim();
-    const password = document.getElementById("passwordInput").value.trim();
-    const msgEl = document.getElementById("loginMessage");
+async function handleRegister() {
+    const id = "user_" + Date.now(); // 고유 ID 생성
+    const guild = document.getElementById("regGuildSelect").value;
+    const nickname = document.getElementById("regNicknameInput").value.trim();
+    const password = document.getElementById("regPasswordInput").value.trim();
+    const role = "길드원"; // 기본 권한
+    const joinDate = new Date().toISOString().split('T')[0];
+    const messageEl = document.getElementById("regMessage");
 
-    if(!nickname || !password){
-        msgEl.textContent = "가입할 닉네임과 비밀번호를 입력해주세요.";
-        return;
-    }
-    if(!members[guild]) members[guild] = [];
-    if(members[guild].some(m => m.nickname === nickname)){
-        msgEl.textContent = "이미 등록된 닉네임입니다.";
+    if (!nickname || !password) {
+        messageEl.textContent = "닉네임과 비밀번호를 입력해주세요.";
         return;
     }
 
-    let role = (nickname === "리퓨티") ? "관리자" : "길드원";
-    members[guild].push({ 
-        id: Date.now().toString(), guild, nickname, password, role, joinDate: today() 
-    });
-    saveJSON("guildMembers", members);
-    currentUser = { guild, nickname };
-    saveJSON("currentUser", currentUser);
-    document.getElementById("passwordInput").value = "";
-    startApp();
+    try {
+        const response = await fetch('http://localhost:3000/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, guild, nickname, password, role, joinDate })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            // 회원가입창 닫기 또는 로그인 화면으로 이동
+            showLoginScreen();
+        } else {
+            messageEl.textContent = result.message;
+        }
+    } catch (error) {
+        console.error(error);
+        messageEl.textContent = "서버 오류가 발생했습니다.";
+    }
 }
-
 function startApp(){
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("app").style.display = "flex";
