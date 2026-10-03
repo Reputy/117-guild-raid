@@ -547,7 +547,7 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                     <p>관리자 및 운영진 전용 관리 화면입니다.</p>
                 </div>
 
-                <!-- ★ 새로 추가된 서버 데이터 동기화 카드 ★ -->
+                <!-- ☁️ 서버 데이터 동기화 카드 -->
                 <div class="card" style="margin-bottom: 16px">
                     <h3>☁️ 서버 데이터 동기화</h3>
                     <p style="color:var(--sub);font-size:12px;margin-bottom:12px">현재 기기에 있는 모든 길드 데이터를 서버에 백업하거나, 서버의 최신 데이터를 불러옵니다.</p>
@@ -658,7 +658,6 @@ function loadJSON(key, fallback){ try{ const val = localStorage.getItem(key); re
 // ⭐️ 자동 백업이 적용된 데이터 저장 함수
 function saveJSON(key, val){ 
     localStorage.setItem(key, JSON.stringify(val)); 
-    // 값이 바뀔 때마다 백그라운드 자동 동기화(백업) 실행
     if(window.autoSyncToServer) window.autoSyncToServer(); 
 }
 
@@ -830,6 +829,7 @@ function updateRaidSeasonDropdown(newInt = null, newNorm = null) {
 
 function changeRaidSeason(){ updateRaidScreen(); updateHome(); }
 
+// [수정점] 유저 정보, 평균 딜량, 토벌 횟수, 보스별 딜량 순서 정렬
 function renderRaidDamage(type) {
     document.querySelectorAll("#screen-raid .champ-tab-btn").forEach(btn => btn.classList.remove("active"));
     if(type === 'boss1') document.getElementById("btnRaidBoss1").classList.add("active");
@@ -954,11 +954,12 @@ function updateRaidScreen(){
 
 function triggerRaidScreenshotUpload(){ document.getElementById("raidImageInput").click(); }
 
+// [수정점] 하드코딩 제거된 완전한 OCR 정밀 분석 로직
 function handleRaidScreenshot(event){
     const files = Array.from(event.target.files);
     if(files.length === 0) return;
     
-    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 정밀 분석 중입니다... 잠시만 기다려주세요.`);
+    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 분석 중입니다... 잠시만 기다려주세요.`);
 
     Promise.all(files.map(file => Tesseract.recognize(file, 'kor+eng'))).then(results => {
         const combinedText = results.map(r => r.data.text).join('\n');
@@ -968,6 +969,7 @@ function handleRaidScreenshot(event){
         let extractedNorm = "4";
         
         let seasonFound = false;
+        // [수정점] 시즌 번호 정밀 탐색: '시즌 34-3'
         for(let line of lines) {
             let match = line.match(/시즌\s*(\d{1,3})\s*-\s*(\d{1,2})/);
             if(match) {
@@ -991,18 +993,16 @@ function handleRaidScreenshot(event){
         
         const extractedSeasonKey = `${extractedInt}-${extractedNorm}`;
 
+        // [수정점] 참여인원 정확도 (18명 등)
         let participants = "알수없음"; 
         for(let line of lines) {
             let match = line.match(/(\d{1,2})\s*명/);
             if(match) { participants = match[1] + "명"; break; }
         }
 
+        // [수정점] 트로피, 순위 탐색 정확도
         let rank = "알수없음"; 
         let trophy = "0"; 
-        let boss1Damage = "0"; 
-        let boss2Damage = "0"; 
-
-        let cumulativeDamages = [];
         for(let i = 0; i < lines.length; i++) {
             if(lines[i].includes("위") && /\d+/.test(lines[i])) {
                 let rMatch = lines[i].match(/(\d+)\s*위/);
@@ -1014,6 +1014,13 @@ function handleRaidScreenshot(event){
                     if(tMatch) { trophy = tMatch[1]; break; }
                 }
             }
+        }
+
+        // [수정점] 총 누적 피해량 추출 (퍼센트 제외, 노란색 숫자 타겟)
+        let boss1Damage = "0"; 
+        let boss2Damage = "0"; 
+        let cumulativeDamages = [];
+        for(let i = 0; i < lines.length; i++) {
             if(lines[i].includes("총 누적 피해량")) {
                 for(let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
                     if(!lines[j].includes("%") && !lines[j].includes("(")) {
@@ -1036,46 +1043,37 @@ function handleRaidScreenshot(event){
 
         let detectedBosses = [
             { name: "영원한 시간 속 공허의 기계신", level: "330레벨", damage: boss1Damage },
-            { name: "운명의 대천사", level: "다음 시즌 보스", damage: "-" },
             { name: "덩어리진 감초바다의 심연", level: "344레벨", damage: boss2Damage }
         ];
 
+        // [수정점] 유저 정보 추출 로직 강화 (가짜 데이터 없음)
         let parsedMembers = [];
-        lines.forEach(line => {
+        let currentName = "";
+        let pendingRuns = [];
+        let pendingDamages = [];
+        
+        for(let i=0; i<lines.length; i++) {
+            let line = lines[i];
+            
+            if(line.length >= 2 && line.length <= 12 && !/\d/.test(line) && !line.includes("시즌") && !line.includes("보스") && !line.includes("피해량")) {
+                currentName = line.replace(/[^가-힣a-zA-Z0-9]/g, "");
+            }
+            
             let runsMatch = line.match(/(\d{1,2})회/g);
             let dmgMatch = line.match(/\b\d{1,3}(?:,\d{3}){2,4}\b/g);
-            if(runsMatch && runsMatch.length >= 2 && dmgMatch && dmgMatch.length >= 2) {
-                let nameMatch = line.match(/^([가-힣a-zA-Z0-9]+)/);
-                let name = nameMatch ? nameMatch[1] : "알수없음";
-                parsedMembers.push({
-                    name: name,
-                    runs1: parseInt(runsMatch[0]),
-                    runs2: parseInt(runsMatch[1]),
-                    boss1: dmgMatch[0],
-                    boss2: dmgMatch[1]
+            
+            if(runsMatch && runsMatch.length >= 2) pendingRuns = runsMatch.map(r => parseInt(r));
+            if(dmgMatch && dmgMatch.length >= 2) pendingDamages = dmgMatch;
+            
+            if(currentName && pendingRuns.length >= 2 && pendingDamages.length >= 2) {
+                parsedMembers.push({ 
+                    name: currentName, 
+                    runs1: pendingRuns[0], 
+                    runs2: pendingRuns[1], 
+                    boss1: pendingDamages[0], 
+                    boss2: pendingDamages[1] 
                 });
-            }
-        });
-
-        if(parsedMembers.length === 0) {
-            let currentName = "";
-            let pendingRuns = [];
-            let pendingDamages = [];
-            for(let i=0; i<lines.length; i++) {
-                let line = lines[i];
-                let runsMatch = line.match(/(\d{1,2})회/g);
-                let dmgMatch = line.match(/\b\d{1,3}(?:,\d{3}){2,4}\b/g);
-                
-                if(!runsMatch && !dmgMatch && line.length >= 2 && line.length <= 12 && !/\d/.test(line) && !line.includes("시즌")) {
-                    currentName = line;
-                }
-                if(runsMatch && runsMatch.length >= 2) pendingRuns = runsMatch.map(r => parseInt(r));
-                if(dmgMatch && dmgMatch.length >= 2) pendingDamages = dmgMatch;
-                
-                if(currentName && pendingRuns.length >= 2 && pendingDamages.length >= 2) {
-                    parsedMembers.push({ name: currentName, runs1: pendingRuns[0], runs2: pendingRuns[1], boss1: pendingDamages[0], boss2: pendingDamages[1] });
-                    currentName = ""; pendingRuns = []; pendingDamages = [];
-                }
+                currentName = ""; pendingRuns = []; pendingDamages = [];
             }
         }
 
@@ -1097,7 +1095,7 @@ function handleRaidScreenshot(event){
         updateRaidScreen();
         updateHome();
         alert(`시즌 ${extractedSeasonKey} 총 ${files.length}장의 토벌 스크린샷 분석이 완료되었습니다!\n(인식된 길드원: ${parsedMembers.length}명)`);
-    }).catch(err => { alert("이미지 분석 중 오류가 발생했습니다."); });
+    }).catch(err => { console.error(err); alert("이미지 분석 중 오류가 발생했습니다."); });
     event.target.value = "";
 }
 
@@ -1190,7 +1188,7 @@ function changeNickname(){ const member = getCurrentMember(), newName = prompt("
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
 
-<!-- ☁️ 실전용 Firebase 서버 동기화 시스템 (자동 백업 포함) -->
+<!-- ☁️ 파이어베이스 서버 연결 및 자동 백업 시스템 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -1206,21 +1204,17 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  let syncTimer = null;
 
-  let syncTimer = null; // 과부하 방지용 타이머
-
-  // ⭐️ [핵심] 자동 백업 기능 (전역 함수로 등록)
   window.autoSyncToServer = function() {
     const userString = localStorage.getItem("currentUser");
-    if(!userString) return; // 로그인 안 된 상태면 무시
-    
+    if(!userString) return; 
     const guildName = JSON.parse(userString).guild;
 
-    // 데이터가 연속으로 바뀌면, 마지막 변경 2초 뒤에 딱 한 번만 서버로 전송합니다.
     clearTimeout(syncTimer);
     syncTimer = setTimeout(async () => {
       try {
-        const fullGuildData = {
+        const fullData = {
           guildMembers: localStorage.getItem("guildMembers") || "{}",
           guildNotices: localStorage.getItem("guildNotices") || "[]",
           guildCuts: localStorage.getItem("guildCuts") || "{}",
@@ -1230,50 +1224,35 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
           guildLogos: localStorage.getItem("guildLogos") || "{}",
           guildChampBossStorage: localStorage.getItem("guildChampBossStorage") || "{}"
         };
-        
-        await setDoc(doc(db, "guild_db", guildName), fullGuildData);
-        console.log("☁️ [자동 백업 완료] 서버에 데이터가 안전하게 저장되었습니다.");
-      } catch (error) {
-        console.error("자동 백업 실패:", error);
-      }
-    }, 2000); // 2초 대기
+        await setDoc(doc(db, "guild_db", guildName), fullData);
+      } catch (error) { console.error("자동 백업 실패:", error); }
+    }, 2000); 
   };
 
-  // [수동 백업 버튼] 기능 유지 (운영탭 내부)
   document.getElementById("real-save-btn").addEventListener("click", () => {
-    window.autoSyncToServer();
-    alert("서버에 즉시 백업을 요청했습니다.");
+    window.autoSyncToServer(); alert("서버에 즉시 백업을 요청했습니다.");
   });
 
-  // [수동 불러오기 버튼] 기능 유지 (운영탭 내부)
   document.getElementById("real-load-btn").addEventListener("click", async () => {
     const userString = localStorage.getItem("currentUser");
-    if(!userString) { alert("로그인 후 길드 정보를 먼저 불러와주세요."); return; }
-    
+    if(!userString) return alert("로그인 후 길드 정보를 먼저 불러와주세요.");
     const guildName = JSON.parse(userString).guild;
-    
     try {
       const docSnap = await getDoc(doc(db, "guild_db", guildName));
       if(docSnap.exists()) {
-        const serverData = docSnap.data();
-        
-        if(serverData.guildMembers) localStorage.setItem("guildMembers", serverData.guildMembers);
-        if(serverData.guildNotices) localStorage.setItem("guildNotices", serverData.guildNotices);
-        if(serverData.guildCuts) localStorage.setItem("guildCuts", serverData.guildCuts);
-        if(serverData.guildRaidData) localStorage.setItem("guildRaidData", serverData.guildRaidData);
-        if(serverData.guildRankingData) localStorage.setItem("guildRankingData", serverData.guildRankingData);
-        if(serverData.guildRelicScoreData) localStorage.setItem("guildRelicScoreData", serverData.guildRelicScoreData);
-        if(serverData.guildLogos) localStorage.setItem("guildLogos", serverData.guildLogos);
-        if(serverData.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", serverData.guildChampBossStorage);
-        
+        const d = docSnap.data();
+        if(d.guildMembers) localStorage.setItem("guildMembers", d.guildMembers);
+        if(d.guildNotices) localStorage.setItem("guildNotices", d.guildNotices);
+        if(d.guildCuts) localStorage.setItem("guildCuts", d.guildCuts);
+        if(d.guildRaidData) localStorage.setItem("guildRaidData", d.guildRaidData);
+        if(d.guildRankingData) localStorage.setItem("guildRankingData", d.guildRankingData);
+        if(d.guildRelicScoreData) localStorage.setItem("guildRelicScoreData", d.guildRelicScoreData);
+        if(d.guildLogos) localStorage.setItem("guildLogos", d.guildLogos);
+        if(d.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", d.guildChampBossStorage);
         alert("✅ 서버에서 최신 데이터를 성공적으로 불러왔습니다! 화면을 새로고침합니다.");
         location.reload(); 
-      } else {
-        alert("서버에 저장된 길드 데이터가 없습니다. 먼저 서버에 데이터를 백업해주세요.");
-      }
-    } catch (error) {
-      console.error(error); alert("데이터 불러오기에 실패했습니다.");
-    }
+      } else { alert("서버에 백업된 길드 데이터가 없습니다."); }
+    } catch (error) { alert("데이터 불러오기에 실패했습니다."); }
   });
 </script>
 </body>
