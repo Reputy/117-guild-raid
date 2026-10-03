@@ -540,12 +540,23 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                 <div id="noticeList"><div class="empty">공지사항이 없습니다.</div></div>
             </section>
 
-            <!-- 운영 -->
+            <!-- 운영 (관리자/운영진 전용) -->
             <section id="screen-operation" class="screen">
                 <div class="page-header">
                     <h1>운영</h1>
                     <p>관리자 및 운영진 전용 관리 화면입니다.</p>
                 </div>
+
+                <!-- ★ 새로 추가된 서버 데이터 동기화 카드 ★ -->
+                <div class="card" style="margin-bottom: 16px">
+                    <h3>☁️ 서버 데이터 동기화</h3>
+                    <p style="color:var(--sub);font-size:12px;margin-bottom:12px">현재 기기에 있는 모든 길드 데이터를 서버에 백업하거나, 서버의 최신 데이터를 불러옵니다.</p>
+                    <div style="display:flex;gap:8px">
+                        <button id="real-save-btn" class="btn btn-primary" style="flex:1;padding:12px 0;">서버에 최신 데이터 덮어쓰기 (백업)</button>
+                        <button id="real-load-btn" class="btn btn-secondary" style="flex:1;border:1px solid #cfe1ec;padding:12px 0;">서버에서 데이터 불러오기</button>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h3>🎨 테마 선택</h3>
                     <p style="color:var(--sub);font-size:12px;margin-bottom:12px">원하는 분위기로 사이트 테마를 변경해보세요.</p>
@@ -903,7 +914,7 @@ function updateRaidScreen(){
     area.innerHTML = `
         <div class="card" style="margin-bottom:16px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <h3 style="margin:0">⚔️ 비상하는 운명의 시즌 ${seasonKey} 결과</h3>
+                <h3 style="margin:0">⚔️️ 비상하는 운명의 시즌 ${seasonKey} 결과</h3>
                 <button class="btn btn-danger btn-small" onclick="deleteRaidSeasonData('${seasonKey}')">데이터 초기화</button>
             </div>
             <div class="raid-dashboard">
@@ -950,7 +961,6 @@ function handleRaidScreenshot(event){
         let extractedInt = "34"; 
         let extractedNorm = "4";
         
-        // 정규식 개선: '시즌'이라는 단어 바로 뒤 혹은 가장 상단에 위치한 '숫자-숫자' 패턴 추적
         let seasonFound = false;
         for(let line of lines) {
             let match = line.match(/시즌\s*(\d{1,3})\s*-\s*(\d{1,2})/);
@@ -1024,7 +1034,6 @@ function handleRaidScreenshot(event){
             { name: "덩어리진 감초바다의 심연", level: "344레벨", damage: boss2Damage }
         ];
 
-        // 하드코딩 제거, 실제 동적 데이터 추출 (실패 시 기존 데이터 보존)
         let parsedMembers = [];
         lines.forEach(line => {
             let runsMatch = line.match(/(\d{1,2})회/g);
@@ -1174,24 +1183,12 @@ function getBadgeClass(role){ if(role === "관리자") return "badge-admin"; if(
 function changeNickname(){ const member = getCurrentMember(), newName = prompt("변경할 닉네임을 입력하세요:", member.nickname); if(!newName || !newName.trim()) return; member.nickname = newName.trim(); currentUser.nickname = newName.trim(); saveJSON("currentUser", currentUser); saveJSON("guildMembers", members); document.getElementById("currentNickname").textContent = newName.trim(); document.getElementById("personalNickname").textContent = newName.trim(); alert("닉네임이 변경되었습니다."); }
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
-<!-- ========================================== -->
+
 <!-- ☁️ 실전용 Firebase 서버 동기화 시스템 -->
-<!-- ========================================== -->
-
-<!-- 화면 우측 하단 연동 버튼 (디자인 개선) -->
-<div style="padding: 15px; background: #fff; border: 2px solid #2788d8; position: fixed; bottom: 15px; right: 15px; z-index: 9999; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
-  <p style="margin:0 0 10px 0; font-weight:bold; color:#14549a; font-size:13px;">☁️ 서버 데이터 동기화</p>
-  <div style="display: flex; gap: 8px;">
-    <button id="real-save-btn" class="btn btn-primary" style="padding: 10px 15px;">서버에 저장 (백업)</button>
-    <button id="real-load-btn" class="btn btn-secondary" style="padding: 10px 15px;">서버에서 불러오기</button>
-  </div>
-</div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-  // 본인의 Firebase 정보
   const firebaseConfig = {
     apiKey: "AIzaSyAysZQbayh0_31xnrsndzvhiSvNPQD3QyQ",
     authDomain: "cookie-server-117.firebaseapp.com",
@@ -1204,16 +1201,14 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 1. [서버에 저장] 기능
+  // [서버에 저장] 버튼 기능 (운영탭 내부)
   document.getElementById("real-save-btn").addEventListener("click", async () => {
-    // 로그인 안 되어 있으면 차단
     const userString = localStorage.getItem("currentUser");
     if(!userString) { alert("로그인 후 길드 정보를 먼저 불러와주세요."); return; }
     
-    const guildName = JSON.parse(userString).guild; // 예: "117번째우정"
+    const guildName = JSON.parse(userString).guild;
     
     try {
-      // 현재 브라우저(localStorage)에 있는 모든 데이터를 하나로 모음
       const fullGuildData = {
         guildMembers: localStorage.getItem("guildMembers") || "{}",
         guildNotices: localStorage.getItem("guildNotices") || "[]",
@@ -1225,16 +1220,14 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
         guildChampBossStorage: localStorage.getItem("guildChampBossStorage") || "{}"
       };
       
-      // 'guild_db'라는 서랍장 안에 길드이름(117번째우정) 이름표를 붙여서 통째로 저장 (덮어쓰기)
       await setDoc(doc(db, "guild_db", guildName), fullGuildData);
-      alert(`✅ [${guildName}] 길드의 모든 데이터가 서버에 안전하게 저장되었습니다!`);
-      
+      alert(`✅ [${guildName}] 길드의 모든 데이터가 서버에 안전하게 백업되었습니다!`);
     } catch (error) {
-      console.error(error); alert("저장에 실패했습니다.");
+      console.error(error); alert("데이터 저장에 실패했습니다.");
     }
   });
 
-  // 2. [서버에서 불러오기] 기능
+  // [서버에서 불러오기] 버튼 기능 (운영탭 내부)
   document.getElementById("real-load-btn").addEventListener("click", async () => {
     const userString = localStorage.getItem("currentUser");
     if(!userString) { alert("로그인 후 길드 정보를 먼저 불러와주세요."); return; }
@@ -1242,13 +1235,10 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
     const guildName = JSON.parse(userString).guild;
     
     try {
-      // 서버에서 내 길드이름표가 붙은 데이터를 찾아옴
       const docSnap = await getDoc(doc(db, "guild_db", guildName));
-      
       if(docSnap.exists()) {
         const serverData = docSnap.data();
         
-        // 서버에서 가져온 데이터를 현재 브라우저에 덮어씌움
         if(serverData.guildMembers) localStorage.setItem("guildMembers", serverData.guildMembers);
         if(serverData.guildNotices) localStorage.setItem("guildNotices", serverData.guildNotices);
         if(serverData.guildCuts) localStorage.setItem("guildCuts", serverData.guildCuts);
@@ -1259,14 +1249,12 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
         if(serverData.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", serverData.guildChampBossStorage);
         
         alert("✅ 서버에서 최신 데이터를 성공적으로 불러왔습니다! 화면을 새로고침합니다.");
-        // 데이터가 화면에 바로 반영되도록 즉시 새로고침
         location.reload(); 
-        
       } else {
-        alert("서버에 저장된 길드 데이터가 없습니다.");
+        alert("서버에 저장된 길드 데이터가 없습니다. 먼저 서버에 데이터를 백업해주세요.");
       }
     } catch (error) {
-      console.error(error); alert("불러오기에 실패했습니다.");
+      console.error(error); alert("데이터 불러오기에 실패했습니다.");
     }
   });
 </script>
