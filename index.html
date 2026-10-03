@@ -1174,65 +1174,71 @@ function getBadgeClass(role){ if(role === "관리자") return "badge-admin"; if(
 function changeNickname(){ const member = getCurrentMember(), newName = prompt("변경할 닉네임을 입력하세요:", member.nickname); if(!newName || !newName.trim()) return; member.nickname = newName.trim(); currentUser.nickname = newName.trim(); saveJSON("currentUser", currentUser); saveJSON("guildMembers", members); document.getElementById("currentNickname").textContent = newName.trim(); document.getElementById("personalNickname").textContent = newName.trim(); alert("닉네임이 변경되었습니다."); }
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
-    <!-- Firebase SDK 불러오기 (v9 모듈 방식) -->
+<!-- ========================================== -->
+<!-- 아래부터 Firebase 서버 연결 및 테스트 코드입니다 -->
+<!-- ========================================== -->
+
+<!-- 1. 화면에 보여질 테스트용 버튼 2개 -->
+<div style="padding: 20px; background: #fff; border: 2px solid red; position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
+  <p style="margin:0 0 10px 0; font-weight:bold;">서버 연동 테스트</p>
+  <button id="test-save-btn" style="padding:10px; background:blue; color:white;">서버에 데이터 저장하기</button>
+  <button id="test-load-btn" style="padding:10px; background:green; color:white;">서버에서 데이터 불러오기</button>
+</div>
+
+<!-- 2. Firebase 서버 연결 스크립트 -->
 <script type="module">
-  // 1. Firebase 핵심 기능과 DB(Firestore) 기능 가져오기
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-  // 2. 아까 1단계에서 발급받은 '내 Firebase 설정 코드'를 여기에 붙여넣으세요!
+  // ★★★ 주의: 아래 firebaseConfig 부분은 1단계에서 화면에 떴던 본인의 코드로 꼭 바꿔주세요! ★★★
   const firebaseConfig = {
-    apiKey: "AIzaSyC... (본인 코드로 변경)",
-    authDomain: "cookie-guild-117.firebaseapp.com",
-    projectId: "cookie-guild-117",
-    storageBucket: "cookie-guild-117.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
+    apiKey: "AIzaSy...", 
+    authDomain: "...",
+    projectId: "...",
+    storageBucket: "...",
+    messagingSenderId: "...",
+    appId: "..."
   };
 
-  // 3. Firebase 초기화 및 DB 연결
+  // 서버 연결 켜기
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ==========================================
-  // [데이터 저장하기 기능 만들기]
-  // ==========================================
-  // HTML의 일반 script(전역)에서 쓸 수 있게 window. 함수로 만듭니다.
-  window.saveGuildData = async function() {
+  // '저장하기' 버튼을 눌렀을 때 작동할 기능
+  document.getElementById("test-save-btn").addEventListener("click", async () => {
     try {
-      // 예시: 저장할 데이터 (나중에는 화면에 입력된 값을 가져오게 수정하면 됩니다)
-      const dataToSave = {
-        name: "용감한쿠키",
-        damage: 15000000,
+      // 임시로 저장해볼 가짜 길드 데이터
+      const testData = {
+        name: "테스트쿠키",
+        damage: 1000000,
         boss: "레드벨벳 드래곤",
-        date: new Date().toISOString()
+        time: new Date().toISOString()
       };
-
-      // 'guild_records'라는 컬렉션(폴더 개념)에 데이터 추가
-      const docRef = await addDoc(collection(db, "guild_records"), dataToSave);
-      alert("데이터가 성공적으로 서버에 저장되었습니다!");
       
-    } catch (e) {
-      console.error("저장 중 에러 발생: ", e);
-      alert("저장에 실패했습니다. 콘솔을 확인해주세요.");
+      await addDoc(collection(db, "guild_records"), testData);
+      alert("성공! 데이터가 서버에 저장되었습니다.");
+    } catch (error) {
+      console.error("저장 실패:", error);
+      alert("에러가 발생했습니다. (F12를 눌러 콘솔창을 확인하세요)");
     }
-  };
+  });
 
-  // ==========================================
-  // [데이터 불러오기 기능 만들기]
-  // ==========================================
-  window.loadGuildData = async function() {
+  // '불러오기' 버튼을 눌렀을 때 작동할 기능
+  document.getElementById("test-load-btn").addEventListener("click", async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "guild_records"));
-      console.log("--- 서버에서 불러온 데이터 ---");
+      let resultText = "저장된 데이터 목록:\n";
       querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
+        resultText += `- ${doc.data().name} (${doc.data().damage}점)\n`;
       });
-      alert("데이터를 성공적으로 불러왔습니다! (F12 개발자 도구 콘솔창 확인)");
-    } catch (e) {
-      console.error("불러오기 중 에러 발생: ", e);
+      alert(resultText);
+    } catch (error) {
+      alert("불러오기 실패!");
     }
-  };
+  });
 </script>
+<!-- ========================================== -->
+<!-- Firebase 연동 코드 끝 -->
+<!-- ========================================== -->
 </body>
 </html>
