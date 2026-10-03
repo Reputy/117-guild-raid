@@ -1175,22 +1175,23 @@ function changeNickname(){ const member = getCurrentMember(), newName = prompt("
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
 <!-- ========================================== -->
-<!-- 아래부터 Firebase 서버 연결 및 테스트 코드입니다 -->
+<!-- ☁️ 실전용 Firebase 서버 동기화 시스템 -->
 <!-- ========================================== -->
 
-<!-- 1. 화면에 보여질 테스트용 버튼 2개 -->
-<div style="padding: 20px; background: #fff; border: 2px solid red; position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
-  <p style="margin:0 0 10px 0; font-weight:bold;">서버 연동 테스트</p>
-  <button id="test-save-btn" style="padding:10px; background:blue; color:white;">서버에 데이터 저장하기</button>
-  <button id="test-load-btn" style="padding:10px; background:green; color:white;">서버에서 데이터 불러오기</button>
+<!-- 화면 우측 하단 연동 버튼 (디자인 개선) -->
+<div style="padding: 15px; background: #fff; border: 2px solid #2788d8; position: fixed; bottom: 15px; right: 15px; z-index: 9999; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+  <p style="margin:0 0 10px 0; font-weight:bold; color:#14549a; font-size:13px;">☁️ 서버 데이터 동기화</p>
+  <div style="display: flex; gap: 8px;">
+    <button id="real-save-btn" class="btn btn-primary" style="padding: 10px 15px;">서버에 저장 (백업)</button>
+    <button id="real-load-btn" class="btn btn-secondary" style="padding: 10px 15px;">서버에서 불러오기</button>
+  </div>
 </div>
 
-<!-- 2. Firebase 서버 연결 스크립트 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-  // ★★★ 주의: 아래 firebaseConfig 부분은 1단계에서 화면에 떴던 본인의 코드로 꼭 바꿔주세요! ★★★
+  // 본인의 Firebase 정보
   const firebaseConfig = {
     apiKey: "AIzaSyAysZQbayh0_31xnrsndzvhiSvNPQD3QyQ",
     authDomain: "cookie-server-117.firebaseapp.com",
@@ -1200,45 +1201,74 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
     appId: "1:804269862033:web:3f0c934647ee045abea330"
   };
 
-  // 서버 연결 켜기
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // '저장하기' 버튼을 눌렀을 때 작동할 기능
-  document.getElementById("test-save-btn").addEventListener("click", async () => {
+  // 1. [서버에 저장] 기능
+  document.getElementById("real-save-btn").addEventListener("click", async () => {
+    // 로그인 안 되어 있으면 차단
+    const userString = localStorage.getItem("currentUser");
+    if(!userString) { alert("로그인 후 길드 정보를 먼저 불러와주세요."); return; }
+    
+    const guildName = JSON.parse(userString).guild; // 예: "117번째우정"
+    
     try {
-      // 임시로 저장해볼 가짜 길드 데이터
-      const testData = {
-        name: "테스트쿠키",
-        damage: 1000000,
-        boss: "레드벨벳 드래곤",
-        time: new Date().toISOString()
+      // 현재 브라우저(localStorage)에 있는 모든 데이터를 하나로 모음
+      const fullGuildData = {
+        guildMembers: localStorage.getItem("guildMembers") || "{}",
+        guildNotices: localStorage.getItem("guildNotices") || "[]",
+        guildCuts: localStorage.getItem("guildCuts") || "{}",
+        guildRaidData: localStorage.getItem("guildRaidData") || "{}",
+        guildRankingData: localStorage.getItem("guildRankingData") || "{}",
+        guildRelicScoreData: localStorage.getItem("guildRelicScoreData") || "{}",
+        guildLogos: localStorage.getItem("guildLogos") || "{}",
+        guildChampBossStorage: localStorage.getItem("guildChampBossStorage") || "{}"
       };
       
-      await addDoc(collection(db, "guild_records"), testData);
-      alert("성공! 데이터가 서버에 저장되었습니다.");
+      // 'guild_db'라는 서랍장 안에 길드이름(117번째우정) 이름표를 붙여서 통째로 저장 (덮어쓰기)
+      await setDoc(doc(db, "guild_db", guildName), fullGuildData);
+      alert(`✅ [${guildName}] 길드의 모든 데이터가 서버에 안전하게 저장되었습니다!`);
+      
     } catch (error) {
-      console.error("저장 실패:", error);
-      alert("에러가 발생했습니다. (F12를 눌러 콘솔창을 확인하세요)");
+      console.error(error); alert("저장에 실패했습니다.");
     }
   });
 
-  // '불러오기' 버튼을 눌렀을 때 작동할 기능
-  document.getElementById("test-load-btn").addEventListener("click", async () => {
+  // 2. [서버에서 불러오기] 기능
+  document.getElementById("real-load-btn").addEventListener("click", async () => {
+    const userString = localStorage.getItem("currentUser");
+    if(!userString) { alert("로그인 후 길드 정보를 먼저 불러와주세요."); return; }
+    
+    const guildName = JSON.parse(userString).guild;
+    
     try {
-      const querySnapshot = await getDocs(collection(db, "guild_records"));
-      let resultText = "저장된 데이터 목록:\n";
-      querySnapshot.forEach((doc) => {
-        resultText += `- ${doc.data().name} (${doc.data().damage}점)\n`;
-      });
-      alert(resultText);
+      // 서버에서 내 길드이름표가 붙은 데이터를 찾아옴
+      const docSnap = await getDoc(doc(db, "guild_db", guildName));
+      
+      if(docSnap.exists()) {
+        const serverData = docSnap.data();
+        
+        // 서버에서 가져온 데이터를 현재 브라우저에 덮어씌움
+        if(serverData.guildMembers) localStorage.setItem("guildMembers", serverData.guildMembers);
+        if(serverData.guildNotices) localStorage.setItem("guildNotices", serverData.guildNotices);
+        if(serverData.guildCuts) localStorage.setItem("guildCuts", serverData.guildCuts);
+        if(serverData.guildRaidData) localStorage.setItem("guildRaidData", serverData.guildRaidData);
+        if(serverData.guildRankingData) localStorage.setItem("guildRankingData", serverData.guildRankingData);
+        if(serverData.guildRelicScoreData) localStorage.setItem("guildRelicScoreData", serverData.guildRelicScoreData);
+        if(serverData.guildLogos) localStorage.setItem("guildLogos", serverData.guildLogos);
+        if(serverData.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", serverData.guildChampBossStorage);
+        
+        alert("✅ 서버에서 최신 데이터를 성공적으로 불러왔습니다! 화면을 새로고침합니다.");
+        // 데이터가 화면에 바로 반영되도록 즉시 새로고침
+        location.reload(); 
+        
+      } else {
+        alert("서버에 저장된 길드 데이터가 없습니다.");
+      }
     } catch (error) {
-      alert("불러오기 실패!");
+      console.error(error); alert("불러오기에 실패했습니다.");
     }
   });
 </script>
-<!-- ========================================== -->
-<!-- Firebase 연동 코드 끝 -->
-<!-- ========================================== -->
 </body>
 </html>
