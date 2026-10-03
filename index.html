@@ -540,14 +540,14 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                 <div id="noticeList"><div class="empty">공지사항이 없습니다.</div></div>
             </section>
 
-            <!-- 운영 (관리자/운영진 전용) -->
+            <!-- 운영 -->
             <section id="screen-operation" class="screen">
                 <div class="page-header">
                     <h1>운영</h1>
                     <p>관리자 및 운영진 전용 관리 화면입니다.</p>
                 </div>
 
-                <!-- ☁️ 서버 데이터 동기화 카드 -->
+                <!-- ★ 서버 동기화 기능 카드 ★ -->
                 <div class="card" style="margin-bottom: 16px">
                     <h3>☁️ 서버 데이터 동기화</h3>
                     <p style="color:var(--sub);font-size:12px;margin-bottom:12px">현재 기기에 있는 모든 길드 데이터를 서버에 백업하거나, 서버의 최신 데이터를 불러옵니다.</p>
@@ -655,7 +655,7 @@ let currentCutType = null;
 
 function loadJSON(key, fallback){ try{ const val = localStorage.getItem(key); return val === null ? fallback : JSON.parse(val); }catch(e){ return fallback; } }
 
-// ⭐️ 자동 백업이 적용된 데이터 저장 함수
+// ★ 자동 백업 연동 ★
 function saveJSON(key, val){ 
     localStorage.setItem(key, JSON.stringify(val)); 
     if(window.autoSyncToServer) window.autoSyncToServer(); 
@@ -829,7 +829,6 @@ function updateRaidSeasonDropdown(newInt = null, newNorm = null) {
 
 function changeRaidSeason(){ updateRaidScreen(); updateHome(); }
 
-// [수정점] 유저 정보, 평균 딜량, 토벌 횟수, 보스별 딜량 순서 정렬
 function renderRaidDamage(type) {
     document.querySelectorAll("#screen-raid .champ-tab-btn").forEach(btn => btn.classList.remove("active"));
     if(type === 'boss1') document.getElementById("btnRaidBoss1").classList.add("active");
@@ -954,12 +953,11 @@ function updateRaidScreen(){
 
 function triggerRaidScreenshotUpload(){ document.getElementById("raidImageInput").click(); }
 
-// [수정점] 하드코딩 제거된 완전한 OCR 정밀 분석 로직
 function handleRaidScreenshot(event){
     const files = Array.from(event.target.files);
     if(files.length === 0) return;
     
-    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 분석 중입니다... 잠시만 기다려주세요.`);
+    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 정밀 분석 중입니다... 잠시만 기다려주세요.`);
 
     Promise.all(files.map(file => Tesseract.recognize(file, 'kor+eng'))).then(results => {
         const combinedText = results.map(r => r.data.text).join('\n');
@@ -968,8 +966,8 @@ function handleRaidScreenshot(event){
         let extractedInt = "34"; 
         let extractedNorm = "4";
         
+        // ★ 시즌 번호 정밀 탐색 ('시즌 34-3' 패턴)
         let seasonFound = false;
-        // [수정점] 시즌 번호 정밀 탐색: '시즌 34-3'
         for(let line of lines) {
             let match = line.match(/시즌\s*(\d{1,3})\s*-\s*(\d{1,2})/);
             if(match) {
@@ -993,14 +991,14 @@ function handleRaidScreenshot(event){
         
         const extractedSeasonKey = `${extractedInt}-${extractedNorm}`;
 
-        // [수정점] 참여인원 정확도 (18명 등)
+        // ★ 참여인원 정확도 향상
         let participants = "알수없음"; 
         for(let line of lines) {
             let match = line.match(/(\d{1,2})\s*명/);
             if(match) { participants = match[1] + "명"; break; }
         }
 
-        // [수정점] 트로피, 순위 탐색 정확도
+        // ★ 트로피, 순위 탐색 정확도
         let rank = "알수없음"; 
         let trophy = "0"; 
         for(let i = 0; i < lines.length; i++) {
@@ -1016,7 +1014,7 @@ function handleRaidScreenshot(event){
             }
         }
 
-        // [수정점] 총 누적 피해량 추출 (퍼센트 제외, 노란색 숫자 타겟)
+        // ★ 총 누적 피해량 추출 (퍼센트 제외, 노란색 숫자 타겟)
         let boss1Damage = "0"; 
         let boss2Damage = "0"; 
         let cumulativeDamages = [];
@@ -1046,7 +1044,7 @@ function handleRaidScreenshot(event){
             { name: "덩어리진 감초바다의 심연", level: "344레벨", damage: boss2Damage }
         ];
 
-        // [수정점] 유저 정보 추출 로직 강화 (가짜 데이터 없음)
+        // ★ 유저 정보 추출 로직 (가짜 데이터 완전 제거)
         let parsedMembers = [];
         let currentName = "";
         let pendingRuns = [];
@@ -1188,7 +1186,7 @@ function changeNickname(){ const member = getCurrentMember(), newName = prompt("
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
 
-<!-- ☁️ 파이어베이스 서버 연결 및 자동 백업 시스템 -->
+<!-- ★ 서버 연동 및 자동 백업 모듈 ★ -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -1225,12 +1223,13 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
           guildChampBossStorage: localStorage.getItem("guildChampBossStorage") || "{}"
         };
         await setDoc(doc(db, "guild_db", guildName), fullData);
+        console.log("☁️ 자동 백업 성공");
       } catch (error) { console.error("자동 백업 실패:", error); }
     }, 2000); 
   };
 
   document.getElementById("real-save-btn").addEventListener("click", () => {
-    window.autoSyncToServer(); alert("서버에 즉시 백업을 요청했습니다.");
+    window.autoSyncToServer(); alert("서버에 백업을 요청했습니다.");
   });
 
   document.getElementById("real-load-btn").addEventListener("click", async () => {
