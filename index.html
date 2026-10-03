@@ -1174,5 +1174,65 @@ function getBadgeClass(role){ if(role === "관리자") return "badge-admin"; if(
 function changeNickname(){ const member = getCurrentMember(), newName = prompt("변경할 닉네임을 입력하세요:", member.nickname); if(!newName || !newName.trim()) return; member.nickname = newName.trim(); currentUser.nickname = newName.trim(); saveJSON("currentUser", currentUser); saveJSON("guildMembers", members); document.getElementById("currentNickname").textContent = newName.trim(); document.getElementById("personalNickname").textContent = newName.trim(); alert("닉네임이 변경되었습니다."); }
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
+    <!-- Firebase SDK 불러오기 (v9 모듈 방식) -->
+<script type="module">
+  // 1. Firebase 핵심 기능과 DB(Firestore) 기능 가져오기
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+  // 2. 아까 1단계에서 발급받은 '내 Firebase 설정 코드'를 여기에 붙여넣으세요!
+  const firebaseConfig = {
+    apiKey: "AIzaSyC... (본인 코드로 변경)",
+    authDomain: "cookie-guild-117.firebaseapp.com",
+    projectId: "cookie-guild-117",
+    storageBucket: "cookie-guild-117.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef"
+  };
+
+  // 3. Firebase 초기화 및 DB 연결
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ==========================================
+  // [데이터 저장하기 기능 만들기]
+  // ==========================================
+  // HTML의 일반 script(전역)에서 쓸 수 있게 window. 함수로 만듭니다.
+  window.saveGuildData = async function() {
+    try {
+      // 예시: 저장할 데이터 (나중에는 화면에 입력된 값을 가져오게 수정하면 됩니다)
+      const dataToSave = {
+        name: "용감한쿠키",
+        damage: 15000000,
+        boss: "레드벨벳 드래곤",
+        date: new Date().toISOString()
+      };
+
+      // 'guild_records'라는 컬렉션(폴더 개념)에 데이터 추가
+      const docRef = await addDoc(collection(db, "guild_records"), dataToSave);
+      alert("데이터가 성공적으로 서버에 저장되었습니다!");
+      
+    } catch (e) {
+      console.error("저장 중 에러 발생: ", e);
+      alert("저장에 실패했습니다. 콘솔을 확인해주세요.");
+    }
+  };
+
+  // ==========================================
+  // [데이터 불러오기 기능 만들기]
+  // ==========================================
+  window.loadGuildData = async function() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "guild_records"));
+      console.log("--- 서버에서 불러온 데이터 ---");
+      querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+      });
+      alert("데이터를 성공적으로 불러왔습니다! (F12 개발자 도구 콘솔창 확인)");
+    } catch (e) {
+      console.error("불러오기 중 에러 발생: ", e);
+    }
+  };
+</script>
 </body>
 </html>
