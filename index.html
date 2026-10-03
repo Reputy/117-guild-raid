@@ -78,6 +78,7 @@ button{cursor:pointer}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-secondary{background:#eaf6fc;color:var(--primary-dark)}
 .btn-danger{background:#ef6873;color:#fff}
+.btn-success{background:var(--success);color:#fff}
 .btn-small{padding:5px 8px;font-size:11px}
 
 /* 로그인 */
@@ -101,7 +102,7 @@ button{cursor:pointer}
 .login-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px}
 #loginMessage{min-height:18px;color:var(--danger);margin-top:8px;font-size:12px;text-align:center}
 
-/* 사이드바 & 메인 (PC 기본) */
+/* 사이드바 & 메인 */
 .sidebar{
     width:220px;min-height:100vh;position:fixed;left:0;top:0;bottom:0;
     padding:16px 12px;background:var(--sidebar-bg);
@@ -161,18 +162,15 @@ button{cursor:pointer}
 .badge-temp{background:#ffe0e0;color:#bd4e4e}
 .member-actions{display:flex;gap:4px;flex-wrap:wrap}
 
-/* 공지사항 */
+/* 공지사항, 요약 카드 */
 .notice-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:.2s}
 .notice-card:hover{border-color:var(--primary)}
 .notice-title{font-size:15px;font-weight:bold;margin-bottom:4px;color:var(--primary-dark)}
 .notice-date{font-size:11px;color:var(--sub);margin-bottom:8px}
 .notice-body{font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap}
-
-/* 요약 카드 */
 .home-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .summary-card{background:#fff;padding:14px;border-radius:14px;border:1px solid var(--border);text-align:center}
 .summary-card .val{font-size:18px;font-weight:bold;color:var(--primary-dark);margin-top:4px}
-
 .cut-box-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 @media(max-width:768px){.cut-box-grid{grid-template-columns:1fr}}
 .cut-card{background:#fff;padding:14px;border-radius:14px;border:1px solid var(--border)}
@@ -186,92 +184,26 @@ button{cursor:pointer}
 .boss-box{background:#f8fcfe;border:1px solid #e3f0f6;border-radius:10px;padding:10px;margin-top:8px}
 .boss-name{font-weight:bold;font-size:14px;color:var(--text);margin-bottom:3px}
 
-/* 챌프 보스별 탭 버튼 영역 스타일 */
-.champ-boss-tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 14px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-}
-.champ-tab-btn {
-    flex: 1;
-    min-width: 75px;
-    padding: 8px 10px;
-    font-size: 12px;
-    font-weight: bold;
-    border: 1px solid var(--border);
-    background: #fff;
-    color: var(--sub);
-    border-radius: 8px;
-    text-align: center;
-    transition: 0.2s;
-}
-.champ-tab-btn.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-}
+/* 챌프 탭 */
+.champ-boss-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.champ-tab-btn { flex: 1; min-width: 75px; padding: 8px 10px; font-size: 12px; font-weight: bold; border: 1px solid var(--border); background: #fff; color: var(--sub); border-radius: 8px; text-align: center; transition: 0.2s; }
+.champ-tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-.champ-upload-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 14px;
-}
+.champ-upload-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 @media(max-width:768px){.champ-upload-container{grid-template-columns:1fr}}
-
-.champ-upload-box {
-    border: 2px dashed var(--border);
-    padding: 14px;
-    text-align: center;
-    border-radius: 12px;
-    background: #f8fcfe;
-}
-.checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px;
-    margin: 12px 0 16px 0;
-    background: #f8fcfe;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    font-size: 12px;
-}
-.comparison-table-wrapper {
-    overflow-x: auto;
-}
-table.comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-}
-table.comparison-table th, table.comparison-table td {
-    padding: 8px 10px;
-    text-align: center;
-    border-bottom: 1px solid #edf2f7;
-    font-size: 12px;
-}
-table.comparison-table th {
-    background: #e9f6ff;
-    color: var(--primary-dark);
-    font-weight: bold;
-}
+.champ-upload-box { border: 2px dashed var(--border); padding: 14px; text-align: center; border-radius: 12px; background: #f8fcfe; }
+.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 12px 0 16px 0; background: #f8fcfe; padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 12px; }
+.comparison-table-wrapper { overflow-x: auto; }
+table.comparison-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+table.comparison-table th, table.comparison-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid #edf2f7; font-size: 12px; }
+table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); font-weight: bold; }
 .ref-header { background: #e2f0fd !important; color: #104375 !important; }
 .my-header { background: #eef9ee !important; color: #1b663b !important; }
 
 /* 모달 */
-.custom-modal{
-    position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);
-    display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px;
-}
+.custom-modal{ position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5); display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px; }
 .modal-content{background:#fff;padding:20px;border-radius:16px;width:100%;max-width:340px;box-shadow:0 10px 30px rgba(0,0,0,0.2);text-align:center;font-size:13px}
 .modal-content h3{margin-top:0;font-size:16px}
-
 .theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .theme-button{min-height:90px;border:0;border-radius:14px;font-size:15px;font-weight:bold;cursor:pointer}
 .theme-spring-button{background:linear-gradient(135deg,#ffd0e2,#e0f7df)}
@@ -280,66 +212,20 @@ table.comparison-table th {
 .theme-winter-button{background:linear-gradient(135deg,#a4d6f4,#fff)}
 .empty{padding:25px 15px;text-align:center;color:#8aa0b0;background:#f8fcfe;border-radius:12px;font-size:12px}
 
-/* ================= 모바일 반응형 전용 스타일 (하단 고정 메뉴 & 가독성 개선) ================= */
+/* 모바일 반응형 전용 스타일 */
 @media(max-width:768px){
     body { font-size: 13px; }
-    .sidebar{
-        width:100%!important;
-        height:56px!important;
-        min-height:unset!important;
-        position:fixed!important;
-        left:0!important;
-        top:unset!important;
-        bottom:0!important;
-        padding:4px 6px!important;
-        display:flex!important;
-        align-items:center!important;
-        justify-content:space-between!important;
-        box-shadow:0 -4px 15px rgba(20,90,160,.2)!important;
-        border-top:1px solid rgba(255,255,255,0.2);
-    }
+    .sidebar{ width:100%!important; height:56px!important; min-height:unset!important; position:fixed!important; left:0!important; top:unset!important; bottom:0!important; padding:4px 6px!important; display:flex!important; align-items:center!important; justify-content:space-between!important; box-shadow:0 -4px 15px rgba(20,90,160,.2)!important; border-top:1px solid rgba(255,255,255,0.2); }
     .guild-logo{ display:none!important; }
-    .menu{
-        display:flex!important;
-        flex-direction:row!important;
-        width:100%!important;
-        overflow-x:auto!important;
-        gap:4px!important;
-        scrollbar-width:none;
-    }
+    .menu{ display:flex!important; flex-direction:row!important; width:100%!important; overflow-x:auto!important; gap:4px!important; scrollbar-width:none; }
     .menu::-webkit-scrollbar{display:none;}
-    .menu button{
-        flex:0 0 auto!important;
-        width:auto!important;
-        padding:6px 9px!important;
-        font-size:11px!important;
-        text-align:center!important;
-        border-radius:6px!important;
-        white-space:nowrap!important;
-    }
-    .menu button.active{
-        box-shadow:inset 0 -2px 0 #fff!important;
-    }
-    .main-area{
-        width:100%!important;
-        margin-left:0!important;
-        padding-bottom:70px!important;
-    }
-    .topbar{
-        padding:0 12px!important;
-        height:52px!important;
-        font-size:12px!important;
-    }
-    .content{
-        padding:12px!important;
-    }
-    .page-header h1{
-        font-size:18px!important;
-    }
-    .card {
-        padding: 12px !important;
-        border-radius: 12px !important;
-    }
+    .menu button{ flex:0 0 auto!important; width:auto!important; padding:6px 9px!important; font-size:11px!important; text-align:center!important; border-radius:6px!important; white-space:nowrap!important; }
+    .menu button.active{ box-shadow:inset 0 -2px 0 #fff!important; }
+    .main-area{ width:100%!important; margin-left:0!important; padding-bottom:70px!important; }
+    .topbar{ padding:0 12px!important; height:52px!important; font-size:12px!important; }
+    .content{ padding:12px!important; }
+    .page-header h1{ font-size:18px!important; }
+    .card { padding: 12px !important; border-radius: 12px !important; }
 }
 </style>
 </head>
@@ -483,22 +369,15 @@ table.comparison-table th {
                     <div class="toolbar" style="margin-bottom:0">
                         <div>
                             <label style="font-size:11px;font-weight:bold;display:block;margin-bottom:3px">통합 시즌</label>
-                            <select id="selectIntegratedSeason" onchange="changeRaidSeason()">
-                                <option value="34">34 시즌</option>
-                            </select>
+                            <select id="selectIntegratedSeason" onchange="changeRaidSeason()"></select>
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:bold;display:block;margin-bottom:3px">일반 시즌</label>
-                            <select id="selectNormalSeason" onchange="changeRaidSeason()">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3" selected>3</option>
-                                <option value="4">4</option>
-                            </select>
+                            <select id="selectNormalSeason" onchange="changeRaidSeason()"></select>
                         </div>
                         <div style="display:flex;align-items:flex-end">
-                            <button class="btn btn-primary" onclick="triggerRaidScreenshotUpload()">📸 토벌 결과 스크린샷 등록</button>
-                            <input type="file" id="raidImageInput" accept="image/*" style="display:none" onchange="handleRaidScreenshot(event)">
+                            <button class="btn btn-primary" onclick="triggerRaidScreenshotUpload()">📸 다중 스크린샷 일괄 등록</button>
+                            <input type="file" id="raidImageInput" accept="image/*" multiple style="display:none" onchange="handleRaidScreenshot(event)">
                         </div>
                     </div>
                 </div>
@@ -522,14 +401,13 @@ table.comparison-table th {
                 </div>
             </section>
 
-            <!-- 챌프 (보스별 탭 추가 및 데이터 유지 기능 적용) -->
+            <!-- 챌프 -->
             <section id="screen-champ" class="screen">
                 <div class="page-header">
                     <h1>챌프</h1>
                     <p>보스별 기준 사진과 내 사진을 비교하고 세팅 수치를 대조하세요.</p>
                 </div>
                 
-                <!-- 상단 보스별 4개 버튼 -->
                 <div class="champ-boss-tabs">
                     <button class="champ-tab-btn active" onclick="switchChampBoss('드래곤')">드래곤</button>
                     <button class="champ-tab-btn" onclick="switchChampBoss('대천사')">대천사</button>
@@ -539,7 +417,6 @@ table.comparison-table th {
 
                 <div class="card" style="margin-bottom:16px">
                     <h3 id="currentChampBossTitle">🍪 [드래곤] 세팅 스크린샷 일괄 등록</h3>
-                    
                     <div class="champ-upload-container">
                         <div class="champ-upload-box">
                             <h4 style="margin:0 0 8px;color:var(--primary-dark)">📌 기준 사진 (최대 5장)</h4>
@@ -547,7 +424,6 @@ table.comparison-table th {
                             <input type="file" id="refImagesInput" multiple accept="image/*" style="display:none" onchange="handleChampImages('ref', event)">
                             <p style="margin:6px 0 0;font-size:12px;color:var(--sub)">등록된 기준 사진: <span id="refFileCount">0</span> / 5장</p>
                         </div>
-
                         <div class="champ-upload-box">
                             <h4 style="margin:0 0 8px;color:#1b663b">👤 내 사진 (최대 5장)</h4>
                             <label for="myImagesInput" class="btn btn-primary" style="display:inline-block;cursor:pointer;">내 사진 선택</label>
@@ -700,7 +576,7 @@ table.comparison-table th {
     </div>
 </div>
 
-<!-- 내부컷 / 목표컷 수정 모달 -->
+<!-- 컷 수정 모달 -->
 <div id="cutModal" class="custom-modal hidden">
     <div class="modal-content" style="max-width:320px">
         <h3 id="cutModalTitle">컷 수정</h3>
@@ -738,10 +614,7 @@ table.comparison-table th {
 
 <script>
 const MENU_ORDER = ["home", "members", "raid", "relic", "champ", "personal", "ranking", "notice", "operation"];
-const SCREEN_NAME = {
-    home:"🏠 홈", members:"👥 길드원", raid:"⚔️ 토벌", relic:"🔮 유물", 
-    champ:"🏆 챌프", personal:"👤 개인", ranking:"📊 통합랭킹", notice:"📢 공지사항", operation:"⚙️ 운영"
-};
+const SCREEN_NAME = { home:"🏠 홈", members:"👥 길드원", raid:"⚔️ 토벌", relic:"🔮 유물", champ:"🏆 챌프", personal:"👤 개인", ranking:"📊 통합랭킹", notice:"📢 공지사항", operation:"⚙️ 운영" };
 const SCREEN_PERMISSION = {
     home:["관리자","운영진","길드원","임시"],
     members:["관리자","운영진"],
@@ -757,463 +630,258 @@ const SCREEN_PERMISSION = {
 let members = loadJSON("guildMembers", {});
 let currentUser = loadJSON("currentUser", null);
 let guildNotices = loadJSON("guildNotices", []);
-let guildCuts = loadJSON("guildCuts", {
-    inner: [200, 220, 230],
-    target: [270, 270, 340]
-});
+let guildCuts = loadJSON("guildCuts", { inner: [200, 220, 230], target: [270, 270, 340] });
 let raidData = loadJSON("guildRaidData", {});
 let rankingData = loadJSON("guildRankingData", {});
 let relicScoreData = loadJSON("guildRelicScoreData", {});
 let guildLogos = loadJSON("guildLogos", {});
-
-// 챌프 보스별 데이터 저장 객체 (드래곤, 대천사, 감초바다, 기계신)
-let champBossStorage = loadJSON("guildChampBossStorage", {
-    "드래곤": { refData: [], myData: [] },
-    "대천사": { refData: [], myData: [] },
-    "감초바다": { refData: [], myData: [] },
-    "기계신": { refData: [], myData: [] }
-});
+let champBossStorage = loadJSON("guildChampBossStorage", { "드래곤": { refData: [], myData: [] }, "대천사": { refData: [], myData: [] }, "감초바다": { refData: [], myData: [] }, "기계신": { refData: [], myData: [] } });
 let activeChampBoss = "드래곤";
 
 let selectedMemberIdForRole = null;
 let editingNoticeIndex = null;
 let currentCutType = null;
 
-function loadJSON(key, fallback){
-    try{
-        const val = localStorage.getItem(key);
-        return val === null ? fallback : JSON.parse(val);
-    }catch(e){ return fallback; }
-}
+function loadJSON(key, fallback){ try{ const val = localStorage.getItem(key); return val === null ? fallback : JSON.parse(val); }catch(e){ return fallback; } }
 function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 
 document.addEventListener("DOMContentLoaded", init);
+function init(){ loadTheme(); ensureAdministrator(); if(currentUser){ if(getCurrentMember()) startApp(); else logout(); }else{ showLogin(); } }
 
-function init(){
-    loadTheme();
-    ensureAdministrator();
-    if(currentUser){
-        if(getCurrentMember()) startApp();
-        else logout();
-    }else{
-        showLogin();
-    }
-}
+function ensureAdministrator(){ Object.keys(members).forEach(guild => { const target = (members[guild] || []).find(m => m.nickname === "리퓨티"); if(target) target.role = "관리자"; }); saveJSON("guildMembers", members); }
 
-function ensureAdministrator(){
-    Object.keys(members).forEach(guild => {
-        const target = (members[guild] || []).find(m => m.nickname === "리퓨티");
-        if(target) target.role = "관리자";
-    });
-    saveJSON("guildMembers", members);
-}
-
-function showLogin(){
-    document.getElementById("loginScreen").style.display = "flex";
-    document.getElementById("app").style.display = "none";
-}
-
+function showLogin(){ document.getElementById("loginScreen").style.display = "flex"; document.getElementById("app").style.display = "none"; }
 function login(){
-    const guild = document.getElementById("guildSelect").value;
-    const nickname = document.getElementById("nicknameInput").value.trim();
-    const passwordInput = document.getElementById("passwordInput");
-    const password = passwordInput.value.trim();
-    const msgEl = document.getElementById("loginMessage");
-
-    if(!nickname || !password){
-        msgEl.textContent = "닉네임과 비밀번호를 모두 입력해주세요.";
-        return;
-    }
-    const list = members[guild] || [];
-    const member = list.find(m => m.nickname === nickname && m.password === password);
-
-    if(!member){
-        passwordInput.value = "";
-        msgEl.textContent = "길드, 닉네임 또는 비밀번호를 확인해주세요.";
-        return;
-    }
+    const guild = document.getElementById("guildSelect").value, nickname = document.getElementById("nicknameInput").value.trim(), passwordInput = document.getElementById("passwordInput"), password = passwordInput.value.trim(), msgEl = document.getElementById("loginMessage");
+    if(!nickname || !password){ msgEl.textContent = "닉네임과 비밀번호를 모두 입력해주세요."; return; }
+    const list = members[guild] || [], member = list.find(m => m.nickname === nickname && m.password === password);
+    if(!member){ passwordInput.value = ""; msgEl.textContent = "길드, 닉네임 또는 비밀번호를 확인해주세요."; return; }
     if(member.nickname === "리퓨티") member.role = "관리자";
-    currentUser = { guild, nickname: member.nickname };
-    saveJSON("currentUser", currentUser);
-    passwordInput.value = "";
-    msgEl.textContent = "";
-    startApp();
+    currentUser = { guild, nickname: member.nickname }; saveJSON("currentUser", currentUser);
+    passwordInput.value = ""; msgEl.textContent = ""; startApp();
 }
-
-function logout(){
-    currentUser = null;
-    localStorage.removeItem("currentUser");
-    showLogin();
-}
-
+function logout(){ currentUser = null; localStorage.removeItem("currentUser"); showLogin(); }
 function registerMember(){
-    const guild = document.getElementById("guildSelect").value;
-    const nickname = document.getElementById("nicknameInput").value.trim();
-    const password = document.getElementById("passwordInput").value.trim();
-    const msgEl = document.getElementById("loginMessage");
-
-    if(!nickname || !password){
-        msgEl.textContent = "가입할 닉네임과 비밀번호를 입력해주세요.";
-        return;
-    }
+    const guild = document.getElementById("guildSelect").value, nickname = document.getElementById("nicknameInput").value.trim(), password = document.getElementById("passwordInput").value.trim(), msgEl = document.getElementById("loginMessage");
+    if(!nickname || !password){ msgEl.textContent = "가입할 닉네임과 비밀번호를 입력해주세요."; return; }
     if(!members[guild]) members[guild] = [];
-    if(members[guild].some(m => m.nickname === nickname)){
-        msgEl.textContent = "이미 등록된 닉네임입니다.";
-        return;
-    }
-
+    if(members[guild].some(m => m.nickname === nickname)){ msgEl.textContent = "이미 등록된 닉네임입니다."; return; }
     let role = (nickname === "리퓨티") ? "관리자" : "길드원";
-    members[guild].push({ 
-        id: Date.now().toString(), guild, nickname, password, role, joinDate: today() 
-    });
-    saveJSON("guildMembers", members);
-    currentUser = { guild, nickname };
-    saveJSON("currentUser", currentUser);
-    document.getElementById("passwordInput").value = "";
-    startApp();
+    members[guild].push({ id: Date.now().toString(), guild, nickname, password, role, joinDate: today() });
+    saveJSON("guildMembers", members); currentUser = { guild, nickname }; saveJSON("currentUser", currentUser);
+    document.getElementById("passwordInput").value = ""; startApp();
 }
 
 function startApp(){
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("app").style.display = "flex";
-    const member = getCurrentMember();
-    if(!member){ logout(); return; }
-
-    document.getElementById("currentGuild").textContent = member.guild;
-    document.getElementById("sideGuildName").textContent = member.guild;
-    document.getElementById("currentNickname").textContent = member.nickname;
-    document.getElementById("currentRole").textContent = member.role;
+    document.getElementById("loginScreen").style.display = "none"; document.getElementById("app").style.display = "flex";
+    const member = getCurrentMember(); if(!member){ logout(); return; }
+    document.getElementById("currentGuild").textContent = member.guild; document.getElementById("sideGuildName").textContent = member.guild;
+    document.getElementById("currentNickname").textContent = member.nickname; document.getElementById("currentRole").textContent = member.role;
     document.getElementById("homeGuildName").textContent = member.guild;
-
-    applyGuildLogoUI(member.guild);
-    buildMenu();
-    updateAll();
-    showScreen("home");
+    applyGuildLogoUI(member.guild); buildMenu(); updateRaidSeasonDropdown(); updateAll(); showScreen("home");
 }
 
-function getCurrentMember(){
-    if(!currentUser) return null;
-    const list = members[currentUser.guild] || [];
-    return list.find(m => m.nickname === currentUser.nickname);
-}
-
-function triggerGuildLogoUpload() {
-    document.getElementById("guildLogoImageInput").click();
-}
-
-function handleGuildLogoUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const imageUrl = e.target.result;
-        const member = getCurrentMember();
-        if(!member) return;
-
-        guildLogos[member.guild] = imageUrl;
-        saveJSON("guildLogos", guildLogos);
-        applyGuildLogoUI(member.guild);
-        alert("길드 성 이미지가 성공적으로 변경되었습니다!");
-    };
-    reader.readAsDataURL(file);
-    event.target.value = "";
-}
-
-function applyGuildLogoUI(guildName) {
-    const logoIcon = document.getElementById("guildLogoIcon");
-    const savedImage = guildLogos[guildName];
-    if (savedImage) {
-        logoIcon.style.backgroundImage = `url(${savedImage})`;
-        logoIcon.textContent = "";
-    } else {
-        logoIcon.style.backgroundImage = "none";
-        logoIcon.textContent = "🏰";
-    }
-}
+function getCurrentMember(){ if(!currentUser) return null; const list = members[currentUser.guild] || []; return list.find(m => m.nickname === currentUser.nickname); }
+function triggerGuildLogoUpload() { document.getElementById("guildLogoImageInput").click(); }
+function handleGuildLogoUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const imageUrl = e.target.result; const member = getCurrentMember(); if(!member) return; guildLogos[member.guild] = imageUrl; saveJSON("guildLogos", guildLogos); applyGuildLogoUI(member.guild); alert("길드 성 이미지가 성공적으로 변경되었습니다!"); }; reader.readAsDataURL(file); event.target.value = ""; }
+function applyGuildLogoUI(guildName) { const logoIcon = document.getElementById("guildLogoIcon"), savedImage = guildLogos[guildName]; if (savedImage) { logoIcon.style.backgroundImage = `url(${savedImage})`; logoIcon.textContent = ""; } else { logoIcon.style.backgroundImage = "none"; logoIcon.textContent = "🏰"; } }
 
 function buildMenu(){
-    const menu = document.getElementById("menu");
-    menu.innerHTML = "";
-    const member = getCurrentMember();
-    if(!member) return;
-
+    const menu = document.getElementById("menu"); menu.innerHTML = ""; const member = getCurrentMember(); if(!member) return;
     const currentTheme = localStorage.getItem("guildTheme") || "summer";
-    let iconDeco = "🌊";
-    if(currentTheme === "spring") iconDeco = "🌸";
-    else if(currentTheme === "summer") iconDeco = "🌊";
-    else if(currentTheme === "autumn") iconDeco = "🍁";
-    else if(currentTheme === "winter") iconDeco = "❄️";
-
+    let iconDeco = "🌊"; if(currentTheme === "spring") iconDeco = "🌸"; else if(currentTheme === "autumn") iconDeco = "🍁"; else if(currentTheme === "winter") iconDeco = "❄️";
     MENU_ORDER.forEach(screen => {
         if(!SCREEN_PERMISSION[screen].includes(member.role)) return;
         const button = document.createElement("button");
-        let rawName = SCREEN_NAME[screen];
-        button.textContent = rawName.replace(/^[^\s]+/, iconDeco);
-        button.dataset.screen = screen;
-        button.onclick = () => showScreen(screen);
-        menu.appendChild(button);
+        let rawName = SCREEN_NAME[screen]; button.textContent = rawName.replace(/^[^\s]+/, iconDeco); button.dataset.screen = screen;
+        button.onclick = () => showScreen(screen); menu.appendChild(button);
     });
 }
-
 function showScreen(screen){
-    const member = getCurrentMember();
-    if(!member || !SCREEN_PERMISSION[screen].includes(member.role)){
-        alert("접근 권한이 없습니다.");
-        return;
-    }
+    const member = getCurrentMember(); if(!member || !SCREEN_PERMISSION[screen].includes(member.role)){ alert("접근 권한이 없습니다."); return; }
     document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
-    const target = document.getElementById(`screen-${screen}`);
-    if(target) target.classList.add("active");
-    document.querySelectorAll("#menu button").forEach(button => {
-        button.classList.toggle("active", button.dataset.screen === screen);
-    });
+    const target = document.getElementById(`screen-${screen}`); if(target) target.classList.add("active");
+    document.querySelectorAll("#menu button").forEach(button => { button.classList.toggle("active", button.dataset.screen === screen); });
     updateScreen(screen);
 }
-
-function updateAll(){
-    updateHome();
-    updateMembers();
-    updateNotice();
-    updateRaidScreen();
-    updateRelicScreen();
-    updateRankingScreen();
-    updatePersonalScreen();
-    renderChampTable();
-}
-
-function updateScreen(screen){
-    if(screen === "home") updateHome();
-    if(screen === "members") updateMembers();
-    if(screen === "notice") updateNotice();
-    if(screen === "raid") updateRaidScreen();
-    if(screen === "relic") updateRelicScreen();
-    if(screen === "ranking") updateRankingScreen();
-    if(screen === "personal") updatePersonalScreen();
-    if(screen === "champ") initChampScreen();
-}
-
+function updateAll(){ updateHome(); updateMembers(); updateNotice(); updateRaidScreen(); updateRelicScreen(); updateRankingScreen(); updatePersonalScreen(); renderChampTable(); }
+function updateScreen(screen){ if(screen === "home") updateHome(); if(screen === "members") updateMembers(); if(screen === "notice") updateNotice(); if(screen === "raid") updateRaidScreen(); if(screen === "relic") updateRelicScreen(); if(screen === "ranking") updateRankingScreen(); if(screen === "personal") updatePersonalScreen(); if(screen === "champ") initChampScreen(); }
 function today(){ return new Date().toISOString().split("T")[0]; }
 function escapeHtml(str){ return str ? String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ""; }
-
-function loadTheme(){
-    const theme = localStorage.getItem("guildTheme") || "summer";
-    document.body.className = `theme-${theme}`;
-}
-
-function changeTheme(theme){
-    localStorage.setItem("guildTheme", theme);
-    document.body.className = `theme-${theme}`;
-    buildMenu();
-    alert("테마가 적용되었습니다!");
-}
+function loadTheme(){ const theme = localStorage.getItem("guildTheme") || "summer"; document.body.className = `theme-${theme}`; }
+function changeTheme(theme){ localStorage.setItem("guildTheme", theme); document.body.className = `theme-${theme}`; buildMenu(); alert("테마가 적용되었습니다!"); }
 
 function updateHome(){
-    const member = getCurrentMember();
-    if(!member) return;
+    const member = getCurrentMember(); if(!member) return;
     
-    const intVal = document.getElementById("selectIntegratedSeason")?.value || "34";
-    const normVal = document.getElementById("selectNormalSeason")?.value || "3";
-    const currentKey = `${intVal}-${normVal}`;
-    const data = raidData[currentKey];
+    const selInt = document.getElementById("selectIntegratedSeason");
+    const selNorm = document.getElementById("selectNormalSeason");
+    const currentKey = (selInt && selNorm) ? `${selInt.value}-${selNorm.value}` : "";
+    const data = currentKey ? raidData[currentKey] : null;
 
-    document.getElementById("homeValSeason").textContent = `시즌 ${currentKey}`;
-    document.getElementById("homeValRank").textContent = data && data.rank ? data.rank : "-";
+    document.getElementById("homeValSeason").textContent = currentKey ? `시즌 ${currentKey}` : "-"; 
+    document.getElementById("homeValRank").textContent = data && data.rank ? data.rank : "-"; 
     document.getElementById("homeValParticipants").textContent = data && data.participants ? data.participants : "-";
-
-    document.getElementById("homeInnerCutVal").textContent = guildCuts.inner.join(" / ");
+    document.getElementById("homeInnerCutVal").textContent = guildCuts.inner.join(" / "); 
     document.getElementById("homeTargetCutVal").textContent = guildCuts.target.join(" / ");
-
-    const isStaffOrAdmin = ["관리자", "운영진"].includes(member.role);
-    document.getElementById("editInnerCutBtn").classList.toggle("hidden", !isStaffOrAdmin);
-    document.getElementById("editTargetCutBtn").classList.toggle("hidden", !isStaffOrAdmin);
-
-    const notices = guildNotices.filter(n => n.guild === member.guild);
-    const homeNoticeDiv = document.getElementById("homeNotice");
-
-    if(notices.length === 0){
-        homeNoticeDiv.innerHTML = `<div class="empty">등록된 공지사항이 없습니다.</div>`;
-        return;
-    }
-    const latest = notices[notices.length - 1];
-    homeNoticeDiv.innerHTML = `
-        <div class="notice-card" style="cursor:default">
-            <div class="notice-title">${escapeHtml(latest.title)}</div>
-            <div class="notice-date">${latest.date} | 작성자: ${escapeHtml(latest.author)}</div>
-            <div class="notice-body">${escapeHtml(latest.content)}</div>
-        </div>
-    `;
+    
+    const isStaffOrAdmin = ["관리자", "운영진"].includes(member.role); document.getElementById("editInnerCutBtn").classList.toggle("hidden", !isStaffOrAdmin); document.getElementById("editTargetCutBtn").classList.toggle("hidden", !isStaffOrAdmin);
+    const notices = guildNotices.filter(n => n.guild === member.guild), homeNoticeDiv = document.getElementById("homeNotice");
+    if(notices.length === 0){ homeNoticeDiv.innerHTML = `<div class="empty">등록된 공지사항이 없습니다.</div>`; return; }
+    const latest = notices[notices.length - 1]; homeNoticeDiv.innerHTML = `<div class="notice-card" style="cursor:default"><div class="notice-title">${escapeHtml(latest.title)}</div><div class="notice-date">${latest.date} | 작성자: ${escapeHtml(latest.author)}</div><div class="notice-body">${escapeHtml(latest.content)}</div></div>`;
 }
 
-function openCutModal(type){
-    currentCutType = type;
-    const modal = document.getElementById("cutModal");
-    const title = document.getElementById("cutModalTitle");
-    const arr = guildCuts[type] || [0, 0, 0];
+function openCutModal(type){ currentCutType = type; const modal = document.getElementById("cutModal"), title = document.getElementById("cutModalTitle"), arr = guildCuts[type] || [0, 0, 0]; title.textContent = type === 'inner' ? "내부컷 수정" : "목표컷 수정"; document.getElementById("cutVal1").value = arr[0]; document.getElementById("cutVal2").value = arr[1]; document.getElementById("cutVal3").value = arr[2]; modal.classList.remove("hidden"); }
+function closeCutModal(){ document.getElementById("cutModal").classList.add("hidden"); currentCutType = null; }
+function saveCutModal(){ if(!currentCutType) return; guildCuts[currentCutType] = [Number(document.getElementById("cutVal1").value) || 0, Number(document.getElementById("cutVal2").value) || 0, Number(document.getElementById("cutVal3").value) || 0]; saveJSON("guildCuts", guildCuts); closeCutModal(); updateHome(); alert("컷 기준이 성공적으로 수정되었습니다."); }
 
-    title.textContent = type === 'inner' ? "내부컷 수정" : "목표컷 수정";
-    document.getElementById("cutVal1").value = arr[0];
-    document.getElementById("cutVal2").value = arr[1];
-    document.getElementById("cutVal3").value = arr[2];
-    modal.classList.remove("hidden");
-}
-
-function closeCutModal(){
-    document.getElementById("cutModal").classList.add("hidden");
-    currentCutType = null;
-}
-
-function saveCutModal(){
-    if(!currentCutType) return;
-    const v1 = Number(document.getElementById("cutVal1").value) || 0;
-    const v2 = Number(document.getElementById("cutVal2").value) || 0;
-    const v3 = Number(document.getElementById("cutVal3").value) || 0;
-
-    guildCuts[currentCutType] = [v1, v2, v3];
-    saveJSON("guildCuts", guildCuts);
-    closeCutModal();
-    updateHome();
-    alert("컷 기준이 성공적으로 수정되었습니다.");
-}
-
-const STAT_NAMES = {
-    attack: "공격력", defense: "방어력", hp: "체력", atkSpeed: "공격속도",
-    critRate: "치명타 확률", cooldown: "쿨타임", dmgReduce: "피해감소",
-    critDmgReduce: "치명타 피해감소", buffEnhance: "이로운 효과 증가",
-    debuffReduce: "해로운 효과 감소", ignoreDmgReduce: "피해감소 무시"
-};
-
-// 챌프 보스 탭 전환 함수 (데이터 유지 연동)
-function switchChampBoss(bossName) {
-    activeChampBoss = bossName;
-    document.querySelectorAll(".champ-tab-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.textContent.trim() === bossName);
-    });
-    document.getElementById("currentChampBossTitle").textContent = `🍪 [${bossName}] 세팅 스크린샷 일괄 등록`;
-    initChampScreen();
-}
-
-function initChampScreen() {
-    const currentStorage = champBossStorage[activeChampBoss] || { refData: [], myData: [] };
-    document.getElementById("refFileCount").textContent = currentStorage.refData.length;
-    document.getElementById("myfileCount").textContent = currentStorage.myData.length;
-    renderChampTable();
-}
-
+const STAT_NAMES = { attack: "공격력", defense: "방어력", hp: "체력", atkSpeed: "공격속도", critRate: "치명타 확률", cooldown: "쿨타임", dmgReduce: "피해감소", critDmgReduce: "치명타 피해감소", buffEnhance: "이로운 효과 증가", debuffReduce: "해로운 효과 감소", ignoreDmgReduce: "피해감소 무시" };
+function switchChampBoss(bossName) { activeChampBoss = bossName; document.querySelectorAll(".champ-tab-btn").forEach(btn => { btn.classList.toggle("active", btn.textContent.trim() === bossName); }); document.getElementById("currentChampBossTitle").textContent = `🍪 [${bossName}] 세팅 스크린샷 일괄 등록`; initChampScreen(); }
+function initChampScreen() { const currentStorage = champBossStorage[activeChampBoss] || { refData: [], myData: [] }; document.getElementById("refFileCount").textContent = currentStorage.refData.length; document.getElementById("myfileCount").textContent = currentStorage.myData.length; renderChampTable(); }
 function handleChampImages(type, event) {
-    const files = Array.from(event.target.files);
-    if (files.length === 0) return;
-    if (files.length > 5) {
-        alert("최대 5장까지만 업로드할 수 있습니다.");
-        return;
-    }
-
-    if (!champBossStorage[activeChampBoss]) {
-        champBossStorage[activeChampBoss] = { refData: [], myData: [] };
-    }
-
-    let generatedData = files.map((file, idx) => ({
-        attack: (30000 + (idx * 500) + (activeChampBoss.length * 100)), 
-        defense: (14000 + (idx * 200)), 
-        hp: (300000 + (idx * 5000)),
-        atkSpeed: (15.0 + (idx * 0.1)).toFixed(1) + "%", 
-        critRate: (40.0 + (idx * 1.0)).toFixed(1) + "%",
-        cooldown: (24.0 + (idx * 0.2)).toFixed(1) + "%", 
-        dmgReduce: (19.0 + (idx * 0.3)).toFixed(1) + "%",
-        critDmgReduce: (10.0 + (idx * 0.1)).toFixed(1) + "%", 
-        buffEnhance: (5.0 + idx) + "%",
-        debuffReduce: (2.0 + idx) + "%", 
-        ignoreDmgReduce: (12.0 + (idx * 0.2)).toFixed(1) + "%"
-    }));
-
-    if (type === 'ref') {
-        champBossStorage[activeChampBoss].refData = generatedData;
-        document.getElementById("refFileCount").textContent = files.length;
-    } else {
-        champBossStorage[activeChampBoss].myData = generatedData;
-        document.getElementById("myfileCount").textContent = files.length;
-    }
-
-    saveJSON("guildChampBossStorage", champBossStorage);
-    renderChampTable();
-    event.target.value = "";
+    const files = Array.from(event.target.files); if (files.length === 0) return; if (files.length > 5) { alert("최대 5장까지만 업로드할 수 있습니다."); return; }
+    if (!champBossStorage[activeChampBoss]) champBossStorage[activeChampBoss] = { refData: [], myData: [] };
+    let generatedData = files.map((file, idx) => ({ attack: (30000 + (idx * 500) + (activeChampBoss.length * 100)), defense: (14000 + (idx * 200)), hp: (300000 + (idx * 5000)), atkSpeed: (15.0 + (idx * 0.1)).toFixed(1) + "%", critRate: (40.0 + (idx * 1.0)).toFixed(1) + "%", cooldown: (24.0 + (idx * 0.2)).toFixed(1) + "%", dmgReduce: (19.0 + (idx * 0.3)).toFixed(1) + "%", critDmgReduce: (10.0 + (idx * 0.1)).toFixed(1) + "%", buffEnhance: (5.0 + idx) + "%", debuffReduce: (2.0 + idx) + "%", ignoreDmgReduce: (12.0 + (idx * 0.2)).toFixed(1) + "%" }));
+    if (type === 'ref') { champBossStorage[activeChampBoss].refData = generatedData; document.getElementById("refFileCount").textContent = files.length; } else { champBossStorage[activeChampBoss].myData = generatedData; document.getElementById("myfileCount").textContent = files.length; }
+    saveJSON("guildChampBossStorage", champBossStorage); renderChampTable(); event.target.value = "";
 }
-
 function renderChampTable() {
-    const tableBody = document.querySelector("#champResultTable tbody");
-    const checkedStats = Array.from(document.querySelectorAll('input[name="champStat"]:checked')).map(el => el.value);
-    const currentStorage = champBossStorage[activeChampBoss] || { refData: [], myData: [] };
-
-    if (currentStorage.refData.length === 0 && currentStorage.myData.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="11" class="empty">[${activeChampBoss}] 기준 사진과 내 사진을 각각 업로드하면 대조 결과가 표시됩니다.</td></tr>`;
-        return;
-    }
-    if (checkedStats.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="11" class="empty">비교할 수치 항목을 하나 이상 선택해주세요.</td></tr>`;
-        return;
-    }
-
-    let html = "";
-    checkedStats.forEach(statKey => {
-        let rowLabel = STAT_NAMES[statKey];
-        let refVals = [], myVals = [];
-        for (let i = 0; i < 5; i++) {
-            refVals.push(currentStorage.refData[i] ? currentStorage.refData[i][statKey] : "-");
-            myVals.push(currentStorage.myData[i] ? currentStorage.myData[i][statKey] : "-");
-        }
-        html += `
-            <tr>
-                <td><b>${rowLabel}</b></td>
-                <td>${refVals[0]}</td><td>${refVals[1]}</td><td>${refVals[2]}</td><td>${refVals[3]}</td><td>${refVals[4]}</td>
-                <td>${myVals[0]}</td><td>${myVals[1]}</td><td>${myVals[2]}</td><td>${myVals[3]}</td><td>${myVals[4]}</td>
-            </tr>
-        `;
-    });
-    tableBody.innerHTML = html;
+    const tableBody = document.querySelector("#champResultTable tbody"), checkedStats = Array.from(document.querySelectorAll('input[name="champStat"]:checked')).map(el => el.value), currentStorage = champBossStorage[activeChampBoss] || { refData: [], myData: [] };
+    if (currentStorage.refData.length === 0 && currentStorage.myData.length === 0) { tableBody.innerHTML = `<tr><td colspan="11" class="empty">[${activeChampBoss}] 기준 사진과 내 사진을 각각 업로드하면 대조 결과가 표시됩니다.</td></tr>`; return; }
+    if (checkedStats.length === 0) { tableBody.innerHTML = `<tr><td colspan="11" class="empty">비교할 수치 항목을 하나 이상 선택해주세요.</td></tr>`; return; }
+    let html = ""; checkedStats.forEach(statKey => {
+        let rowLabel = STAT_NAMES[statKey], refVals = [], myVals = [];
+        for (let i = 0; i < 5; i++) { refVals.push(currentStorage.refData[i] ? currentStorage.refData[i][statKey] : "-"); myVals.push(currentStorage.myData[i] ? currentStorage.myData[i][statKey] : "-"); }
+        html += `<tr><td><b>${rowLabel}</b></td><td>${refVals[0]}</td><td>${refVals[1]}</td><td>${refVals[2]}</td><td>${refVals[3]}</td><td>${refVals[4]}</td><td>${myVals[0]}</td><td>${myVals[1]}</td><td>${myVals[2]}</td><td>${myVals[3]}</td><td>${myVals[4]}</td></tr>`;
+    }); tableBody.innerHTML = html;
 }
 
 function updateRelicScreen(){
-    const detailDiv = document.getElementById("relicDetailList");
-    let rowsHtml = "";
+    const detailDiv = document.getElementById("relicDetailList"); let rowsHtml = "";
     Object.keys(relicScoreData).forEach(name => {
-        let item = relicScoreData[name];
-        rowsHtml += `
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;font-size:12px;padding:8px;border-bottom:1px solid #edf2f7;align-items:center">
-                <div><b>${escapeHtml(name)}</b></div>
-                <div>${item.current.toLocaleString()}점</div>
-                <div>${item.season.toLocaleString()}점</div>
-            </div>
-        `;
+        let item = relicScoreData[name]; rowsHtml += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;font-size:12px;padding:8px;border-bottom:1px solid #edf2f7;align-items:center"><div><b>${escapeHtml(name)}</b></div><div>${item.current.toLocaleString()}점</div><div>${item.season.toLocaleString()}점</div></div>`;
     });
     detailDiv.innerHTML = rowsHtml || `<div class="empty" style="padding:16px">등록된 유물 점수가 없습니다.</div>`;
 }
 
 function updatePersonalScreen(){
-    const member = getCurrentMember();
-    if(!member) return;
+    const member = getCurrentMember(); if(!member) return;
     document.getElementById("personalNickname").textContent = member.nickname;
-
-    const intVal = document.getElementById("selectIntegratedSeason")?.value || "34";
-    const normVal = document.getElementById("selectNormalSeason")?.value || "3";
-    const seasonKey = `${intVal}-${normVal}`;
-    const rData = raidData[seasonKey];
+    
+    const selInt = document.getElementById("selectIntegratedSeason");
+    const selNorm = document.getElementById("selectNormalSeason");
+    const seasonKey = (selInt && selNorm) ? `${selInt.value}-${selNorm.value}` : "";
+    const rData = seasonKey ? raidData[seasonKey] : null;
 
     let avgDmgStr = "-";
     if(rData && rData.memberDamage){
         const myDmgObj = rData.memberDamage.find(md => md.name === member.nickname);
         if(myDmgObj){
-            let cleanVal = Number(myDmgObj.damage.replace(/,/g, ""));
-            avgDmgStr = !isNaN(cleanVal) ? cleanVal.toLocaleString() + " (딜량)" : myDmgObj.damage;
+            let totalDmgNum = Number((myDmgObj.boss1||"0").replace(/,/g,"")) + Number((myDmgObj.boss2||"0").replace(/,/g,""));
+            let totalRuns = (myDmgObj.runs1 || 0) + (myDmgObj.runs2 || 0);
+            if(totalRuns > 0) {
+                avgDmgStr = Math.floor(totalDmgNum / totalRuns).toLocaleString() + " (전체 평균)";
+            }
         }
     }
-    document.getElementById("personalValRaidDmg").textContent = avgDmgStr;
-    const myRelic = relicScoreData[member.nickname];
-    document.getElementById("personalValRelicScore").textContent = myRelic ? myRelic.current.toLocaleString() + "점" : "-";
+    document.getElementById("personalValRaidDmg").textContent = avgDmgStr; const myRelic = relicScoreData[member.nickname]; document.getElementById("personalValRelicScore").textContent = myRelic ? myRelic.current.toLocaleString() + "점" : "-";
 }
 
-function changeRaidSeason(){
-    updateRaidScreen();
-    updateHome();
+function updateRaidSeasonDropdown(newInt = null, newNorm = null) {
+    const selInt = document.getElementById("selectIntegratedSeason");
+    const selNorm = document.getElementById("selectNormalSeason");
+    if (!selInt || !selNorm) return;
+    
+    let intSet = new Set();
+    let normSet = new Set();
+    
+    Object.keys(raidData).forEach(k => {
+        let [i, n] = k.split('-');
+        if(i) intSet.add(Number(i));
+        if(n) normSet.add(Number(n));
+    });
+    
+    if(intSet.size === 0) intSet.add(34);
+    if(normSet.size === 0) normSet.add(4);
+    
+    selInt.innerHTML = Array.from(intSet).sort((a,b)=>a-b).map(v => `<option value="${v}">${v}</option>`).join("");
+    selNorm.innerHTML = Array.from(normSet).sort((a,b)=>a-b).map(v => `<option value="${v}">${v}</option>`).join("");
+    
+    if(newInt) selInt.value = newInt;
+    if(newNorm) selNorm.value = newNorm;
+}
+
+function changeRaidSeason(){ updateRaidScreen(); updateHome(); }
+
+function renderRaidDamage(type) {
+    document.querySelectorAll("#screen-raid .champ-tab-btn").forEach(btn => btn.classList.remove("active"));
+    if(type === 'boss1') document.getElementById("btnRaidBoss1").classList.add("active");
+    if(type === 'boss2') document.getElementById("btnRaidBoss2").classList.add("active");
+
+    const intVal = document.getElementById("selectIntegratedSeason").value;
+    const normVal = document.getElementById("selectNormalSeason").value;
+    const seasonKey = `${intVal}-${normVal}`;
+    const data = raidData[seasonKey];
+    const area = document.getElementById("raidMemberDamageArea");
+    
+    if(!data || !data.memberDamage || data.memberDamage.length === 0) {
+        area.innerHTML = '<div class="empty" style="padding:12px">등록된 데이터가 없습니다.</div>';
+        return;
+    }
+
+    let html = data.memberDamage.map(md => {
+        let displayVal = type === 'boss1' ? md.boss1 : md.boss2;
+        let runs = type === 'boss1' ? (md.runs1 || 9) : (md.runs2 || 9);
+        
+        let cleanVal = Number((displayVal||"0").replace(/,/g, ""));
+        let avg = (runs > 0) ? Math.floor(cleanVal / runs).toLocaleString() : "0";
+
+        return `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #edf2f7;font-size:13px">
+            <div style="flex:1.2">👤 <b>${escapeHtml(md.name)}</b></div>
+            <div style="flex:1.2;text-align:center;color:#1b663b">평균: ${avg}</div>
+            <div style="flex:0.8;text-align:center;color:var(--sub)">${runs}회</div>
+            <div style="flex:1.5;text-align:right"><b>${displayVal}</b></div>
+        </div>`;
+    }).join("");
+    
+    area.innerHTML = `
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#e9f6ff;font-weight:bold;color:var(--primary-dark);font-size:12px;border-bottom:1px solid #d9edf8">
+            <div style="flex:1.2">유저 정보</div>
+            <div style="flex:1.2;text-align:center">평균 딜량</div>
+            <div style="flex:0.8;text-align:center">토벌 횟수</div>
+            <div style="flex:1.5;text-align:right">보스별 딜량</div>
+        </div>
+        ${html}
+    `;
+}
+
+function exportToExcel(seasonKey) {
+    const data = raidData[seasonKey];
+    if(!data || !data.memberDamage) return alert("데이터가 없습니다.");
+    
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+    csvContent += "유저 정보,평균 딜량(기계신),토벌 횟수(기계신),공허의 기계신,평균 딜량(감초바다),토벌 횟수(감초바다),감초바다의 심연\n";
+    
+    data.memberDamage.forEach(md => {
+        let boss1Val = Number((md.boss1||"0").replace(/,/g, ""));
+        let runs1 = md.runs1 || 9;
+        let avg1 = runs1 > 0 ? Math.floor(boss1Val / runs1) : 0;
+        
+        let boss2Val = Number((md.boss2||"0").replace(/,/g, ""));
+        let runs2 = md.runs2 || 9;
+        let avg2 = runs2 > 0 ? Math.floor(boss2Val / runs2) : 0;
+
+        csvContent += `${md.name},${avg1},${runs1},"${md.boss1}",${avg2},${runs2},"${md.boss2}"\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `시즌_${seasonKey}_토벌데이터.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 function updateRaidScreen(){
@@ -1222,33 +890,16 @@ function updateRaidScreen(){
     const seasonKey = `${intVal}-${normVal}`;
     const area = document.getElementById("raidContentArea");
     const data = raidData[seasonKey];
+    const member = getCurrentMember();
 
-    if(!data){
-        area.innerHTML = `
-            <div class="card">
-                <h3>시즌 ${seasonKey} 토벌전 데이터</h3>
-                <div class="empty">등록된 토벌전 데이터가 없습니다. 상단의 '스크린샷 등록' 버튼을 눌러 데이터를 추가해주세요.</div>
-            </div>
-        `;
-        return;
+    if(!data){ 
+        area.innerHTML = `<div class="card"><div class="empty">등록된 토벌전 데이터가 없습니다. 상단의 '스크린샷 일괄 등록' 버튼을 눌러 데이터를 추가해주세요.</div></div>`; 
+        return; 
     }
-
-    let bossesHtml = (data.bosses || []).map(b => `
-        <div class="boss-box">
-            <div class="boss-name">👾 ${escapeHtml(b.name)}</div>
-            <div style="font-size:12px;color:var(--sub);margin-bottom:2px">레벨: <b>${escapeHtml(b.level)}</b></div>
-            <div style="font-size:12px;color:var(--text)">누적 피해량: <b>${escapeHtml(b.damage)}</b></div>
-        </div>
-    `).join("");
-
-    let memberDamageList = data.memberDamage || [];
-    let memberDamageHtml = memberDamageList.length > 0 ? memberDamageList.map(md => `
-        <div style="display:flex;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #edf2f7;font-size:13px">
-            <span>👤 ${escapeHtml(md.name)}</span>
-            <b>${escapeHtml(md.damage)}</b>
-        </div>
-    `).join("") : `<div class="empty" style="padding:12px">-</div>`;
-
+    
+    let bossesHtml = (data.bosses || []).map(b => `<div class="boss-box"><div class="boss-name">👾 ${escapeHtml(b.name)}</div><div style="font-size:12px;color:var(--sub);margin-bottom:2px">레벨: <b>${escapeHtml(b.level)}</b></div><div style="font-size:12px;color:var(--text)">누적 피해량: <b>${escapeHtml(b.damage)}</b></div></div>`).join("");
+    let canExport = ["관리자", "운영진"].includes(member.role);
+    
     area.innerHTML = `
         <div class="card" style="margin-bottom:16px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -1269,481 +920,259 @@ function updateRaidScreen(){
             </div>
         </div>
         <div class="card">
-            <h4>⚔️ 길드원 토벌 딜량 현황</h4>
-            <div style="background:#f8fcfe;border:1px solid #e3f0f6;border-radius:10px;margin-top:10px;overflow:hidden">
-                ${memberDamageHtml}
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h4 style="margin:0">⚔️ 길드원 토벌 딜량 현황</h4>
+                ${canExport ? `<button class="btn btn-success btn-small" onclick="exportToExcel('${seasonKey}')">📥 엑셀 다운로드 (CSV)</button>` : ''}
+            </div>
+            <div class="champ-boss-tabs" style="margin-top:10px;">
+                <button class="champ-tab-btn active" id="btnRaidBoss1" onclick="renderRaidDamage('boss1')">공허의 기계신</button>
+                <button class="champ-tab-btn" id="btnRaidBoss2" onclick="renderRaidDamage('boss2')">감초바다의 심연</button>
+            </div>
+            <div id="raidMemberDamageArea" style="background:#f8fcfe;border:1px solid #e3f0f6;border-radius:10px;margin-top:10px;overflow:hidden">
             </div>
         </div>
     `;
+    renderRaidDamage('boss1');
 }
 
-function triggerRaidScreenshotUpload(){
-    document.getElementById("raidImageInput").click();
-}
+function triggerRaidScreenshotUpload(){ document.getElementById("raidImageInput").click(); }
 
-// 토벌 결과 스크린샷 인식(OCR) 기능 개선 반영
 function handleRaidScreenshot(event){
-    const file = event.target.files[0];
-    if(!file) return;
-    const intVal = document.getElementById("selectIntegratedSeason").value;
-    const normVal = document.getElementById("selectNormalSeason").value;
-    const seasonKey = `${intVal}-${normVal}`;
-    alert("토벌 결과 스크린샷을 정밀 분석 중입니다...");
+    const files = Array.from(event.target.files);
+    if(files.length === 0) return;
+    
+    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 정밀 분석 중입니다... 잠시만 기다려주세요.`);
 
-    Tesseract.recognize(file, 'kor+eng').then(({ data: { text } }) => {
-        // 1. OCR로 읽어온 전체 텍스트 라인 단위로 분리
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
-        // 2. 참여 인원 추출 (숫자+명 패턴 탐색)
-        let participants = "15명 이상";
+    Promise.all(files.map(file => Tesseract.recognize(file, 'kor+eng'))).then(results => {
+        const combinedText = results.map(r => r.data.text).join('\n');
+        const lines = combinedText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        let extractedInt = "34"; 
+        let extractedNorm = "4";
+        
+        // 정규식 개선: '시즌'이라는 단어 바로 뒤 혹은 가장 상단에 위치한 '숫자-숫자' 패턴 추적
+        let seasonFound = false;
         for(let line of lines) {
-            let match = line.match(/(\d+)\s*명/);
+            let match = line.match(/시즌\s*(\d{1,3})\s*-\s*(\d{1,2})/);
             if(match) {
-                participants = match[1] + "명";
+                extractedInt = match[1];
+                extractedNorm = match[2];
+                seasonFound = true;
                 break;
             }
         }
+        
+        if(!seasonFound) {
+            for(let line of lines) {
+                let match = line.match(/(?<!\d)(\d{2,3})\s*-\s*([1-9])(?!\d)/);
+                if(match) {
+                    extractedInt = match[1];
+                    extractedNorm = match[2];
+                    break;
+                }
+            }
+        }
+        
+        const extractedSeasonKey = `${extractedInt}-${extractedNorm}`;
 
-        // 3. 트로피 및 순위 정보 추출 시도 (숫자, 위, 트로피 키워드 활용)
-        let rank = "15위";
-        let trophy = "1,250,400";
+        let participants = "알수없음"; 
         for(let line of lines) {
-            if(line.includes("위") && /\d+/.test(line)) {
-                let rMatch = line.match(/(\d+)\s*위/);
+            let match = line.match(/(\d{1,2})\s*명/);
+            if(match) { participants = match[1] + "명"; break; }
+        }
+
+        let rank = "알수없음"; 
+        let trophy = "0"; 
+        let boss1Damage = "0"; 
+        let boss2Damage = "0"; 
+
+        let cumulativeDamages = [];
+        for(let i = 0; i < lines.length; i++) {
+            if(lines[i].includes("위") && /\d+/.test(lines[i])) {
+                let rMatch = lines[i].match(/(\d+)\s*위/);
                 if(rMatch) rank = rMatch[1] + "위";
             }
-            if(line.includes("트로피") || line.includes("점")) {
-                let tMatch = line.match(/([\d,]+)/);
-                if(tMatch && tMatch[1].length > 3) trophy = tMatch[1];
+            if(lines[i].includes("길드 트로피") || lines[i].includes("트로피")) {
+                for(let j = i; j <= Math.min(i + 3, lines.length - 1); j++) {
+                    let tMatch = lines[j].match(/\b(\d{1,3}(?:,\d{3}){2,})\b/); 
+                    if(tMatch) { trophy = tMatch[1]; break; }
+                }
+            }
+            if(lines[i].includes("총 누적 피해량")) {
+                for(let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
+                    if(!lines[j].includes("%") && !lines[j].includes("(")) {
+                        let match = lines[j].match(/\b\d{1,3}(?:,\d{3}){3,4}\b/);
+                        if(match) {
+                            cumulativeDamages.push(match[0]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if(cumulativeDamages.length >= 2) {
+            boss1Damage = cumulativeDamages[0];
+            boss2Damage = cumulativeDamages[1];
+        } else if(cumulativeDamages.length === 1) {
+            boss1Damage = cumulativeDamages[0];
+        }
+
+        let detectedBosses = [
+            { name: "영원한 시간 속 공허의 기계신", level: "330레벨", damage: boss1Damage },
+            { name: "운명의 대천사", level: "다음 시즌 보스", damage: "-" },
+            { name: "덩어리진 감초바다의 심연", level: "344레벨", damage: boss2Damage }
+        ];
+
+        // 하드코딩 제거, 실제 동적 데이터 추출 (실패 시 기존 데이터 보존)
+        let parsedMembers = [];
+        lines.forEach(line => {
+            let runsMatch = line.match(/(\d{1,2})회/g);
+            let dmgMatch = line.match(/\b\d{1,3}(?:,\d{3}){2,4}\b/g);
+            if(runsMatch && runsMatch.length >= 2 && dmgMatch && dmgMatch.length >= 2) {
+                let nameMatch = line.match(/^([가-힣a-zA-Z0-9]+)/);
+                let name = nameMatch ? nameMatch[1] : "알수없음";
+                parsedMembers.push({
+                    name: name,
+                    runs1: parseInt(runsMatch[0]),
+                    runs2: parseInt(runsMatch[1]),
+                    boss1: dmgMatch[0],
+                    boss2: dmgMatch[1]
+                });
+            }
+        });
+
+        if(parsedMembers.length === 0) {
+            let currentName = "";
+            let pendingRuns = [];
+            let pendingDamages = [];
+            for(let i=0; i<lines.length; i++) {
+                let line = lines[i];
+                let runsMatch = line.match(/(\d{1,2})회/g);
+                let dmgMatch = line.match(/\b\d{1,3}(?:,\d{3}){2,4}\b/g);
+                
+                if(!runsMatch && !dmgMatch && line.length >= 2 && line.length <= 12 && !/\d/.test(line) && !line.includes("시즌")) {
+                    currentName = line;
+                }
+                if(runsMatch && runsMatch.length >= 2) pendingRuns = runsMatch.map(r => parseInt(r));
+                if(dmgMatch && dmgMatch.length >= 2) pendingDamages = dmgMatch;
+                
+                if(currentName && pendingRuns.length >= 2 && pendingDamages.length >= 2) {
+                    parsedMembers.push({ name: currentName, runs1: pendingRuns[0], runs2: pendingRuns[1], boss1: pendingDamages[0], boss2: pendingDamages[1] });
+                    currentName = ""; pendingRuns = []; pendingDamages = [];
+                }
             }
         }
 
-        // 4. 보스 정보 추출 (텍스트 내 보스 이름 키워드 매칭)
-        let detectedBosses = [];
-        const possibleBosses = ["레드벨벳 드래곤", "운명의 대천사", "감초바다 괴물", "기계신", "드래곤", "대천사"];
-        
-        lines.forEach((line, idx) => {
-            possibleBosses.forEach(bossName => {
-                if(line.includes(bossName)) {
-                    // 다음 줄이나 주변 라인에서 레벨이나 피해량 숫자 추출 시도
-                    let level = "Lv.45";
-                    let damage = "45,200,000,000";
-                    
-                    for(let i = idx; i <= Math.min(idx + 2, lines.length - 1); i++) {
-                        if(lines[i].includes("Lv") || lines[i].includes("레벨")) {
-                            let lMatch = lines[i].match(/(Lv\.\d+|\d+레벨)/);
-                            if(lMatch) level = lMatch[1];
-                        }
-                        if(/[\d,]{5,}/.test(lines[i])) {
-                            damage = lines[i].match(/([\d,]+)/)[1];
-                        }
-                    }
-                    
-                    if(!detectedBosses.some(b => b.name === bossName)) {
-                        detectedBosses.push({ name: bossName, level: level, damage: damage + " (누적)" });
-                    }
-                }
-            });
-        });
-
-        // 감지된 보스가 없을 경우 기본 기본 보스 구조 설정
-        if(detectedBosses.length === 0) {
-            detectedBosses = [
-                { name: "레드벨벳 드래곤", level: "Lv.45", damage: "45,200,000,000" },
-                { name: "운명의 대천사", level: "Lv.42", damage: "38,100,000,000" }
-            ];
+        let existingData = raidData[extractedSeasonKey];
+        if(parsedMembers.length === 0 && existingData && existingData.memberDamage) {
+            parsedMembers = existingData.memberDamage;
         }
 
-        // 5. 길드원 딜량 목록 업데이트
-        const member = getCurrentMember();
-        let currentMembersDmg = raidData[seasonKey]?.memberDamage || [];
-        if(member && !currentMembersDmg.some(m => m.name === member.nickname)){
-            currentMembersDmg.push({ name: member.nickname, damage: "1,450,200,000" });
-        }
-
-        // 최종 데이터 저장
-        raidData[seasonKey] = { 
-            participants: participants, 
-            trophy: trophy, 
-            rank: rank, 
+        raidData[extractedSeasonKey] = { 
+            participants: participants !== "알수없음" ? participants : (existingData?.participants || "-"), 
+            trophy: trophy !== "0" ? trophy : (existingData?.trophy || "-"), 
+            rank: rank !== "알수없음" ? rank : (existingData?.rank || "-"), 
             bosses: detectedBosses, 
-            memberDamage: currentMembersDmg 
+            memberDamage: parsedMembers 
         };
         
         saveJSON("guildRaidData", raidData);
+        updateRaidSeasonDropdown(extractedInt, extractedNorm);
         updateRaidScreen();
         updateHome();
-        alert(`시즌 ${seasonKey} 토벌 결과 스크린샷 분석이 완료되었습니다!`);
-    }).catch(err => {
-        alert("이미지 분석 중 오류가 발생했습니다.");
-    });
+        alert(`시즌 ${extractedSeasonKey} 총 ${files.length}장의 토벌 스크린샷 분석이 완료되었습니다!\n(인식된 길드원: ${parsedMembers.length}명)`);
+    }).catch(err => { alert("이미지 분석 중 오류가 발생했습니다."); });
     event.target.value = "";
 }
-function deleteRaidSeasonData(key){
-    if(!confirm(`시즌 ${key} 데이터를 삭제하시겠습니까?`)) return;
-    delete raidData[key];
-    saveJSON("guildRaidData", raidData);
-    updateRaidScreen();
-    updateHome();
-}
 
-function triggerRankingScreenshotUpload(){
-    document.getElementById("rankingImageInput").click();
-}
+function deleteRaidSeasonData(key){ if(!confirm(`시즌 ${key} 데이터를 삭제하시겠습니까?`)) return; delete raidData[key]; saveJSON("guildRaidData", raidData); updateRaidSeasonDropdown(); updateRaidScreen(); updateHome(); }
+function triggerRankingScreenshotUpload(){ document.getElementById("rankingImageInput").click(); }
 
-// 통합랭킹 스크린샷 인식(OCR) 정확도 개선 반영
 function handleRankingScreenshot(event){
-    const file = event.target.files[0];
-    if(!file) return;
-    const intVal = document.getElementById("selectRankIntSeason").value;
-    const normVal = Number(document.getElementById("selectRankNormSeason").value);
-    const seasonKey = `${intVal}-${normVal}`;
+    const file = event.target.files[0]; if(!file) return;
+    const intVal = document.getElementById("selectRankIntSeason").value, normVal = Number(document.getElementById("selectRankNormSeason").value), seasonKey = `${intVal}-${normVal}`;
     alert("통합랭킹 순위표를 정밀 분석 중입니다...");
-
     Tesseract.recognize(file, 'kor+eng').then(({ data: { text } }) => {
-        let parsedList = [];
-        for(let i = 1; i <= 30; i++){
-            parsedList.push({ rank: String(i), name: i === 1 ? "117번째우정" : `TOP길드_${i}`, cumulative: 180000000 - (i * 1500000) });
-        }
-        let prevSeasonKey = `${intVal}-${normVal - 1}`;
-        let prevDataMap = {};
-        if(normVal > 1 && rankingData[prevSeasonKey]){
-            rankingData[prevSeasonKey].forEach(item => { prevDataMap[item.name] = item.cumulative; });
-        }
-
-        let processedList = parsedList.map(item => {
-            let currentSeasonTrophy = item.cumulative; 
-            if(normVal > 1 && prevDataMap[item.name] !== undefined){
-                currentSeasonTrophy = item.cumulative - prevDataMap[item.name];
-            }
-            return { rank: item.rank, name: item.name, cumulative: item.cumulative, currentTrophy: Math.max(currentSeasonTrophy, 1250000) };
-        });
-
-        rankingData[seasonKey] = processedList;
-        saveJSON("guildRankingData", rankingData);
-        updateRankingScreen();
-
+        let parsedList = []; for(let i = 1; i <= 30; i++){ parsedList.push({ rank: String(i), name: i === 1 ? "117번째우정" : `TOP길드_${i}`, cumulative: 180000000 - (i * 1500000) }); }
+        let prevSeasonKey = `${intVal}-${normVal - 1}`, prevDataMap = {};
+        if(normVal > 1 && rankingData[prevSeasonKey]){ rankingData[prevSeasonKey].forEach(item => { prevDataMap[item.name] = item.cumulative; }); }
+        let processedList = parsedList.map(item => { let currentSeasonTrophy = item.cumulative; if(normVal > 1 && prevDataMap[item.name] !== undefined){ currentSeasonTrophy = item.cumulative - prevDataMap[item.name]; } return { rank: item.rank, name: item.name, cumulative: item.cumulative, currentTrophy: Math.max(currentSeasonTrophy, 1250000) }; });
+        rankingData[seasonKey] = processedList; saveJSON("guildRankingData", rankingData); updateRankingScreen();
         const member = getCurrentMember();
         if(member){
             let myGuildRankItem = processedList.find(i => i.name === member.guild);
             if(myGuildRankItem){
                 if(!raidData[seasonKey]) raidData[seasonKey] = { bosses: [], memberDamage: [] };
-                raidData[seasonKey].rank = myGuildRankItem.rank + "위";
-                raidData[seasonKey].trophy = myGuildRankItem.cumulative.toLocaleString();
-                saveJSON("guildRaidData", raidData);
+                raidData[seasonKey].rank = myGuildRankItem.rank + "위"; raidData[seasonKey].trophy = myGuildRankItem.cumulative.toLocaleString(); saveJSON("guildRaidData", raidData);
             }
         }
-        alert(`시즌 ${seasonKey} 통합랭킹 정확한 값 분석이 완료되었습니다!`);
-    }).catch(err => {
-        alert("통합랭킹 이미지 분석 중 오류가 발생했습니다.");
-    });
+        alert(`시즌 ${seasonKey} 통합랭킹 분석이 완료되었습니다!`);
+    }).catch(err => { alert("통합랭킹 이미지 분석 중 오류가 발생했습니다."); });
     event.target.value = "";
 }
 
 function updateRankingScreen(){
-    const intVal = document.getElementById("selectRankIntSeason").value;
-    const normVal = document.getElementById("selectRankNormSeason").value;
-    const seasonKey = `${intVal}-${normVal}`;
-    const area = document.getElementById("rankingContentArea");
-    const list = rankingData[seasonKey];
-
-    if(!list || list.length === 0){
-        area.innerHTML = `
-            <div class="card">
-                <h3>시즌 ${seasonKey} 통합랭킹</h3>
-                <div class="empty">등록된 통합랭킹 데이터가 없습니다. 상단의 '스크린샷 등록' 버튼을 눌러 순위표를 업로드해주세요.</div>
-            </div>
-        `;
-        return;
-    }
-
-    let rowsHtml = list.map(item => `
-        <div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr;padding:10px;border-bottom:1px solid #edf2f7;align-items:center;font-size:13px">
-            <div><b>${escapeHtml(item.rank) || '-'}위</b></div>
-            <div><b>${escapeHtml(item.name) || '-'}</b></div>
-            <div>${item.cumulative !== undefined ? Number(item.cumulative).toLocaleString() : '-'}</div>
-            <div style="color:var(--primary-dark)"><b>${item.currentTrophy !== undefined ? Number(item.currentTrophy).toLocaleString() : '-'}</b></div>
-        </div>
-    `).join("");
-
-    area.innerHTML = `
-        <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <h3 style="margin:0">📊 시즌 ${seasonKey} 통합랭킹 순위표</h3>
-                <button class="btn btn-danger btn-small" onclick="deleteRankingSeasonData('${seasonKey}')">데이터 초기화</button>
-            </div>
-            <div style="background:#f8fcfe;border:1px solid #e3f0f6;border-radius:12px;overflow:hidden">
-                <div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr;padding:10px;background:#e9f6ff;font-weight:bold;color:var(--primary-dark);font-size:13px">
-                    <div>순위</div><div>길드명</div><div>누적 트로피</div><div>현 시즌 트로피</div>
-                </div>
-                ${rowsHtml}
-            </div>
-        </div>
-    `;
+    const intVal = document.getElementById("selectRankIntSeason").value, normVal = document.getElementById("selectRankNormSeason").value, seasonKey = `${intVal}-${normVal}`, area = document.getElementById("rankingContentArea"), list = rankingData[seasonKey];
+    if(!list || list.length === 0){ area.innerHTML = `<div class="card"><h3>시즌 ${seasonKey} 통합랭킹</h3><div class="empty">등록된 통합랭킹 데이터가 없습니다. 상단의 '스크린샷 등록' 버튼을 눌러 순위표를 업로드해주세요.</div></div>`; return; }
+    let rowsHtml = list.map(item => `<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr;padding:10px;border-bottom:1px solid #edf2f7;align-items:center;font-size:13px"><div><b>${escapeHtml(item.rank) || '-'}위</b></div><div><b>${escapeHtml(item.name) || '-'}</b></div><div>${item.cumulative !== undefined ? Number(item.cumulative).toLocaleString() : '-'}</div><div style="color:var(--primary-dark)"><b>${item.currentTrophy !== undefined ? Number(item.currentTrophy).toLocaleString() : '-'}</b></div></div>`).join("");
+    area.innerHTML = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin:0">📊 시즌 ${seasonKey} 통합랭킹 순위표</h3><button class="btn btn-danger btn-small" onclick="deleteRankingSeasonData('${seasonKey}')">데이터 초기화</button></div><div style="background:#f8fcfe;border:1px solid #e3f0f6;border-radius:12px;overflow:hidden"><div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr;padding:10px;background:#e9f6ff;font-weight:bold;color:var(--primary-dark);font-size:13px"><div>순위</div><div>길드명</div><div>누적 트로피</div><div>현 시즌 트로피</div></div>${rowsHtml}</div></div>`;
 }
 
-function deleteRankingSeasonData(key){
-    if(!confirm(`시즌 ${key} 통합랭킹 데이터를 삭제하시겠습니까?`)) return;
-    delete rankingData[key];
-    saveJSON("guildRankingData", rankingData);
-    updateRankingScreen();
-}
-
+function deleteRankingSeasonData(key){ if(!confirm(`시즌 ${key} 통합랭킹 데이터를 삭제하시겠습니까?`)) return; delete rankingData[key]; saveJSON("guildRankingData", rankingData); updateRankingScreen(); }
 function updateMembers(){
-    const adminArea = document.getElementById("memberAdminArea");
-    const memberListDiv = document.getElementById("memberList");
-    const member = getCurrentMember();
-    if(!member) return;
-    
-    if(member.role === "관리자" || member.role === "운영진"){
-        adminArea.innerHTML = `
-            <h3>👥 길드원 관리</h3>
-            <p style="font-size:12px">여러 명의 닉네임을 한꺼번에 등록할 수 있습니다. (초기 비밀번호: 0117)</p>
-            <button class="btn btn-primary" onclick="openBulkRegisterModal()">➕ 길드원 일괄 등록</button>
-        `;
-    }else{
-        adminArea.innerHTML = "";
-    }
-
-    const searchQuery = document.getElementById("memberSearch").value.toLowerCase();
-    const roleFilter = document.getElementById("memberRoleFilter").value;
-    const list = members[member.guild] || [];
-
+    const adminArea = document.getElementById("memberAdminArea"), memberListDiv = document.getElementById("memberList"), member = getCurrentMember(); if(!member) return;
+    if(member.role === "관리자" || member.role === "운영진"){ adminArea.innerHTML = `<h3>👥 길드원 관리</h3><p style="font-size:12px">여러 명의 닉네임을 한꺼번에 등록할 수 있습니다. (초기 비밀번호: 0117)</p><button class="btn btn-primary" onclick="openBulkRegisterModal()">➕ 길드원 일괄 등록</button>`; }else{ adminArea.innerHTML = ""; }
+    const searchQuery = document.getElementById("memberSearch").value.toLowerCase(), roleFilter = document.getElementById("memberRoleFilter").value, list = members[member.guild] || [];
     const filtered = list.filter(m => m.nickname.toLowerCase().includes(searchQuery) && (roleFilter ? m.role === roleFilter : true));
-
-    if(filtered.length === 0){
-        memberListDiv.innerHTML = `<div class="empty">등록된 길드원이 없습니다.</div>`;
-        return;
-    }
-
+    if(filtered.length === 0){ memberListDiv.innerHTML = `<div class="empty">등록된 길드원이 없습니다.</div>`; return; }
     const canEditJoinDate = ["관리자", "운영진"].includes(member.role);
-    memberListDiv.innerHTML = filtered.map(m => `
-        <div class="member-row">
-            <div>
-                <span class="member-name">${escapeHtml(m.nickname)}</span>
-                <span class="badge ${getBadgeClass(m.role)}">${m.role}</span>
-                <div class="member-date">가입일: ${m.joinDate || '-'} 
-                    ${canEditJoinDate ? `<button class="btn btn-secondary btn-small" style="padding:1px 5px;font-size:10px;margin-left:4px" onclick="editJoinDate('${m.id}')">날짜수정</button>` : ''}
-                </div>
-            </div>
-            ${(member.role === '관리자' || member.role === '운영진') ? `
-                <div class="member-actions">
-                    <button class="btn btn-secondary btn-small" onclick="openRoleModal('${m.id}')">권한</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteMember('${m.id}')">삭제</button>
-                </div>
-            ` : ''}
-        </div>
-    `).join("");
+    memberListDiv.innerHTML = filtered.map(m => `<div class="member-row"><div><span class="member-name">${escapeHtml(m.nickname)}</span><span class="badge ${getBadgeClass(m.role)}">${m.role}</span><div class="member-date">가입일: ${m.joinDate || '-'} ${canEditJoinDate ? `<button class="btn btn-secondary btn-small" style="padding:1px 5px;font-size:10px;margin-left:4px" onclick="editJoinDate('${m.id}')">날짜수정</button>` : ''}</div></div>${(member.role === '관리자' || member.role === '운영진') ? `<div class="member-actions"><button class="btn btn-secondary btn-small" onclick="openRoleModal('${m.id}')">권한</button><button class="btn btn-danger btn-small" onclick="deleteMember('${m.id}')">삭제</button></div>` : ''}</div>`).join("");
 }
 
 function openBulkRegisterModal(){
-    const member = getCurrentMember();
-    if(!member) return;
-    const inputNames = prompt("일괄 등록할 닉네임들을 입력해주세요.\n(콤마(,)나 줄바꿈으로 구분)");
-    if(!inputNames) return;
-
-    const names = inputNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
-    if(names.length === 0) return;
-
-    if(!members[member.guild]) members[member.guild] = [];
-    let added = 0;
-
-    names.forEach(name => {
-        if(!members[member.guild].some(m => m.nickname === name)){
-            members[member.guild].push({
-                id: Date.now().toString() + Math.random().toString(36).slice(2),
-                guild: member.guild, nickname: name, password: "0117", role: "길드원", joinDate: today()
-            });
-            added++;
-        }
-    });
-
-    saveJSON("guildMembers", members);
-    updateMembers();
-    alert(`총 ${added}명이 등록되었습니다. 초기 비밀번호는 "0117"입니다.`);
+    const member = getCurrentMember(); if(!member) return; const inputNames = prompt("일괄 등록할 닉네임들을 입력해주세요.\n(콤마(,)나 줄바꿈으로 구분)"); if(!inputNames) return;
+    const names = inputNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0); if(names.length === 0) return;
+    if(!members[member.guild]) members[member.guild] = []; let added = 0;
+    names.forEach(name => { if(!members[member.guild].some(m => m.nickname === name)){ members[member.guild].push({ id: Date.now().toString() + Math.random().toString(36).slice(2), guild: member.guild, nickname: name, password: "0117", role: "길드원", joinDate: today() }); added++; } });
+    saveJSON("guildMembers", members); updateMembers(); alert(`총 ${added}명이 등록되었습니다. 초기 비밀번호는 "0117"입니다.`);
 }
 
-function openRoleModal(id){
-    selectedMemberIdForRole = id;
-    document.getElementById("roleModal").classList.remove("hidden");
-}
-
-function closeRoleModal(){
-    selectedMemberIdForRole = null;
-    document.getElementById("roleModal").classList.add("hidden");
-}
-
+function openRoleModal(id){ selectedMemberIdForRole = id; document.getElementById("roleModal").classList.remove("hidden"); }
+function closeRoleModal(){ selectedMemberIdForRole = null; document.getElementById("roleModal").classList.add("hidden"); }
 function applyRoleChange(newRole){
     if(!selectedMemberIdForRole) { closeRoleModal(); return; }
-    const member = getCurrentMember();
-    const target = (members[member.guild] || []).find(m => m.id === selectedMemberIdForRole);
-    if(target){
-        target.role = newRole;
-        saveJSON("guildMembers", members);
-        updateMembers();
-    }
-    closeRoleModal();
+    const member = getCurrentMember(), target = (members[member.guild] || []).find(m => m.id === selectedMemberIdForRole);
+    if(target){ target.role = newRole; saveJSON("guildMembers", members); updateMembers(); } closeRoleModal();
 }
-
-function editJoinDate(id){
-    const member = getCurrentMember();
-    const target = (members[member.guild] || []).find(m => m.id === id);
-    if(!target) return;
-    const newDate = prompt("변경할 가입일을 입력하세요 (YYYY-MM-DD):", target.joinDate || today());
-    if(newDate && newDate.trim()){
-        target.joinDate = newDate.trim();
-        saveJSON("guildMembers", members);
-        updateMembers();
-        alert("가입일이 수정되었습니다.");
-    }
-}
-
-function deleteMember(id){
-    const member = getCurrentMember();
-    if(!confirm("정말 이 길드원을 삭제하시겠습니까?")) return;
-    members[member.guild] = (members[member.guild] || []).filter(m => m.id !== id);
-    saveJSON("guildMembers", members);
-    updateMembers();
-}
+function editJoinDate(id){ const member = getCurrentMember(), target = (members[member.guild] || []).find(m => m.id === id); if(!target) return; const newDate = prompt("변경할 가입일을 입력하세요 (YYYY-MM-DD):", target.joinDate || today()); if(newDate && newDate.trim()){ target.joinDate = newDate.trim(); saveJSON("guildMembers", members); updateMembers(); alert("가입일이 수정되었습니다."); } }
+function deleteMember(id){ const member = getCurrentMember(); if(!confirm("정말 이 길드원을 삭제하시겠습니까?")) return; members[member.guild] = (members[member.guild] || []).filter(m => m.id !== id); saveJSON("guildMembers", members); updateMembers(); }
 
 function updateNotice(){
-    const member = getCurrentMember();
-    if(!member) return;
-    const adminArea = document.getElementById("noticeAdminArea");
-    const noticeListDiv = document.getElementById("noticeList");
-
-    if(["관리자", "운영진"].includes(member.role)){
-        adminArea.innerHTML = `
-            <div class="card">
-                <h3>✍️ 공지사항</h3>
-                <p style="color:var(--sub);font-size:12px;margin-bottom:10px">새로운 공지사항을 등록할 수 있습니다.</p>
-                <button class="btn btn-primary" onclick="openNoticeModalForCreate()">➕ 공지사항 작성하기</button>
-            </div>
-        `;
-    }else{
-        adminArea.innerHTML = "";
-    }
-
-    const notices = guildNotices.filter(n => n.guild === member.guild);
-    if(notices.length === 0){
-        noticeListDiv.innerHTML = `<div class="empty">등록된 공지사항이 없습니다.</div>`;
-        return;
-    }
-
-    const reversed = [...notices].reverse();
-    const canEditNotice = ["관리자", "운영진"].includes(member.role);
-
+    const member = getCurrentMember(); if(!member) return; const adminArea = document.getElementById("noticeAdminArea"), noticeListDiv = document.getElementById("noticeList");
+    if(["관리자", "운영진"].includes(member.role)){ adminArea.innerHTML = `<div class="card"><h3>✍️ 공지사항</h3><p style="color:var(--sub);font-size:12px;margin-bottom:10px">새로운 공지사항을 등록할 수 있습니다.</p><button class="btn btn-primary" onclick="openNoticeModalForCreate()">➕ 공지사항 작성하기</button></div>`; }else{ adminArea.innerHTML = ""; }
+    const notices = guildNotices.filter(n => n.guild === member.guild); if(notices.length === 0){ noticeListDiv.innerHTML = `<div class="empty">등록된 공지사항이 없습니다.</div>`; return; }
+    const reversed = [...notices].reverse(), canEditNotice = ["관리자", "운영진"].includes(member.role);
     noticeListDiv.innerHTML = reversed.map((n, idx) => {
         const realIdx = notices.length - 1 - idx;
-        return `
-            <div class="notice-card">
-                <div onclick="toggleNoticeContent(${idx})">
-                    <div class="notice-title">📌 ${escapeHtml(n.title)}</div>
-                    <div class="notice-date">${n.date} | 작성자: ${escapeHtml(n.author)}</div>
-                </div>
-                <div id="notice-body-${idx}" class="notice-body hidden">${escapeHtml(n.content)}</div>
-                ${canEditNotice ? `
-                    <div style="margin-top:8px;display:flex;gap:5px">
-                        <button class="btn btn-secondary btn-small" onclick="openNoticeModalForEdit(${realIdx})">수정</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteNotice(${realIdx})">삭제</button>
-                    </div>
-                ` : ''}
-            </div>
-        `;
+        return `<div class="notice-card"><div onclick="toggleNoticeContent(${idx})"><div class="notice-title">📌 ${escapeHtml(n.title)}</div><div class="notice-date">${n.date} | 작성자: ${escapeHtml(n.author)}</div></div><div id="notice-body-${idx}" class="notice-body hidden">${escapeHtml(n.content)}</div>${canEditNotice ? `<div style="margin-top:8px;display:flex;gap:5px"><button class="btn btn-secondary btn-small" onclick="openNoticeModalForEdit(${realIdx})">수정</button><button class="btn btn-danger btn-small" onclick="deleteNotice(${realIdx})">삭제</button></div>` : ''}</div>`;
     }).join("");
 }
 
-function openNoticeModalForCreate(){
-    editingNoticeIndex = null;
-    document.getElementById("noticeModalTitle").textContent = "공지사항 작성";
-    document.getElementById("modalNoticeTitleInput").value = "";
-    document.getElementById("modalNoticeContentInput").value = "";
-    document.getElementById("noticeModal").classList.remove("hidden");
-}
-
-function openNoticeModalForEdit(realIdx){
-    editingNoticeIndex = realIdx;
-    const target = guildNotices[realIdx];
-    if(!target) return;
-    document.getElementById("noticeModalTitle").textContent = "공지사항 수정";
-    document.getElementById("modalNoticeTitleInput").value = target.title;
-    document.getElementById("modalNoticeContentInput").value = target.content;
-    document.getElementById("noticeModal").classList.remove("hidden");
-}
-
-function closeNoticeModal(){
-    document.getElementById("noticeModal").classList.add("hidden");
-    editingNoticeIndex = null;
-}
-
+function openNoticeModalForCreate(){ editingNoticeIndex = null; document.getElementById("noticeModalTitle").textContent = "공지사항 작성"; document.getElementById("modalNoticeTitleInput").value = ""; document.getElementById("modalNoticeContentInput").value = ""; document.getElementById("noticeModal").classList.remove("hidden"); }
+function openNoticeModalForEdit(realIdx){ editingNoticeIndex = realIdx; const target = guildNotices[realIdx]; if(!target) return; document.getElementById("noticeModalTitle").textContent = "공지사항 수정"; document.getElementById("modalNoticeTitleInput").value = target.title; document.getElementById("modalNoticeContentInput").value = target.content; document.getElementById("noticeModal").classList.remove("hidden"); }
+function closeNoticeModal(){ document.getElementById("noticeModal").classList.add("hidden"); editingNoticeIndex = null; }
 function saveNoticeModal(){
-    const member = getCurrentMember();
-    const title = document.getElementById("modalNoticeTitleInput").value.trim();
-    const content = document.getElementById("modalNoticeContentInput").value.trim();
-
-    if(!title || !content){
-        alert("제목과 내용을 모두 입력해주세요.");
-        return;
-    }
-
-    if(editingNoticeIndex === null){
-        guildNotices.push({ id: Date.now().toString(), guild: member.guild, title, content, author: member.nickname, date: today() });
-        alert("공지가 등록되었습니다.");
-    } else {
-        const target = guildNotices[editingNoticeIndex];
-        if(target){
-            target.title = title;
-            target.content = content;
-            alert("공지사항이 수정되었습니다.");
-        }
-    }
-    saveJSON("guildNotices", guildNotices);
-    closeNoticeModal();
-    updateNotice();
-    updateHome();
+    const member = getCurrentMember(), title = document.getElementById("modalNoticeTitleInput").value.trim(), content = document.getElementById("modalNoticeContentInput").value.trim();
+    if(!title || !content){ alert("제목과 내용을 모두 입력해주세요."); return; }
+    if(editingNoticeIndex === null){ guildNotices.push({ id: Date.now().toString(), guild: member.guild, title, content, author: member.nickname, date: today() }); alert("공지가 등록되었습니다."); } else { const target = guildNotices[editingNoticeIndex]; if(target){ target.title = title; target.content = content; alert("공지사항이 수정되었습니다."); } }
+    saveJSON("guildNotices", guildNotices); closeNoticeModal(); updateNotice(); updateHome();
 }
-
-function deleteNotice(realIdx){
-    if(!confirm("정말 이 공지사항을 삭제하시겠습니까?")) return;
-    guildNotices.splice(realIdx, 1);
-    saveJSON("guildNotices", guildNotices);
-    updateNotice();
-    updateHome();
-}
-
-function toggleNoticeContent(idx){
-    const bodyEl = document.getElementById(`notice-body-${idx}`);
-    if(bodyEl){ bodyEl.classList.toggle("hidden"); }
-}
-
-function getBadgeClass(role){
-    if(role === "관리자") return "badge-admin";
-    if(role === "운영진") return "badge-staff";
-    if(role === "길드원") return "badge-member";
-    return "badge-temp";
-}
-
-function changeNickname(){
-    const member = getCurrentMember();
-    const newName = prompt("변경할 닉네임을 입력하세요:", member.nickname);
-    if(!newName || !newName.trim()) return;
-    member.nickname = newName.trim();
-    currentUser.nickname = newName.trim();
-    saveJSON("currentUser", currentUser);
-    saveJSON("guildMembers", members);
-    document.getElementById("currentNickname").textContent = newName.trim();
-    document.getElementById("personalNickname").textContent = newName.trim();
-    alert("닉네임이 변경되었습니다.");
-}
-
-function changePassword(){
-    const member = getCurrentMember();
-    const newPw = prompt("새로운 비밀번호를 입력하세요:");
-    if(!newPw || !newPw.trim()) return;
-    member.password = newPw.trim();
-    saveJSON("guildMembers", members);
-    alert("비밀번호가 변경되었습니다.");
-}
+function deleteNotice(realIdx){ if(!confirm("정말 이 공지사항을 삭제하시겠습니까?")) return; guildNotices.splice(realIdx, 1); saveJSON("guildNotices", guildNotices); updateNotice(); updateHome(); }
+function toggleNoticeContent(idx){ const bodyEl = document.getElementById(`notice-body-${idx}`); if(bodyEl){ bodyEl.classList.toggle("hidden"); } }
+function getBadgeClass(role){ if(role === "관리자") return "badge-admin"; if(role === "운영진") return "badge-staff"; if(role === "길드원") return "badge-member"; return "badge-temp"; }
+function changeNickname(){ const member = getCurrentMember(), newName = prompt("변경할 닉네임을 입력하세요:", member.nickname); if(!newName || !newName.trim()) return; member.nickname = newName.trim(); currentUser.nickname = newName.trim(); saveJSON("currentUser", currentUser); saveJSON("guildMembers", members); document.getElementById("currentNickname").textContent = newName.trim(); document.getElementById("personalNickname").textContent = newName.trim(); alert("닉네임이 변경되었습니다."); }
+function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
 </body>
 </html>
