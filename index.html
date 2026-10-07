@@ -78,7 +78,7 @@ button{cursor:pointer}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-secondary{background:#eaf6fc;color:var(--primary-dark)}
 .btn-danger{background:#ef6873;color:#fff}
-.btn-success{background:var(--success);color:#fff}
+.btn-success{background:#35a86b;color:#fff}
 .btn-small{padding:5px 8px;font-size:11px}
 
 /* 로그인 */
@@ -159,7 +159,7 @@ button{cursor:pointer}
 .badge-admin{background:#fff0bc;color:#987000}
 .badge-staff{background:#d9f0ff;color:#2672a2}
 .badge-member{background:#def5e5;color:#318051}
-.badge-temp{background:#ffe0e0;color:#bd4e4e}
+.badge-visitor{background:#f1f3f5;color:#495057}
 .member-actions{display:flex;gap:4px;flex-wrap:wrap}
 
 /* 공지사항, 요약 카드 */
@@ -352,7 +352,7 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                             <option value="관리자">관리자</option>
                             <option value="운영진">운영진</option>
                             <option value="길드원">길드원</option>
-                            <option value="임시">임시</option>
+                            <option value="방문자">방문자</option>
                         </select>
                     </div>
                     <div id="memberList" class="member-list"></div>
@@ -478,6 +478,11 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                         <div style="font-size:12px;color:var(--sub)">현재 접속 중인 계정</div>
                         <h2 id="personalNickname" style="margin:4px 0 0;color:var(--primary-dark);font-size:18px">-</h2>
                     </div>
+
+                    <!-- 방문자 승인 대기 안내 메시지 영역 -->
+                    <div id="visitorNoticeArea" class="hidden" style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:12px;border-radius:10px;margin-bottom:16px;text-align:center;font-weight:bold;font-size:13px">
+                        ⏳ 현재 '방문자' 권한 상태입니다.<br>운영진에게 가입승인 요청을 해주세요.
+                    </div>
                     
                     <div class="home-summary-grid" style="margin-bottom:20px">
                         <div class="summary-card">
@@ -581,7 +586,7 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
             <button class="btn btn-primary" onclick="applyRoleChange('관리자')">관리자</button>
             <button class="btn btn-secondary" onclick="applyRoleChange('운영진')">운영진</button>
             <button class="btn btn-secondary" onclick="applyRoleChange('길드원')">길드원</button>
-            <button class="btn btn-danger" onclick="applyRoleChange('임시')">임시</button>
+            <button class="btn btn-secondary" onclick="applyRoleChange('방문자')">방문자</button>
         </div>
         <button class="btn btn-small" style="background:#ddd" onclick="closeRoleModal()">취소</button>
     </div>
@@ -626,15 +631,16 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
 <script>
 const MENU_ORDER = ["home", "members", "raid", "relic", "champ", "personal", "ranking", "notice", "operation"];
 const SCREEN_NAME = { home:"🏠 홈", members:"👥 길드원", raid:"⚔️ 토벌", relic:"🔮 유물", champ:"🏆 챌프", personal:"👤 개인", ranking:"📊 통합랭킹", notice:"📢 공지사항", operation:"⚙️ 운영" };
+
 const SCREEN_PERMISSION = {
-    home:["관리자","운영진","길드원","임시"],
+    home:["관리자","운영진","길드원"],
     members:["관리자","운영진"],
-    raid:["관리자","운영진","길드원","임시"],
+    raid:["관리자","운영진"],
     relic:["관리자","운영진"],
-    champ:["관리자","운영진","길드원","임시"],
-    personal:["관리자","운영진","길드원","임시"],
-    ranking:["관리자","운영진","길드원","임시"],
-    notice:["관리자","운영진","길드원","임시"],
+    champ:["관리자","운영진"],
+    personal:["관리자","운영진","길드원","방문자"],
+    ranking:["관리자","운영진"],
+    notice:["관리자","운영진","길드원"],
     operation:["관리자","운영진"]
 };
 
@@ -655,7 +661,6 @@ let currentCutType = null;
 
 function loadJSON(key, fallback){ try{ const val = localStorage.getItem(key); return val === null ? fallback : JSON.parse(val); }catch(e){ return fallback; } }
 
-// ★ 자동 백업 연동 ★
 function saveJSON(key, val){ 
     localStorage.setItem(key, JSON.stringify(val)); 
     if(window.autoSyncToServer) window.autoSyncToServer(); 
@@ -677,12 +682,13 @@ function login(){
     passwordInput.value = ""; msgEl.textContent = ""; startApp();
 }
 function logout(){ currentUser = null; localStorage.removeItem("currentUser"); showLogin(); }
+
 function registerMember(){
     const guild = document.getElementById("guildSelect").value, nickname = document.getElementById("nicknameInput").value.trim(), password = document.getElementById("passwordInput").value.trim(), msgEl = document.getElementById("loginMessage");
     if(!nickname || !password){ msgEl.textContent = "가입할 닉네임과 비밀번호를 입력해주세요."; return; }
     if(!members[guild]) members[guild] = [];
     if(members[guild].some(m => m.nickname === nickname)){ msgEl.textContent = "이미 등록된 닉네임입니다."; return; }
-    let role = (nickname === "리퓨티") ? "관리자" : "길드원";
+    let role = (nickname === "리퓨티") ? "관리자" : "방문자";
     members[guild].push({ id: Date.now().toString(), guild, nickname, password, role, joinDate: today() });
     saveJSON("guildMembers", members); currentUser = { guild, nickname }; saveJSON("currentUser", currentUser);
     document.getElementById("passwordInput").value = ""; startApp();
@@ -694,7 +700,13 @@ function startApp(){
     document.getElementById("currentGuild").textContent = member.guild; document.getElementById("sideGuildName").textContent = member.guild;
     document.getElementById("currentNickname").textContent = member.nickname; document.getElementById("currentRole").textContent = member.role;
     document.getElementById("homeGuildName").textContent = member.guild;
-    applyGuildLogoUI(member.guild); buildMenu(); updateRaidSeasonDropdown(); updateAll(); showScreen("home");
+    applyGuildLogoUI(member.guild); buildMenu(); updateRaidSeasonDropdown(); updateAll();
+    
+    if(member.role === "방문자"){
+        showScreen("personal");
+    } else {
+        showScreen("home");
+    }
 }
 
 function getCurrentMember(){ if(!currentUser) return null; const list = members[currentUser.guild] || []; return list.find(m => m.nickname === currentUser.nickname); }
@@ -714,7 +726,7 @@ function buildMenu(){
     });
 }
 function showScreen(screen){
-    const member = getCurrentMember(); if(!member || !SCREEN_PERMISSION[screen].includes(member.role)){ alert("접근 권한이 없습니다."); return; }
+    const member = getCurrentMember(); if(!member || !SCREEN_PERMISSION[screen].includes(member.role)){ alert("방문자 권한 상태에서는 접근할 수 없습니다. 운영진에게 가입 승인을 요청해주세요."); return; }
     document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
     const target = document.getElementById(`screen-${screen}`); if(target) target.classList.add("active");
     document.querySelectorAll("#menu button").forEach(button => { button.classList.toggle("active", button.dataset.screen === screen); });
@@ -784,6 +796,11 @@ function updatePersonalScreen(){
     const member = getCurrentMember(); if(!member) return;
     document.getElementById("personalNickname").textContent = member.nickname;
     
+    const visitorNotice = document.getElementById("visitorNoticeArea");
+    if(visitorNotice){
+        visitorNotice.classList.toggle("hidden", member.role !== "방문자");
+    }
+
     const selInt = document.getElementById("selectIntegratedSeason");
     const selNorm = document.getElementById("selectNormalSeason");
     const seasonKey = (selInt && selNorm) ? `${selInt.value}-${selNorm.value}` : "";
@@ -966,7 +983,6 @@ function handleRaidScreenshot(event){
         let extractedInt = "34"; 
         let extractedNorm = "4";
         
-        // ★ 시즌 번호 정밀 탐색 ('시즌 34-3' 패턴)
         let seasonFound = false;
         for(let line of lines) {
             let match = line.match(/시즌\s*(\d{1,3})\s*-\s*(\d{1,2})/);
@@ -991,14 +1007,12 @@ function handleRaidScreenshot(event){
         
         const extractedSeasonKey = `${extractedInt}-${extractedNorm}`;
 
-        // ★ 참여인원 정확도 향상
         let participants = "알수없음"; 
         for(let line of lines) {
             let match = line.match(/(\d{1,2})\s*명/);
             if(match) { participants = match[1] + "명"; break; }
         }
 
-        // ★ 트로피, 순위 탐색 정확도
         let rank = "알수없음"; 
         let trophy = "0"; 
         for(let i = 0; i < lines.length; i++) {
@@ -1014,7 +1028,6 @@ function handleRaidScreenshot(event){
             }
         }
 
-        // ★ 총 누적 피해량 추출 (퍼센트 제외, 노란색 숫자 타겟)
         let boss1Damage = "0"; 
         let boss2Damage = "0"; 
         let cumulativeDamages = [];
@@ -1044,7 +1057,6 @@ function handleRaidScreenshot(event){
             { name: "덩어리진 감초바다의 심연", level: "344레벨", damage: boss2Damage }
         ];
 
-        // ★ 유저 정보 추출 로직 (가짜 데이터 완전 제거)
         let parsedMembers = [];
         let currentName = "";
         let pendingRuns = [];
@@ -1145,8 +1157,8 @@ function openBulkRegisterModal(){
     const member = getCurrentMember(); if(!member) return; const inputNames = prompt("일괄 등록할 닉네임들을 입력해주세요.\n(콤마(,)나 줄바꿈으로 구분)"); if(!inputNames) return;
     const names = inputNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0); if(names.length === 0) return;
     if(!members[member.guild]) members[member.guild] = []; let added = 0;
-    names.forEach(name => { if(!members[member.guild].some(m => m.nickname === name)){ members[member.guild].push({ id: Date.now().toString() + Math.random().toString(36).slice(2), guild: member.guild, nickname: name, password: "0117", role: "길드원", joinDate: today() }); added++; } });
-    saveJSON("guildMembers", members); updateMembers(); alert(`총 ${added}명이 등록되었습니다. 초기 비밀번호는 "0117"입니다.`);
+    names.forEach(name => { if(!members[member.guild].some(m => m.nickname === name)){ members[member.guild].push({ id: Date.now().toString() + Math.random().toString(36).slice(2), guild: member.guild, nickname: name, password: "0117", role: "방문자", joinDate: today() }); added++; } });
+    saveJSON("guildMembers", members); updateMembers(); alert(`총 ${added}명이 방문자 권한으로 등록되었습니다.`);
 }
 
 function openRoleModal(id){ selectedMemberIdForRole = id; document.getElementById("roleModal").classList.remove("hidden"); }
@@ -1181,7 +1193,7 @@ function saveNoticeModal(){
 }
 function deleteNotice(realIdx){ if(!confirm("정말 이 공지사항을 삭제하시겠습니까?")) return; guildNotices.splice(realIdx, 1); saveJSON("guildNotices", guildNotices); updateNotice(); updateHome(); }
 function toggleNoticeContent(idx){ const bodyEl = document.getElementById(`notice-body-${idx}`); if(bodyEl){ bodyEl.classList.toggle("hidden"); } }
-function getBadgeClass(role){ if(role === "관리자") return "badge-admin"; if(role === "운영진") return "badge-staff"; if(role === "길드원") return "badge-member"; return "badge-temp"; }
+function getBadgeClass(role){ if(role === "관리자") return "badge-admin"; if(role === "운영진") return "badge-staff"; if(role === "길드원") return "badge-member"; if(role === "방문자") return "badge-visitor"; return "badge-member"; }
 function changeNickname(){ const member = getCurrentMember(), newName = prompt("변경할 닉네임을 입력하세요:", member.nickname); if(!newName || !newName.trim()) return; member.nickname = newName.trim(); currentUser.nickname = newName.trim(); saveJSON("currentUser", currentUser); saveJSON("guildMembers", members); document.getElementById("currentNickname").textContent = newName.trim(); document.getElementById("personalNickname").textContent = newName.trim(); alert("닉네임이 변경되었습니다."); }
 function changePassword(){ const member = getCurrentMember(), newPw = prompt("새로운 비밀번호를 입력하세요:"); if(!newPw || !newPw.trim()) return; member.password = newPw.trim(); saveJSON("guildMembers", members); alert("비밀번호가 변경되었습니다."); }
 </script>
