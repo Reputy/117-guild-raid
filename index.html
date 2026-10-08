@@ -143,10 +143,12 @@ button{cursor:pointer}
 /* 공통 컴포넌트 */
 .guild-banner{
     position:relative;overflow:hidden;min-height:100px;margin-bottom:16px;
-    padding:18px 20px;border-radius:16px;background:linear-gradient(100deg,var(--primary),var(--accent) 55%,#dff8ff);color:#134b73;
+    padding:18px 20px;border-radius:16px;
+    background:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,0.08);color:var(--text);
 }
-.guild-banner h2{margin:0 0 5px;font-size:20px}
-.guild-banner p{margin:0;font-size:12px}
+.guild-banner h2{margin:0 0 5px;font-size:20px;color:var(--primary-dark)}
+.guild-banner p{margin:0;font-size:12px;color:var(--sub)}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .toolbar input,.toolbar select{min-width:130px;padding:8px 10px;border:1px solid #cfe1ec;border-radius:8px;outline:none;background:#fff;font-size:12px}
 .member-list{display:flex;flex-direction:column;gap:8px}
@@ -285,6 +287,7 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                         <p>길드의 주요 정보와 컷 기준을 한눈에 확인하세요.</p>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center">
+                        <button class="btn btn-secondary btn-small" onclick="openGuildBannerModal()">✏️ 문구수정</button>
                         <button class="btn btn-primary" onclick="showScreen('promo')">💙 길드소개</button>
                         <button id="switchGuildBtn" class="btn btn-secondary hidden" onclick="toggleOtherGuild()">🔄 길드전환</button>
                     </div>
@@ -292,7 +295,7 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                 
                 <div class="guild-banner">
                     <h2 id="homeGuildName"></h2>
-                    <p>함께하는 모든 순간이 소중한 우리 길드</p>
+                    <p id="homeGuildDesc">함께하는 모든 순간이 소중한 우리 길드</p>
                 </div>
 
                 <div class="home-summary-grid">
@@ -363,7 +366,7 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
                     </div>
                 </div>
 
-                <div style="background: rgba(255,255,255,0.85); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden; backdrop-filter: blur(12px);">
+                <div class="card">
                     <div style="margin-bottom: 20px;">
                         <div style="background: var(--primary); color: #fff; display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 10px;">
                             ✨ 우리 길드는요..!
@@ -690,6 +693,21 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
     </div>
 </div>
 
+<!-- 길드 배너 문구 수정 모달 -->
+<div id="guildBannerModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:380px;text-align:left">
+        <h3 style="text-align:center;margin-bottom:12px">길드 배너 문구 수정</h3>
+        <div class="form-group">
+            <label>소개 문구</label>
+            <textarea id="modalGuildDescInput" placeholder="배너에 표시될 문구를 입력하세요"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:15px">
+            <button class="btn btn-primary" style="flex:1" onclick="saveGuildBannerModal()">저장</button>
+            <button class="btn btn-secondary" style="flex:1;background:#ddd;color:#333" onclick="closeGuildBannerModal()">취소</button>
+        </div>
+    </div>
+</div>
+
 <!-- 공지사항 수정/작성 모달 -->
 <div id="noticeModal" class="custom-modal hidden">
     <div class="modal-content" style="max-width:440px;text-align:left">
@@ -895,6 +913,10 @@ function updateHome(){
     document.getElementById("homeValRank").textContent = data && data.rank ? data.rank : "-"; 
     document.getElementById("homeValParticipants").textContent = data && data.participants ? data.participants : "-";
     
+    let descMap = loadJSON("guildBannerDescriptions", {});
+    let customDesc = descMap[member.guild] || "함께하는 모든 순간이 소중한 우리 길드";
+    document.getElementById("homeGuildDesc").textContent = customDesc;
+
     const guildCutsMap = loadJSON("guildCuts", {});
     const cuts = guildCutsMap[member.guild] || { inner: [200, 220, 230], target: [270, 270, 340] };
     document.getElementById("homeInnerCutVal").textContent = cuts.inner.join(" / "); 
@@ -908,6 +930,34 @@ function updateHome(){
     const notices = allNotices.filter(n => n.guild === member.guild), homeNoticeDiv = document.getElementById("homeNotice");
     if(notices.length === 0){ homeNoticeDiv.innerHTML = `<div class="empty">등록된 공지사항이 없습니다.</div>`; return; }
     const latest = notices[notices.length - 1]; homeNoticeDiv.innerHTML = `<div class="notice-card" style="cursor:default"><div class="notice-title">${escapeHtml(latest.title)}</div><div class="notice-date">${latest.date} | 작성자: ${escapeHtml(latest.author)}</div><div class="notice-body">${escapeHtml(latest.content)}</div></div>`;
+}
+
+function openGuildBannerModal(){
+    const member = getCurrentMember();
+    if(!member) return;
+    let descMap = loadJSON("guildBannerDescriptions", {});
+    let currentDesc = descMap[member.guild] || "함께하는 모든 순간이 소중한 우리 길드";
+    document.getElementById("modalGuildDescInput").value = currentDesc;
+    document.getElementById("guildBannerModal").classList.remove("hidden");
+}
+
+function closeGuildBannerModal(){
+    document.getElementById("guildBannerModal").classList.add("hidden");
+}
+
+function saveGuildBannerModal(){
+    const member = getCurrentMember();
+    if(!member) return;
+    const newDesc = document.getElementById("modalGuildDescInput").value.trim();
+    if(!newDesc){ alert("문구를 입력해주세요."); return; }
+    
+    let descMap = loadJSON("guildBannerDescriptions", {});
+    descMap[member.guild] = newDesc;
+    saveJSON("guildBannerDescriptions", descMap);
+    
+    closeGuildBannerModal();
+    updateHome();
+    alert("길드 소개 문구가 수정되었습니다.");
 }
 
 function toggleOtherGuild(){
@@ -1256,7 +1306,8 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
           guildRelicScoreData: localStorage.getItem("guildRelicScoreData") || "{}",
           guildLogos: localStorage.getItem("guildLogos") || "{}",
           guildChampBossStorage: localStorage.getItem("guildChampBossStorage") || "{}",
-          guildThemeImages: localStorage.getItem("guildThemeImages") || "{}"
+          guildThemeImages: localStorage.getItem("guildThemeImages") || "{}",
+          guildBannerDescriptions: localStorage.getItem("guildBannerDescriptions") || "{}"
         };
         await setDoc(doc(db, "guild_db", guildName), fullData);
       } catch (error) { console.error("자동 백업 실패:", error); }
@@ -1284,6 +1335,7 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
         if(d.guildLogos) localStorage.setItem("guildLogos", d.guildLogos);
         if(d.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", d.guildChampBossStorage);
         if(d.guildThemeImages) localStorage.setItem("guildThemeImages", d.guildThemeImages);
+        if(d.guildBannerDescriptions) localStorage.setItem("guildBannerDescriptions", d.guildBannerDescriptions);
         alert("✅ 서버에서 최신 데이터를 successfully 불러왔습니다! 화면을 새로고침합니다.");
         location.reload(); 
       } else { alert("서버에 백업된 길드 데이터가 없습니다."); }
