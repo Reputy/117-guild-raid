@@ -341,50 +341,66 @@ table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); fon
 
             <!-- 길드 소개 화면 -->
             <section id="screen-promo" class="screen">
-                <div class="page-header" style="text-align: center; margin-bottom: 20px;">
-                    <div style="font-size: 13px; font-weight: bold; color: var(--primary); background: var(--primary-light); display: inline-block; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px;">
-                        💙 길드 소개
-                    </div>
-                    <h1 id="promoGuildTitle" style="font-size: 26px; color: var(--primary-dark); margin: 0;">117번째 우정</h1>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                    <div class="card" style="text-align: center; border-top: 4px solid var(--primary);">
-                        <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto 8px;">1</div>
-                        <div style="font-weight: bold; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px;">길드내실</div>
-                        <div style="font-size: 12px; color: var(--text); line-height: 1.4;">70렙 / 성전 1%<br>유물 10레벨 ↑</div>
-                    </div>
-                    <div class="card" style="text-align: center; border-top: 4px solid var(--primary);">
-                        <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto 8px;">2</div>
-                        <div style="font-weight: bold; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px;">길드순위</div>
-                        <div style="font-size: 12px; color: var(--text); line-height: 1.4;">in 70<br>30시즌 65위</div>
-                    </div>
-                    <div class="card" style="text-align: center; border-top: 4px solid var(--primary);">
-                        <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto 8px;">3</div>
-                        <div style="font-weight: bold; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px;">길드목표</div>
-                        <div style="font-size: 12px; color: var(--text); line-height: 1.4;">챌린저 진입</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div style="margin-bottom: 20px;">
-                        <div style="background: var(--primary); color: #fff; display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 10px;">
-                            ✨ 우리 길드는요..!
-                        </div>
-                        <div style="font-size: 13px; color: var(--text); line-height: 1.6; background: rgba(255,255,255,0.7); padding: 14px; border-radius: 12px;">
-                            • 설립: 2024. 1. 27.<br>
-                            • 열정과 진심과 우정이 있는 길드<br>
-                            • 소통방 있음 (카톡, 디코) / 성인 길드
-                        </div>
-                    </div>
+                <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom: 20px;">
                     <div>
-                        <div style="background: var(--primary-dark); color: #fff; display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 10px;">
-                            🤝 우리 함께해요..!
+                        <div style="font-size: 13px; font-weight: bold; color: var(--primary); background: var(--primary-light); display: inline-block; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px;">
+                            💙 길드 소개
                         </div>
-                        <div style="font-size: 13px; color: var(--text); line-height: 1.6; background: rgba(255,255,255,0.7); padding: 14px; border-radius: 12px;">
-                            • 드래곤 230억 / 기계신 230억 / 감초바다 270억<br>
-                            • 토벌 18회 필참 / 수성 참여 및 유물 자동 기부<br>
-                            • 성인 / 내부 운영 규칙 준수 / 공지방 참여
+                        <h1 id="promoGuildTitle" style="font-size: 26px; color: var(--primary-dark); margin: 0;">117번째 우정</h1>
+                    </div>
+                    <div id="promoAdminActionArea" class="hidden">
+                        <button class="btn btn-primary btn-small" onclick="triggerPromoImageUpload()">🖼️ 길드 소개 이미지 등록</button>
+                        <input type="file" id="promoImageInput" accept="image/*" style="display:none" onchange="handlePromoImageUpload(event)">
+                    </div>
+                </div>
+
+                <!-- 이미지 등록 시 표시될 영역 (기본은 텍스트/카드 레이아웃) -->
+                <div id="promoImageDisplayArea" class="hidden" style="margin-bottom:20px; text-align:center;">
+                    <img id="promoCustomImageView" src="" alt="길드 소개 이미지" style="max-width:100%; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.1); border:1px solid var(--border);">
+                    <div style="margin-top:8px;">
+                        <button id="promoImageDeleteBtn" class="btn btn-danger btn-small hidden" onclick="deletePromoImage()">등록 이미지 삭제</button>
+                    </div>
+                </div>
+
+                <div id="promoDefaultContentArea">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <div class="card" style="text-align: center; border-top: 4px solid var(--primary);">
+                            <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto 8px;">1</div>
+                            <div style="font-weight: bold; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px;">길드내실</div>
+                            <div style="font-size: 12px; color: var(--text); line-height: 1.4;">70렙 / 성전 1%<br>유물 10레벨 ↑</div>
+                        </div>
+                        <div class="card" style="text-align: center; border-top: 4px solid var(--primary);">
+                            <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto 8px;">2</div>
+                            <div style="font-weight: bold; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px;">길드순위</div>
+                            <div style="font-size: 12px; color: var(--text); line-height: 1.4;">in 70<br>30시즌 65위</div>
+                        </div>
+                        <div class="card" style="text-align: center; border-top: 4px solid var(--primary);">
+                            <div style="width: 24px; height: 24px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin: 0 auto 8px;">3</div>
+                            <div style="font-weight: bold; font-size: 14px; color: var(--primary-dark); margin-bottom: 6px;">길드목표</div>
+                            <div style="font-size: 12px; color: var(--text); line-height: 1.4;">챌린저 진입</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="margin-bottom: 20px;">
+                            <div style="background: var(--primary); color: #fff; display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 10px;">
+                                ✨ 우리 길드는요..!
+                            </div>
+                            <div style="font-size: 13px; color: var(--text); line-height: 1.6; background: rgba(255,255,255,0.7); padding: 14px; border-radius: 12px;">
+                                • 설립: 2024. 1. 27.<br>
+                                • 열정과 진심과 우정이 있는 길드<br>
+                                • 소통방 있음 (카톡, 디코) / 성인 길드
+                            </div>
+                        </div>
+                        <div>
+                            <div style="background: var(--primary-dark); color: #fff; display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 10px;">
+                                🤝 우리 함께해요..!
+                            </div>
+                            <div style="font-size: 13px; color: var(--text); line-height: 1.6; background: rgba(255,255,255,0.7); padding: 14px; border-radius: 12px;">
+                                • 드래곤 230억 / 기계신 230억 / 감초바다 270억<br>
+                                • 토벌 18회 필참 / 수성 참여 및 유물 자동 기부<br>
+                                • 성인 / 내부 운영 규칙 준수 / 공지방 참여
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -849,8 +865,8 @@ function showScreen(screen){
     document.querySelectorAll("#menu button").forEach(button => { button.classList.toggle("active", button.dataset.screen === screen); });
     updateScreen(screen);
 }
-function updateAll(){ updateHome(); updateMembers(); updateNotice(); updateRaidScreen(); updateRelicScreen(); updateRankingScreen(); updatePersonalScreen(); renderChampTable(); }
-function updateScreen(screen){ if(screen === "home") updateHome(); if(screen === "members") updateMembers(); if(screen === "notice") updateNotice(); if(screen === "raid") updateRaidScreen(); if(screen === "relic") updateRelicScreen(); if(screen === "ranking") updateRankingScreen(); if(screen === "personal") updatePersonalScreen(); if(screen === "champ") initChampScreen(); }
+function updateAll(){ updateHome(); updateMembers(); updateNotice(); updateRaidScreen(); updateRelicScreen(); updateRankingScreen(); updatePersonalScreen(); renderChampTable(); updatePromoScreen(); }
+function updateScreen(screen){ if(screen === "home") updateHome(); if(screen === "members") updateMembers(); if(screen === "notice") updateNotice(); if(screen === "raid") updateRaidScreen(); if(screen === "relic") updateRelicScreen(); if(screen === "ranking") updateRankingScreen(); if(screen === "personal") updatePersonalScreen(); if(screen === "champ") initChampScreen(); if(screen === "promo") updatePromoScreen(); }
 function today(){ return new Date().toISOString().split("T")[0]; }
 function escapeHtml(str){ return str ? String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") : ""; }
 
@@ -896,6 +912,64 @@ function handleThemeImageUpload(season, event) {
     };
     reader.readAsDataURL(file);
     event.target.value = "";
+}
+
+function updatePromoScreen(){
+    const member = getCurrentMember();
+    if(!member) return;
+    const isStaffOrAdmin = ["관리자", "운영진"].includes(member.role);
+    const adminActionArea = document.getElementById("promoAdminActionArea");
+    if(adminActionArea){
+        adminActionArea.classList.toggle("hidden", !isStaffOrAdmin);
+    }
+    
+    let promoImages = loadJSON("guildPromoImages", {});
+    let savedImg = promoImages[member.guild];
+    let displayArea = document.getElementById("promoImageDisplayArea");
+    let defaultArea = document.getElementById("promoDefaultContentArea");
+    let deleteBtn = document.getElementById("promoImageDeleteBtn");
+    let imgView = document.getElementById("promoCustomImageView");
+
+    if(savedImg){
+        imgView.src = savedImg;
+        displayArea.classList.remove("hidden");
+        defaultArea.classList.add("hidden");
+        if(deleteBtn) deleteBtn.classList.toggle("hidden", !isStaffOrAdmin);
+    } else {
+        displayArea.classList.add("hidden");
+        defaultArea.classList.remove("hidden");
+    }
+}
+
+function triggerPromoImageUpload(){
+    document.getElementById("promoImageInput").click();
+}
+
+function handlePromoImageUpload(event){
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+        const member = getCurrentMember();
+        if(!member) return;
+        let promoImages = loadJSON("guildPromoImages", {});
+        promoImages[member.guild] = e.target.result;
+        saveJSON("guildPromoImages", promoImages);
+        updatePromoScreen();
+        alert("길드 소개 이미지가 성공적으로 등록되었습니다!");
+    };
+    reader.readAsDataURL(file);
+    event.target.value = "";
+}
+
+function deletePromoImage(){
+    const member = getCurrentMember();
+    if(!member || !confirm("등록된 길드 소개 이미지를 삭제하시겠습니까?")) return;
+    let promoImages = loadJSON("guildPromoImages", {});
+    delete promoImages[member.guild];
+    saveJSON("guildPromoImages", promoImages);
+    updatePromoScreen();
+    alert("길드 소개 이미지가 삭제되었습니다.");
 }
 
 function updateHome(){
@@ -1350,7 +1424,8 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
           guildLogos: localStorage.getItem("guildLogos") || "{}",
           guildChampBossStorage: localStorage.getItem("guildChampBossStorage") || "{}",
           guildThemeImages: localStorage.getItem("guildThemeImages") || "{}",
-          guildBannerDescriptions: localStorage.getItem("guildBannerDescriptions") || "{}"
+          guildBannerDescriptions: localStorage.getItem("guildBannerDescriptions") || "{}",
+          guildPromoImages: localStorage.getItem("guildPromoImages") || "{}"
         };
         await setDoc(doc(db, "guild_db", guildName), fullData);
       } catch (error) { console.error("자동 백업 실패:", error); }
@@ -1379,6 +1454,7 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
         if(d.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", d.guildChampBossStorage);
         if(d.guildThemeImages) localStorage.setItem("guildThemeImages", d.guildThemeImages);
         if(d.guildBannerDescriptions) localStorage.setItem("guildBannerDescriptions", d.guildBannerDescriptions);
+        if(d.guildPromoImages) localStorage.setItem("guildPromoImages", d.guildPromoImages);
         alert("✅ 서버에서 최신 데이터를 successfully 불러왔습니다! 화면을 새로고침합니다.");
         location.reload(); 
       } else { alert("서버에 백업된 길드 데이터가 없습니다."); }
