@@ -789,7 +789,7 @@ function registerMember(){
     if(!members[guild]) members[guild] = [];
     if(members[guild].some(m => m.nickname === nickname)){ msgEl.textContent = "이미 등록된 닉네임입니다."; return; }
     let role = (nickname === "리퓨티") ? "관리자" : "방문자";
-    members[guild].push({ id: Date.now().toString(), guild, nickname, password, role, joinDate: today() });
+    members[guild].push({ id: Date.now().toString(), guild, nickname, password, role, joinDate: today(), lastAccess: "오늘 00:00", active: true });
     saveJSON("guildMembers", members); currentUser = { guild, nickname }; saveJSON("currentUser", currentUser);
     document.getElementById("passwordInput").value = ""; startApp();
 }
@@ -967,7 +967,7 @@ function toggleOtherGuild(){
     if(!members[nextGuild]) members[nextGuild] = [];
     let targetAdmin = members[nextGuild].find(m => m.nickname === member.nickname);
     if(!targetAdmin){
-        members[nextGuild].push({ id: Date.now().toString(), guild: nextGuild, nickname: member.nickname, password: member.password, role: "관리자", joinDate: today() });
+        members[nextGuild].push({ id: Date.now().toString(), guild: nextGuild, nickname: member.nickname, password: member.password, role: "관리자", joinDate: today(), lastAccess: "오늘 00:00", active: true });
         saveJSON("guildMembers", members);
     } else {
         targetAdmin.role = "관리자";
@@ -1210,24 +1210,67 @@ function updateRankingScreen(){
 
 function updateMembers(){
     const adminArea = document.getElementById("memberAdminArea"), memberListDiv = document.getElementById("memberList"), member = getCurrentMember(); if(!member) return;
-    if(member.role === "관리자" || member.role === "운영진"){ adminArea.innerHTML = `<h3>👥 길드원 관리</h3><button class="btn btn-primary" onclick="openBulkRegisterModal()" style="margin-top:6px;">➕ 길드원 일괄 등록</button>`; }else{ adminArea.innerHTML = ""; }
-    const searchQuery = document.getElementById("memberSearch").value.toLowerCase(), roleFilter = document.getElementById("memberRoleFilter").value, list = members[member.guild] || [];
+    const list = members[member.guild] || [];
+    
+    // 활성화된 인원만 계수 계산
+    const activeCount = list.filter(m => m.active !== false).length;
+
+    if(member.role === "관리자" || member.role === "운영진"){ 
+        adminArea.innerHTML = `<h3>👥 길드원 관리 <span style="font-size:13px;color:var(--sub);font-weight:normal;">(총 인원: ${activeCount}명 / 전체 ${list.length}명)</span></h3><button class="btn btn-primary" onclick="openBulkRegisterModal()" style="margin-top:6px;">➕ 길드원 일괄 등록</button>`; 
+    } else { 
+        adminArea.innerHTML = `<h3>👥 길드원 목록 <span style="font-size:13px;color:var(--sub);font-weight:normal;">(총 인원: ${activeCount}명)</span></h3>`; 
+    }
+
+    const searchQuery = document.getElementById("memberSearch").value.toLowerCase(), roleFilter = document.getElementById("memberRoleFilter").value;
     const filtered = list.filter(m => m.nickname.toLowerCase().includes(searchQuery) && (roleFilter ? m.role === roleFilter : true));
+    
     if(filtered.length === 0){ memberListDiv.innerHTML = `<div class="empty">등록된 길드원이 없습니다.</div>`; return; }
     let isStaffOrAdmin = (member.role === '관리자' || member.role === '운영진');
-    memberListDiv.innerHTML = filtered.map(m => {
+
+    let activeSeq = 1;
+    memberListDiv.innerHTML = filtered.map((m, originalIdx) => {
+        let isActive = m.active !== false;
+        let seqDisplay = isActive ? activeSeq++ : "비";
+        if(!isActive) seqDisplay = `<span style="color:#ef6873;font-weight:bold;cursor:pointer;" onclick="toggleMemberActive('${m.id}')" title="클릭하여 활성화">비</span>`;
+        else seqDisplay = `<span style="cursor:pointer;" onclick="toggleMemberActive('${m.id}')" title="클릭하여 비활성화">${seqDisplay}</span>`;
+
         let badgeClickAttr = isStaffOrAdmin ? `onclick="openRoleModal('${m.id}')" title="클릭하여 권한 관리"` : "";
         let roleBadgeHtml = `<span class="badge ${getBadgeClass(m.role)}" ${badgeClickAttr}>${m.role}</span>`;
         let actionButtons = isStaffOrAdmin ? `<div class="member-actions"><button class="btn btn-secondary btn-small" onclick="deleteMember('${m.id}')">삭제</button></div>` : "";
-        return `<div class="member-row"><div><span class="member-name">${escapeHtml(m.nickname)}</span>${roleBadgeHtml}<div class="member-date">가입일: ${m.joinDate || '-'}</div></div>${actionButtons}</div>`;
+        
+        let lastAccessStr = m.lastAccess || "최근 접속 정보 없음";
+
+        return `
+        <div class="member-row" style="${!isActive ? 'opacity:0.6;' : ''}">
+            <div style="display:flex;align-items:center;gap:12px;flex:1;">
+                <div style="width:28px;text-align:center;font-weight:bold;font-size:13px;">${seqDisplay}</div>
+                <div>
+                    <div><span class="member-name">${escapeHtml(m.nickname)}</span>${roleBadgeHtml}</div>
+                    <div class="member-date">가입일: ${m.joinDate || '-'} | 최근 접속: ${lastAccessStr}</div>
+                </div>
+            </div>
+            ${actionButtons}
+        </div>`;
     }).join("");
+}
+
+function toggleMemberActive(id){
+    const member = getCurrentMember();
+    if(!member || !["관리자", "운영진"].includes(member.role)) return;
+    let list = members[member.guild] || [];
+    let target = list.find(m => m.id === id);
+    if(target){
+        target.active = target.active === false ? true : false;
+        saveJSON("guildMembers", members);
+        updateMembers();
+    }
 }
 
 function openBulkRegisterModal(){
     const member = getCurrentMember(); if(!member) return; const inputNames = prompt("일괄 등록할 닉네임들을 입력하세요 (콤마 또는 줄바꿈 구분):"); if(!inputNames) return;
     const names = inputNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0); if(names.length === 0) return;
     if(!members[member.guild]) members[member.guild] = []; let added = 0;
-    names.forEach(name => { if(!members[member.guild].some(m => m.nickname === name)){ members[member.guild].push({ id: Date.now().toString() + Math.random(), guild: member.guild, nickname: name, password: "1234", role: "길드원", joinDate: today() }); added++; } });
+    names.forEach(name => { if(!members[member.guild].some(m => m.nickname === name)){ members[member.guild].push({ id: Date.now().toString() + Math.random(), guild: member.guild, nickname: name, password: "1234", role: "길드원", joinDate: today(), lastAccess: "오늘 00:00", active: true }); added++; } });
     saveJSON("guildMembers", members); updateMembers(); alert(`총 ${added}명이 등록되었습니다.`);
 }
 
