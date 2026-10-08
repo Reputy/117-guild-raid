@@ -8,6 +8,7 @@
 <style>
 *{box-sizing:border-box}
 
+/* --- 기본 변수 (summer 테마 기준) --- */
 :root{
     --primary:#2788d8;
     --primary-dark:#14549a;
@@ -15,7 +16,7 @@
     --accent:#55bff0;
     --text:#173b63;
     --sub:#7190ad;
-    --bg:linear-gradient(180deg,#dff7ff 0%,#edfaff 45%,#fff 100%);
+    --bg:linear-gradient(180deg,#dff7ff 0%,#edfaff 45%,#fff 100%); /* 기본 bg */
     --card:rgba(255,255,255,.94);
     --border:#d9edf8;
     --danger:#ef6873;
@@ -24,64 +25,96 @@
     --sidebar-bg:linear-gradient(180deg,#1459a3,#2375c4 60%,#1d5da6);
 }
 
+/* --- 테마별 스타일 (배경 이미지 및 고급 UI 적용) --- */
+
+/* 🌸 봄 테마 */
 body.theme-spring{
-    background:linear-gradient(180deg,#ffe6f0 0%,#f3ffe8 45%,#fff 100%);
+    background: url('image_0.png') no-repeat center center fixed;
+    background-size: cover;
     --primary:#e06d98;
     --primary-dark:#a83861;
+    --primary-light:#fff0f5;
+    --text:#5a3644;
+    --sub:#9a7584;
     --border:#fcdde8;
-    --sidebar-bg:linear-gradient(180deg,#b84b75,#d66b93 60%,#a83861);
+    --sidebar-bg:linear-gradient(180deg,rgba(184,75,117,0.9),rgba(214,107,147,0.9) 60%,rgba(168,56,97,0.9));
 }
+
+/* ☀️ 여름 테마 */
 body.theme-summer{
-    background:linear-gradient(180deg,#dff7ff 0%,#edfaff 45%,#fff 100%);
+    background: url('image_1.png') no-repeat center center fixed;
+    background-size: cover;
     --primary:#2788d8;
     --primary-dark:#14549a;
+    --primary-light:#e9f6ff;
+    --text:#173b63;
+    --sub:#7190ad;
     --border:#d9edf8;
-    --sidebar-bg:linear-gradient(180deg,#1459a3,#2375c4 60%,#1d5da6);
+    --sidebar-bg:linear-gradient(180deg,rgba(20,89,163,0.9),rgba(35,117,196,0.9) 60%,rgba(29,93,166,0.9));
 }
+
+/* 🍂 가을 테마 */
 body.theme-autumn{
-    background:linear-gradient(180deg,#ffedd9 0%,#fff5eb 45%,#fff 100%);
+    background: url('image_2.png') no-repeat center center fixed;
+    background-size: cover;
     --primary:#d9822b;
     --primary-dark:#9a5214;
+    --primary-light:#fff5eb;
+    --text:#533314;
+    --sub:#9c7a5a;
     --border:#fde3cb;
-    --sidebar-bg:linear-gradient(180deg,#b56214,#d87f2b 60%,#9a5214);
+    --sidebar-bg:linear-gradient(180deg,rgba(181,98,20,0.9),rgba(216,127,43,0.9) 60%,rgba(154,82,20,0.9));
 }
+
+/* ❄️ 겨울 테마 */
 body.theme-winter{
-    background:linear-gradient(180deg,#e3f2fd 0%,#f5f9ff 45%,#fff 100%);
+    background: url('image_3.png') no-repeat center center fixed;
+    background-size: cover;
     --primary:#42a5f5;
     --primary-dark:#1565c0;
+    --primary-light:#e3f2fd;
+    --text:#0d3c66;
+    --sub:#668db0;
     --border:#cbe5fc;
-    --sidebar-bg:linear-gradient(180deg,#1e88e5,#42a5f5 60%,#1565c0);
+    --sidebar-bg:linear-gradient(180deg,rgba(30,136,229,0.9),rgba(66,165,245,0.9) 60%,rgba(21,101,192,0.9));
 }
+
+/* --- 메뉴 버튼 폰트 색상 (겨울 테마만 흰색 유지) --- */
 body.theme-winter .menu button { color: #ffffff !important; }
 
+/* --- 공통 스타일 (고급 UI를 위해 수정됨) --- */
 html,body{margin:0;min-height:100%}
-body{font-family:Arial,"Noto Sans KR",sans-serif;color:var(--text);background:var(--bg);min-height:100vh;font-size:14px;}
+body{font-family:Arial,"Noto Sans KR",sans-serif;color:var(--text);background:var(--bg);min-height:100vh;font-size:14px; transition: background-image 0.5s ease; }
 
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .app{min-height:100vh}
 .hidden{display:none!important}
+
+/* 고급진 카드 스타일 (반투명 + 블러) */
 .card{
-    background:var(--card);
-    border:1px solid var(--border);
+    background:rgba(255,255,255,0.8); /* 반투명 배경 */
+    border:1px solid rgba(255, 255, 255, 0.3); /* 테두리도 살짝 투명하게 */
     border-radius:16px;
     padding:16px;
-    box-shadow:var(--shadow);
-    backdrop-filter:blur(12px);
+    box-shadow:0 4px 20px rgba(0,0,0,0.05); /* 그림자 연하게 */
+    backdrop-filter:blur(10px); /* 배경 블러 효과 */
 }
 .card h3{margin:0 0 12px;font-size:16px}
+
 .page-header{margin-bottom:16px}
 .page-header h1{margin:0 0 4px;font-size:22px}
 .page-header p{margin:0;color:var(--sub);font-size:12px}
+
 .btn{border:0;border-radius:8px;padding:8px 12px;font-weight:bold;transition:.2s;font-size:13px}
 .btn:hover{transform:translateY(-1px)}
 .btn-primary{background:var(--primary);color:#fff}
-.btn-secondary{background:#eaf6fc;color:var(--primary-dark)}
-.btn-danger{background:#ef6873;color:#fff}
-.btn-success{background:#35a86b;color:#fff}
+.btn-secondary{background:rgba(255,255,255,0.7);color:var(--primary-dark); border:1px solid var(--border); }
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#fff}
 .btn-small{padding:5px 8px;font-size:11px}
 
-/* 로그인 화면 */
+/* 로그인 화면 (로그인 화면 배경은 기존대로 유지) */
 #loginScreen{
     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
     background:linear-gradient(135deg,#4bc0eb,#dff8ff);
@@ -105,9 +138,10 @@ button{cursor:pointer}
 /* 사이드바 & 메인 */
 .sidebar{
     width:220px;min-height:100vh;position:fixed;left:0;top:0;bottom:0;
-    padding:16px 12px;background:var(--sidebar-bg);
-    color:#fff;box-shadow:8px 0 30px rgba(20,90,160,.16);z-index:1000;
+    padding:16px 12px;background:var(--sidebar-bg); /* 테마별 반투명 bg 적용됨 */
+    color:#fff;box-shadow:8px 0 30px rgba(0,0,0,.05);z-index:1000;
     transition:background 0.3s ease;
+    backdrop-filter:blur(5px); /* 사이드바도 살짝 블러 */
 }
 .guild-logo{padding:6px 8px 18px;text-align:center}
 .guild-logo-icon{
@@ -118,6 +152,7 @@ button{cursor:pointer}
 }
 .guild-logo-icon:hover{transform:scale(1.05);background:rgba(255,255,255,.28)}
 .guild-name{margin-top:8px;font-size:16px;font-weight:bold}
+
 .menu{display:flex;flex-direction:column;gap:4px}
 .menu button{
     width:100%;border:0;border-radius:10px;padding:10px 12px;background:transparent;
@@ -128,6 +163,7 @@ button{cursor:pointer}
     background:linear-gradient(90deg,rgba(255,255,255,.23),rgba(255,255,255,.10));
     color:#fff;box-shadow:inset 3px 0 0 #fff;
 }
+
 .main-area{width:calc(100% - 220px);margin-left:220px;min-height:100vh}
 .topbar{
     height:60px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;
@@ -139,6 +175,7 @@ button{cursor:pointer}
 .role-badge{padding:4px 8px;border-radius:16px;background:var(--primary-light);color:var(--primary-dark);font-size:11px;cursor:pointer;display:inline-block;transition:.2s;}
 .role-badge:hover{transform:scale(1.05);opacity:0.9;}
 .logout-btn{border:1px solid #d9eaf5;border-radius:8px;padding:6px 10px;background:#fff;color:#52738e;font-size:12px}
+
 .content{max-width:1200px;margin:auto;padding:20px}
 .screen{display:none}
 .screen.active{display:block}
@@ -146,77 +183,86 @@ button{cursor:pointer}
 /* 공통 컴포넌트 */
 .guild-banner{
     position:relative;overflow:hidden;min-height:100px;margin-bottom:16px;
-    padding:18px 20px;border-radius:16px;background:linear-gradient(100deg,var(--primary),var(--accent) 55%,#dff8ff);color:#134b73;
+    padding:18px 20px;border-radius:16px;background:linear-gradient(100deg,rgba(39,136,216,0.9),rgba(85,191,240,0.9) 55%,rgba(223,248,255,0.9));color:#134b73;
+    backdrop-filter:blur(10px);
 }
 .guild-banner h2{margin:0 0 5px;font-size:20px}
 .guild-banner p{margin:0;font-size:12px}
+
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .toolbar input,.toolbar select{min-width:130px;padding:8px 10px;border:1px solid #cfe1ec;border-radius:8px;outline:none;background:#fff;font-size:12px}
+
 .member-list{display:flex;flex-direction:column;gap:8px}
-.member-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-radius:12px;background:#fff;border:1px solid #e3f0f6}
+.member-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.9);border:1px solid rgba(0,0,0,0.05)}
 .member-name{font-weight:bold;font-size:13px}
 .member-date{color:#8197a8;font-size:11px}
 .badge{display:inline-block;margin-left:5px;padding:3px 7px;border-radius:16px;font-size:10px;font-weight:bold}
-.badge-admin{background:#fff0bc;color:#987000}
-.badge-staff{background:#d9f0ff;color:#2672a2}
-.badge-member{background:#def5e5;color:#318051}
-.badge-visitor{background:#f1f3f5;color:#495057}
+.badge-admin{background:rgba(255,240,188,0.9);color:#987000}
+.badge-staff{background:rgba(217,240,255,0.9);color:#2672a2}
+.badge-member{background:rgba(222,245,229,0.9);color:#318051}
+.badge-temp{background:rgba(255,224,224,0.9);color:#bd4e4e}
 .member-actions{display:flex;gap:4px;flex-wrap:wrap}
 
 /* 공지사항, 요약 카드 */
-.notice-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:.2s}
+.notice-card{background:rgba(255,255,255,0.9);border:1px solid rgba(0,0,0,0.05);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:.2s}
 .notice-card:hover{border-color:var(--primary)}
 .notice-title{font-size:15px;font-weight:bold;margin-bottom:4px;color:var(--primary-dark)}
 .notice-date{font-size:11px;color:var(--sub);margin-bottom:8px}
 .notice-body{font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap}
+
 .home-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
-.summary-card{background:#fff;padding:14px;border-radius:14px;border:1px solid var(--border);text-align:center}
+.summary-card{background:rgba(255,255,255,0.9);padding:14px;border-radius:14px;border:1px solid rgba(0,0,0,0.05);text-align:center}
 .summary-card .val{font-size:18px;font-weight:bold;color:var(--primary-dark);margin-top:4px}
+
 .cut-box-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 @media(max-width:768px){.cut-box-grid{grid-template-columns:1fr}}
-.cut-card{background:#fff;padding:14px;border-radius:14px;border:1px solid var(--border)}
+.cut-card{background:rgba(255,255,255,0.9);padding:14px;border-radius:14px;border:1px solid rgba(0,0,0,0.05)}
 .cut-card h4{margin:0 0 8px;color:var(--primary-dark);font-size:14px}
 .cut-values{display:flex;gap:8px;font-size:15px;font-weight:bold;color:var(--text)}
 
 /* 토벌전 대시보드 */
 .raid-dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
-.raid-stat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
+.raid-stat-card{background:rgba(255,255,255,0.9);border:1px solid rgba(0,0,0,0.05);border-radius:14px;padding:14px}
 .raid-stat-card h4{margin:0 0 8px;color:var(--primary-dark);font-size:13px}
-.boss-box{background:#f8fcfe;border:1px solid #e3f0f6;border-radius:10px;padding:10px;margin-top:8px}
+.boss-box{background:rgba(248,252,254,0.9);border:1px solid rgba(0,0,0,0.05);border-radius:10px;padding:10px;margin-top:8px}
 .boss-name{font-weight:bold;font-size:14px;color:var(--text);margin-bottom:3px}
 
 /* 챌프 탭 */
 .champ-boss-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-.champ-tab-btn { flex: 1; min-width: 75px; padding: 8px 10px; font-size: 12px; font-weight: bold; border: 1px solid var(--border); background: #fff; color: var(--sub); border-radius: 8px; text-align: center; transition: 0.2s; }
+.champ-tab-btn { flex: 1; min-width: 75px; padding: 8px 10px; font-size: 12px; font-weight: bold; border: 1px solid var(--border); background: rgba(255,255,255,0.7); color: var(--sub); border-radius: 8px; text-align: center; transition: 0.2s; }
 .champ-tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 .champ-upload-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 @media(max-width:768px){.champ-upload-container{grid-template-columns:1fr}}
-.champ-upload-box { border: 2px dashed var(--border); padding: 14px; text-align: center; border-radius: 12px; background: #f8fcfe; }
-.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 12px 0 16px 0; background: #f8fcfe; padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 12px; }
+.champ-upload-box { border: 2px dashed var(--border); padding: 14px; text-align: center; border-radius: 12px; background: rgba(248,252,254,0.7); }
+.checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 12px 0 16px 0; background: rgba(248,252,254,0.7); padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 12px; }
+
 .comparison-table-wrapper { overflow-x: auto; }
-table.comparison-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+table.comparison-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.9); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
 table.comparison-table th, table.comparison-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid #edf2f7; font-size: 12px; }
-table.comparison-table th { background: #e9f6ff; color: var(--primary-dark); font-weight: bold; }
-.ref-header { background: #e2f0fd !important; color: #104375 !important; }
-.my-header { background: #eef9ee !important; color: #1b663b !important; }
+table.comparison-table th { background: rgba(233,246,255,0.9); color: var(--primary-dark); font-weight: bold; }
+.ref-header { background: rgba(226,240,253,0.9) !important; color: #104375 !important; }
+.my-header { background: rgba(238,249,238,0.9) !important; color: #1b663b !important; }
 
 /* 모달 */
 .custom-modal{ position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5); display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px; }
 .modal-content{background:#fff;padding:20px;border-radius:16px;width:100%;max-width:340px;box-shadow:0 10px 30px rgba(0,0,0,0.2);text-align:center;font-size:13px}
 .modal-content h3{margin-top:0;font-size:16px}
+
+/* 테마 선택 버튼 (기존 버튼 스타일 유지) */
 .theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .theme-button{min-height:90px;border:0;border-radius:14px;font-size:15px;font-weight:bold;cursor:pointer}
 .theme-spring-button{background:linear-gradient(135deg,#ffd0e2,#e0f7df)}
 .theme-summer-button{background:linear-gradient(135deg,#42bce7,#d8f8ff)}
 .theme-autumn-button{background:linear-gradient(135deg,#e69a50,#ffe1b0)}
 .theme-winter-button{background:linear-gradient(135deg,#a4d6f4,#fff)}
-.empty{padding:25px 15px;text-align:center;color:#8aa0b0;background:#f8fcfe;border-radius:12px;font-size:12px}
+
+.empty{padding:25px 15px;text-align:center;color:#8aa0b0;background:rgba(248,252,254,0.9);border-radius:12px;font-size:12px}
 
 /* 모바일 반응형 전용 스타일 */
 @media(max-width:768px){
     body { font-size: 13px; }
-    .sidebar{ width:100%!important; height:56px!important; min-height:unset!important; position:fixed!important; left:0!important; top:unset!important; bottom:0!important; padding:4px 6px!important; display:flex!important; align-items:center!important; justify-content:space-between!important; box-shadow:0 -4px 15px rgba(20,90,160,.2)!important; border-top:1px solid rgba(255,255,255,0.2); }
+    .sidebar{ width:100%!important; height:56px!important; min-height:unset!important; position:fixed!important; left:0!important; top:unset!important; bottom:0!important; padding:4px 6px!important; display:flex!important; align-items:center!important; justify-content:space-between!important; box-shadow:0 -4px 15px rgba(0,0,0,0.05)!important; border-top:1px solid rgba(255,255,255,0.2); }
     .guild-logo{ display:none!important; }
     .menu{ display:flex!important; flex-direction:row!important; width:100%!important; overflow-x:auto!important; gap:4px!important; scrollbar-width:none; }
     .menu::-webkit-scrollbar{display:none;}
