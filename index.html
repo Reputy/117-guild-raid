@@ -255,6 +255,7 @@ table.comparison-table th { background: rgba(233,246,255,0.8); color: var(--prim
             <button class="btn btn-primary" onclick="login()">로그인</button>
             <button class="btn btn-secondary" onclick="registerMember()">가입</button>
         </div>
+        <button id="login-load-btn" class="btn" style="width:100%; margin-top:10px; background:#e9f6ff; color:#14549a; border:1px solid #2788d8;">☁️ 새 기기 서버 데이터 불러오기</button>
         <p id="loginMessage"></p>
     </div>
 </div>
@@ -343,7 +344,6 @@ table.comparison-table th { background: rgba(233,246,255,0.8); color: var(--prim
                 <div class="card" style="margin-bottom:16px">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
                         <h3 style="margin:0">📢 최신 공지사항</h3>
-                        <button class="btn btn-secondary btn-small" onclick="showScreen('notice')">전체보기</button>
                     </div>
                     <div id="homeNotice">등록된 공지가 없습니다.</div>
                 </div>
@@ -434,7 +434,10 @@ table.comparison-table th { background: rgba(233,246,255,0.8); color: var(--prim
                                 <option value="방문자">방문자</option>
                             </select>
                         </div>
-                        <div id="visitorBatchActionArea" class="hidden" style="display:flex;gap:6px;">
+                        <div id="visitorBatchActionArea" class="hidden" style="display:flex;gap:6px;align-items:center;">
+                            <label style="font-size:12px;margin-right:5px;font-weight:bold;cursor:pointer;">
+                                <input type="checkbox" id="selectAllVisitors" onchange="toggleAllVisitors(this)"> 모두 선택
+                            </label>
                             <button class="btn btn-success btn-small" onclick="batchApproveVisitors()">선택 방문자 승인 (길드원)</button>
                             <button class="btn btn-danger btn-small" onclick="batchDeleteVisitors()">선택 일괄 삭제</button>
                         </div>
@@ -620,18 +623,11 @@ table.comparison-table th { background: rgba(233,246,255,0.8); color: var(--prim
                     <div class="toolbar" style="margin-bottom:0">
                         <div>
                             <label style="font-size:11px;font-weight:bold;display:block;margin-bottom:3px">통합 시즌</label>
-                            <select id="selectRankIntSeason" onchange="updateRankingScreen()">
-                                <option value="34">34 시즌</option>
-                            </select>
+                            <select id="selectRankIntSeason" onchange="updateRankingScreen()"></select>
                         </div>
                         <div>
-                            <label style="font-size:11px;font-weight:bold;display:block;margin-bottom:3px">일반 시즌 (1~4)</label>
-                            <select id="selectRankNormSeason" onchange="updateRankingScreen()">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3" selected>3</option>
-                                <option value="4">4</option>
-                            </select>
+                            <label style="font-size:11px;font-weight:bold;display:block;margin-bottom:3px">일반 시즌</label>
+                            <select id="selectRankNormSeason" onchange="updateRankingScreen()"></select>
                         </div>
                         <div style="display:flex;align-items:flex-end">
                             <button class="btn btn-primary" onclick="triggerRankingScreenshotUpload()">📸 통합랭킹 스크린샷 등록 (OCR)</button>
@@ -872,7 +868,7 @@ function startApp(){
     document.getElementById("currentNickname").textContent = member.nickname; document.getElementById("currentRole").textContent = member.role;
     document.getElementById("homeGuildName").textContent = member.guild;
     document.getElementById("promoGuildTitle").textContent = member.guild;
-    applyGuildLogoUI(member.guild); buildMenu(); updateRaidSeasonDropdown(); updateAll();
+    applyGuildLogoUI(member.guild); buildMenu(); updateRaidSeasonDropdown(); updateRankingSeasonDropdown(); updateAll();
     
     if(member.role === "방문자"){
         showScreen("promo");
@@ -914,7 +910,7 @@ function buildMenu(){
     let iconDeco = "🌊"; if(currentTheme === "spring") iconDeco = "🌸"; else if(currentTheme === "autumn") iconDeco = "🍁"; else if(currentTheme === "winter") iconDeco = "❄️";
     
     MENU_ORDER.forEach(screen => {
-        if(screen === "promo" || screen === "notice") return;
+        if(screen === "promo") return;
         if(!SCREEN_PERMISSION[screen].includes(member.role)) return;
         
         const button = document.createElement("button");
@@ -988,7 +984,7 @@ function updateThemePreviews() {
         let card = document.getElementById(`themeCard_${s}`);
         if(card) {
             if(themeImages[s]) {
-                card.style.backgroundImage = `linear-gradient(rgba(255,255,255,0.65), rgba(255,255,255,0.65)), url(${themeImages[s]})`;
+                card.style.backgroundImage = `linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url(${themeImages[s]})`;
             } else {
                 card.style.backgroundImage = "none";
             }
@@ -1647,57 +1643,130 @@ async function handleRankingScreenshot(event){
     if(!file) return;
     const member = getCurrentMember();
     
-    alert("통합랭킹 스크린샷에서 상위 50위 길드 순위 및 트로피를 추출하는 중입니다...");
+    alert("통합랭킹 스크린샷에서 상위 50위 길드 순위 및 트로피를 추출하는 중입니다...\n(이미지 분석에 시간이 조금 걸릴 수 있습니다.)");
 
     Tesseract.recognize(file, 'kor+eng').then(({ data: { text } }) => {
         let rMap = loadJSON("guildRankingData", {});
-        
         let generatedRankings = [];
-        for(let i = 1; i <= 50; i++) {
-            generatedRankings.push({
-                rank: i,
-                guildName: i === 65 ? member.guild : `우정길드 ${i}호점`,
-                trophy: (15000 - (i * 180)).toLocaleString() + "개"
-            });
+        
+        let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        let extractedKey = null;
+        let seasonMatch = text.match(/시즌\s*(\d+)-(\d+)/);
+        if(seasonMatch) {
+            extractedKey = `${seasonMatch[1]}-${seasonMatch[2]}`;
+        } else {
+            const selInt = document.getElementById("selectRankIntSeason");
+            const selNorm = document.getElementById("selectRankNormSeason");
+            if(selInt && selNorm && selInt.value && selNorm.value) {
+                extractedKey = `${selInt.value}-${selNorm.value}`;
+            } else {
+                extractedKey = "34-3"; 
+            }
         }
 
-        rMap[member.guild] = {
-            season: "34-3",
-            rankList: generatedRankings,
-            rawText: text || "순위 및 트로피 정보 추출 완료"
+        for(let line of lines) {
+            let match = line.match(/^(\d{1,2})\s/);
+            if(match) {
+                let rank = parseInt(match[1]);
+                let numbers = line.match(/[\d,]{5,}/g); 
+                if(numbers && numbers.length >= 2) {
+                    let trophy = numbers[0]; 
+                    let textPart = line.replace(/^(\d{1,2})\s+/, "").replace(/[\d,]{5,}.*$/, "").trim();
+                    let guildName = textPart.replace(/^(?:-|▼\d+|▲\d+|NEW)\s*/i, "").trim();
+                    if(!guildName) guildName = "알수없음";
+
+                    generatedRankings.push({
+                        rank: rank,
+                        guildName: guildName,
+                        trophy: trophy + "개"
+                    });
+                }
+            }
+        }
+        
+        let finalRankings = [];
+        for(let i=1; i<=50; i++) {
+            let found = generatedRankings.find(r => r.rank === i);
+            if(found) {
+                finalRankings.push(found);
+            } else {
+                finalRankings.push({rank: i, guildName: `(인식실패)`, trophy: `-`});
+            }
+        }
+
+        if(!rMap[member.guild]) rMap[member.guild] = {};
+        
+        if (rMap[member.guild].season) {
+             let oldSeason = rMap[member.guild].season;
+             let oldList = rMap[member.guild].rankList;
+             rMap[member.guild] = {}; 
+             rMap[member.guild][oldSeason] = { rankList: oldList };
+        }
+
+        rMap[member.guild][extractedKey] = {
+            rankList: finalRankings
         };
 
         saveJSON("guildRankingData", rMap);
+        
+        let parts = extractedKey.split('-');
+        updateRankingSeasonDropdown(parts[0], parts[1]);
         updateRankingScreen();
-        alert("통합랭킹 50위 추출 및 분석 완료!");
+        alert(`통합랭킹 분석 및 시즌(${extractedKey}) 데이터 등록 완료!`);
     }).catch(err => {
-        let rMap = loadJSON("guildRankingData", {});
-        let generatedRankings = [];
-        for(let i = 1; i <= 50; i++) {
-            generatedRankings.push({ rank: i, guildName: `길드 ${i}호점`, trophy: (15000 - (i * 180)).toLocaleString() + "개" });
-        }
-        rMap[member.guild] = { season: "34-3", rankList: generatedRankings, rawText: "기본 50위 랭킹 데이터 표시" };
-        saveJSON("guildRankingData", rMap);
-        updateRankingScreen();
-        alert("통합랭킹 분석 완료!");
+        alert("OCR 분석 중 오류가 발생했습니다.");
     });
     
     event.target.value = ""; 
+}
+
+function updateRankingSeasonDropdown(newInt = null, newNorm = null) {
+    const selInt = document.getElementById("selectRankIntSeason");
+    const selNorm = document.getElementById("selectRankNormSeason");
+    if (!selInt || !selNorm) return;
+    const member = getCurrentMember();
+    let rankingMap = loadJSON("guildRankingData", {});
+    let currentData = rankingMap[member.guild] || {};
+    let intSet = new Set(), normSet = new Set();
+    
+    Object.keys(currentData).forEach(k => {
+        if (k === "season" || k === "rankList" || k === "rawText") return; 
+        let [i, n] = k.split('-');
+        if(i) intSet.add(Number(i));
+        if(n) normSet.add(Number(n));
+    });
+    if(intSet.size === 0) intSet.add(34);
+    if(normSet.size === 0) normSet.add(3);
+    
+    selInt.innerHTML = Array.from(intSet).sort((a,b)=>a-b).map(v => `<option value="${v}">${v}</option>`).join("");
+    selNorm.innerHTML = Array.from(normSet).sort((a,b)=>a-b).map(v => `<option value="${v}">${v}</option>`).join("");
+    if(newInt) selInt.value = newInt;
+    if(newNorm) selNorm.value = newNorm;
 }
 
 function updateRankingScreen(){
     const area = document.getElementById("rankingContentArea");
     const member = getCurrentMember();
     
-    const selInt = document.getElementById("selectIntegratedSeason");
-    const selNorm = document.getElementById("selectNormalSeason");
-    const currentKey = (selInt && selNorm) ? `${selInt.value}-${selNorm.value}` : "34-3";
+    const selInt = document.getElementById("selectRankIntSeason");
+    const selNorm = document.getElementById("selectRankNormSeason");
+    const currentKey = (selInt && selNorm && selInt.value && selNorm.value) ? `${selInt.value}-${selNorm.value}` : "34-3";
+    
     let guildRaidMap = loadJSON("guildRaidData", {});
-    let currentGuildRaid = guildRaidMap[member.guild] || {};
-    let raidSeasonData = currentGuildRaid[currentKey] || { rank: "65위", trophy: "12,450개" };
+    let raidSeasonData = (guildRaidMap[member.guild] && guildRaidMap[member.guild][currentKey]) 
+        ? guildRaidMap[member.guild][currentKey] 
+        : { rank: "-", trophy: "-" };
 
     let rMap = loadJSON("guildRankingData", {});
-    let data = rMap[member.guild] || { season: currentKey, rankList: [] };
+    let guildRankData = rMap[member.guild] || {};
+    
+    let data = guildRankData[currentKey];
+    if(!data && guildRankData.season === currentKey) {
+        data = guildRankData; 
+    } else if (!data) {
+        data = { rankList: [] };
+    }
     
     let listHtml = (data.rankList || []).map(item => `
         <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.3);font-size:13px;align-items:center;">
@@ -1724,13 +1793,13 @@ function updateRankingScreen(){
             <div style="background:rgba(248,252,254,0.7);border:1px solid var(--border);border-radius:10px;max-height:350px;overflow-y:auto;margin-bottom:14px;">
                 ${listHtml || '<div class="empty">등록된 랭킹 스크린샷 데이터가 없습니다.</div>'}
             </div>
-            <h4 style="margin:16px 0 8px;color:var(--primary-dark)">📝 OCR 인식 원본 로그</h4>
-            <div style="background:rgba(248,252,254,0.7);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:11px;white-space:pre-wrap;line-height:1.4;color:var(--sub);">${escapeHtml(data.rawText || '인식된 원본 내용이 없습니다.')}</div>
         </div>
     `;
 }
 
 function updateMembers(){
+    const selectAllCb = document.getElementById("selectAllVisitors");
+    if(selectAllCb) selectAllCb.checked = false;
     const adminArea = document.getElementById("memberAdminArea"), memberListDiv = document.getElementById("memberList"), member = getCurrentMember(); if(!member) return;
     let list = members[member.guild] || [];
     
@@ -1798,6 +1867,11 @@ function updateMembers(){
             ${actionButtons}
         </div>`;
     }).join("");
+}
+
+function toggleAllVisitors(checkbox) {
+    const checkboxes = document.querySelectorAll('.visitor-checkbox');
+    checkboxes.forEach(cb => { cb.checked = checkbox.checked; });
 }
 
 function batchApproveVisitors() {
@@ -2017,6 +2091,39 @@ function changePassword(){ const member = getCurrentMember(), newPw = prompt("�
       } else { alert("서버에 백업된 길드 데이터가 없습니다."); }
     } catch (error) { alert("데이터 불러오기에 실패했습니다."); }
   });
+
+  const loginLoadBtn = document.getElementById("login-load-btn");
+  if (loginLoadBtn) {
+    loginLoadBtn.addEventListener("click", async () => {
+      const guildName = document.getElementById("guildSelect").value;
+      try {
+        const docSnap = await getDoc(doc(db, "guild_db", guildName));
+        if (docSnap.exists()) {
+          const d = docSnap.data();
+          if(d.guildMembers) localStorage.setItem("guildMembers", d.guildMembers);
+          if(d.guildNotices) localStorage.setItem("guildNotices", d.guildNotices);
+          if(d.guildCuts) localStorage.setItem("guildCuts", d.guildCuts);
+          if(d.guildRaidData) localStorage.setItem("guildRaidData", d.guildRaidData);
+          if(d.guildRankingData) localStorage.setItem("guildRankingData", d.guildRankingData);
+          if(d.guildRelicScoreData) localStorage.setItem("guildRelicScoreData", d.guildRelicScoreData);
+          if(d.guildLogos) localStorage.setItem("guildLogos", d.guildLogos);
+          if(d.guildChampBossStorage) localStorage.setItem("guildChampBossStorage", d.guildChampBossStorage);
+          if(d.guildThemeImages) localStorage.setItem("guildThemeImages", d.guildThemeImages);
+          if(d.guildBannerDescriptions) localStorage.setItem("guildBannerDescriptions", d.guildBannerDescriptions);
+          if(d.guildPromoImages) localStorage.setItem("guildPromoImages", d.guildPromoImages);
+          if(d.guildTargetRanks) localStorage.setItem("guildTargetRanks", d.guildTargetRanks);
+          if(d.guildRelicCriteria) localStorage.setItem("guildRelicCriteria", d.guildRelicCriteria);
+          
+          alert(`✅ [${guildName}] 길드의 서버 데이터를 성공적으로 불러왔습니다! 이제 로그인해주세요.`);
+          location.reload(); 
+        } else { 
+          alert("서버에 백업된 길드 데이터가 없습니다."); 
+        }
+      } catch (error) { 
+        alert("데이터 불러오기에 실패했습니다."); 
+      }
+    });
+  }
 </script>
 </body>
 </html>
