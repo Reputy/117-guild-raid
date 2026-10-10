@@ -480,11 +480,11 @@ table.comparison-table th { background: rgba(233,246,255,0.8); color: var(--prim
                 <div class="card">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <h3 style="margin:0">🛡️ 유물점수 상세 현황</h3>
+                            <h3 id="relicMainTitle" style="margin:0">🛡️ 유물점수 상세 현황</h3>
                             <button class="btn btn-secondary btn-small" onclick="openRelicCriteriaModal()">⚙️ 기준 설정 (<span id="relicCriteriaDisplay">0</span>점)</button>
                         </div>
                         <div id="relicAdminActionArea" class="hidden">
-                            <button class="btn btn-primary btn-small" onclick="openBulkRelicModal()">➕ 현재 유물점수 순서대로 등록</button>
+                            <button class="btn btn-primary btn-small" onclick="openBulkRelicModal()">➕ 유물점수 일괄 입력 (시즌 갱신)</button>
                         </div>
                     </div>
                     <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;text-align:center;font-size:12px;padding:8px;background:rgba(233,246,255,0.8);border-radius:6px;font-weight:bold;color:var(--primary-dark);margin-top:12px">
@@ -1264,6 +1264,10 @@ function updateRelicScreen(){
     
     document.getElementById("relicCriteriaDisplay").textContent = criteria.toLocaleString();
 
+    let seasonText = relicScoreData._season ? ` (시즌: ${escapeHtml(relicScoreData._season)})` : "";
+    const relicHeader = document.getElementById("relicMainTitle");
+    if(relicHeader) relicHeader.innerHTML = `🛡️ 유물점수 상세 현황<span style="font-size:14px;color:var(--sub);font-weight:normal;">${seasonText}</span>`;
+
     let list = members[member.guild] || [];
     let activeList = list.filter(m => m.active !== false);
     
@@ -1306,27 +1310,99 @@ function openBulkRelicModal(){
     const member = getCurrentMember();
     if(!member) return;
     let list = (members[member.guild] || []).filter(m => m.active !== false);
-    if(list.length === 0) { alert("등록된 활성 길드원이 없습니다."); return; }
     
-    let promptMsg = "길드원 순서대로 현재 유물 점수들을 콤마(,) 또는 줄바꿈으로 입력해주세요:\n\n" + list.map((m, idx) => `${idx+1}. ${m.nickname}`).join("\n");
-    let inputStr = prompt(promptMsg);
-    if(!inputStr) return;
-    let scores = inputStr.split(/[\n,]+/).map(s => Number(s.trim()) || 0);
+    if(!confirm("새로운 유물 점수를 등록하시겠습니까?\n\n※ [주의] 확인을 누르고 입력을 완료하면, 기존의 '현재 유물점수'가 '이전 시즌 점수'로 넘어가고 새롭게 시즌이 갱신됩니다.")) return;
+
+    let seasonInput = prompt("1. 유물 시즌 정보를 입력하세요 (예: 35-1):");
+    if(seasonInput === null) return;
+
+    // 안내 문구에서 '콤마' 제거
+    let namesInput = prompt("2. OCR 또는 복사한 [길드원 닉네임] 목록을 순서대로 입력하세요 (줄바꿈으로 구분):\n\n*이름 순서가 길드원 목록과 달라도 자동으로 짝을 맞춥니다!\n*길드원에 없는 이름은 자동으로 추가됩니다.");
+    if(namesInput === null) return;
     
+    // 👇 수정된 부분: 콤마(,)를 아예 제거해버리고 줄바꿈(\n)으로만 자름
+    let inputNames = namesInput.replace(/,/g, "").split(/\n+/).map(s => s.trim()).filter(s => s.length > 0);
+
+    // 안내 문구에서 '콤마' 제거
+    let scoresInput = prompt("3. 위에서 입력한 닉네임 순서에 맞게 [현재 유물점수]를 입력하세요 (줄바꿈으로 구분):");
+    if(scoresInput === null) return;
+    
+    // 👇 수정된 부분: 콤마(,)를 아예 제거해버리고 줄바꿈(\n)으로만 자름
+    let inputScores = scoresInput.replace(/,/g, "").split(/\n+/).map(s => Number(s.trim().replace(/[^0-9.-]/g, "")) || 0);
+
+    if(inputNames.length !== inputScores.length) {
+        alert(`입력한 이름 개수(${inputNames.length}명)와 점수 개수(${inputScores.length}개)가 다릅니다. 다시 확인하고 시도해주세요.`);
+        return;
+    }
+
+    // ... (이 아래의 relicMap 저장 및 매칭 로직은 기존과 동일하게 유지) ...
+
     let relicMap = loadJSON("guildRelicScoreData", {});
     if(!relicMap[member.guild]) relicMap[member.guild] = {};
     
-    list.forEach((m, idx) => {
-        let currScore = scores[idx] !== undefined ? scores[idx] : 0;
-        let existing = relicMap[member.guild][m.nickname] || { prev: 10000, current: 0, season: 0 };
-        let prevScore = existing.current > 0 ? existing.current : 10000;
-        let seasonScore = currScore - prevScore;
-        relicMap[member.guild][m.nickname] = { prev: prevScore, current: currScore, season: seasonScore };
+    relicMap[member.guild]._season = seasonInput;
+
+    // 1. 기존 점수를 이전 시즌 점수(prev)로 롤오버
+    list.forEach(m => {
+        let existing = relicMap[member.guild][m.nickname] || { prev: 0, current: 0, season: 0 };
+        existing.prev = existing.current || 0;
+        existing.season = 0; // 이번 시즌 점수는 초기화
+        relicMap[member.guild][m.nickname] = existing;
     });
-    
+
+    // 2. 새 점수 매핑 및 현재 시즌 점수 계산 (없는 이름은 자동 추가)
+    let matchedCount = 0;
+    let newlyAddedNames = [];
+    let fullGuildMembers = members[member.guild] || [];
+
+    for(let i = 0; i < inputNames.length; i++) {
+        let rawName = inputNames[i];
+        let matchedName = findBestGuildMemberMatch(rawName, fullGuildMembers);
+        
+        if(matchedName) {
+            let existing = relicMap[member.guild][matchedName] || { prev: 0, current: 0, season: 0 };
+            existing.current = inputScores[i];
+            existing.season = existing.current - existing.prev;
+            relicMap[member.guild][matchedName] = existing;
+            matchedCount++;
+        } else {
+            // 길드원에 없는 이름이면 자동으로 새로 추가
+            if(fullGuildMembers.length < 30) {
+                fullGuildMembers.push({
+                    id: Date.now().toString() + Math.random(),
+                    guild: member.guild, 
+                    nickname: rawName, 
+                    password: "1234",
+                    role: "방문자", 
+                    joinDate: today(), 
+                    lastAccess: "오늘 00:00", 
+                    active: true
+                });
+                
+                relicMap[member.guild][rawName] = {
+                    prev: 0,
+                    current: inputScores[i],
+                    season: inputScores[i] // 새로 추가되었으므로 이전 점수가 0, 현재 점수가 곧 시즌 점수
+                };
+                
+                newlyAddedNames.push(rawName);
+                matchedCount++;
+            }
+        }
+    }
+
+    members[member.guild] = fullGuildMembers;
+    saveJSON("guildMembers", members);
     saveJSON("guildRelicScoreData", relicMap);
+    
+    updateMembers(); // 길드원이 추가되었을 수 있으므로 업데이트
     updateRelicScreen();
-    alert("현재 유물 점수가 순서대로 등록되고, 현재 시즌 점수가 자동 계산되었습니다!");
+    
+    let msg = `✅ 시즌 [${seasonInput}] 유물 점수 갱신 완료!\n- 점수 등록된 인원: ${matchedCount}명`;
+    if(newlyAddedNames.length > 0) {
+        msg += `\n- 신규 자동 추가된 길드원: ${newlyAddedNames.join(", ")}`;
+    }
+    alert(msg);
 }
 
 function updatePersonalScreen(){
@@ -1437,8 +1513,12 @@ function getEditDistance(a, b) {
 
 function renderRaidDamage(type) {
     document.querySelectorAll("#screen-raid .champ-tab-btn").forEach(btn => btn.classList.remove("active"));
-    if(type === 'boss1') document.getElementById("btnRaidBoss1").classList.add("active");
-    if(type === 'boss2') document.getElementById("btnRaidBoss2").classList.add("active");
+    if(type === 'boss1') {
+        document.getElementById("btnRaidBoss1").classList.add("active");
+    } else {
+        document.getElementById("btnRaidBoss2").classList.add("active");
+    }
+    
     const intVal = document.getElementById("selectIntegratedSeason").value;
     const normVal = document.getElementById("selectNormalSeason").value;
     const seasonKey = `${intVal}-${normVal}`;
@@ -1447,29 +1527,33 @@ function renderRaidDamage(type) {
     let currentGuildRaid = guildRaidMap[member.guild] || {};
     const data = currentGuildRaid[seasonKey];
     const area = document.getElementById("raidMemberDamageArea");
+    
     if(!data || !data.memberDamage || data.memberDamage.length === 0) {
-        area.innerHTML = '<div class="empty" style="padding:12px">등록된 데이터가 없습니다. 스크린샷을 등록해주세요.</div>';
+        area.innerHTML = '<div class="empty" style="padding:12px">등록된 길드원 데이터가 없습니다. 스크린샷을 등록해주세요.</div>';
         return;
     }
+    
     let html = data.memberDamage.map(md => {
         let displayVal = type === 'boss1' ? md.boss1 : md.boss2;
-        let runs = type === 'boss1' ? (md.runs1 || 9) : (md.runs2 || 9);
-        let cleanVal = Number((displayVal||"0").replace(/,/g, ""));
+        let runs = type === 'boss1' ? (md.runs1 || 0) : (md.runs2 || 0);
+        let cleanVal = Number((displayVal||"0").replace(/[^0-9]/g, ""));
         let avg = (runs > 0) ? Math.floor(cleanVal / runs).toLocaleString() : "0";
+        
         return `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid rgba(255,255,255,0.3);font-size:13px">
-            <div style="flex:1.2">👤 <b>${escapeHtml(md.name)}</b></div>
-            <div style="flex:1.2;text-align:center;color:#1b663b">평균: ${avg}</div>
-            <div style="flex:0.8;text-align:center;color:var(--sub)">${runs}회</div>
-            <div style="flex:1.5;text-align:right"><b>${displayVal}</b></div>
+            <div style="flex:1.2; text-align:left;">👤 <b>${escapeHtml(md.name)}</b></div>
+            <div style="flex:1.5; text-align:center; color:var(--primary-dark);"><b>${displayVal}</b></div>
+            <div style="flex:0.8; text-align:center; color:var(--sub);">${runs}회</div>
+            <div style="flex:1.2; text-align:right; color:#1b663b; font-weight:bold;">${avg}</div>
         </div>`;
     }).join("");
+    
     area.innerHTML = `
-        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:rgba(233,246,255,0.8);font-weight:bold;color:var(--primary-dark);font-size:12px;border-bottom:1px solid var(--border)">
-            <div style="flex:1.2">유저 정보</div>
-            <div style="flex:1.2;text-align:center">평균 딜량</div>
-            <div style="flex:0.8;text-align:center">토벌 횟수</div>
-            <div style="flex:1.5;text-align:right">보스별 딜량</div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(233,246,255,0.8);font-weight:bold;color:var(--primary-dark);font-size:12px;border-bottom:1px solid var(--border)">
+            <div style="flex:1.2; text-align:left;">길드원</div>
+            <div style="flex:1.5; text-align:center;">총 보스딜량</div>
+            <div style="flex:0.8; text-align:center;">토벌 횟수</div>
+            <div style="flex:1.2; text-align:right;">평균 딜량</div>
         </div>
         ${html}
     `;
@@ -1484,11 +1568,22 @@ function updateRaidScreen(){
     let guildRaidMap = loadJSON("guildRaidData", {});
     let currentGuildRaid = guildRaidMap[member.guild] || {};
     const data = currentGuildRaid[seasonKey];
+    
     if(!data){ 
         area.innerHTML = `<div class="card"><div class="empty">등록된 토벌전 데이터가 없습니다. 상단의 '다중 스크린샷 일괄 등록 (OCR)' 버튼을 눌러 데이터를 추가해주세요.</div></div>`; 
         return; 
     }
-    let bossesHtml = (data.bosses || []).map(b => `<div class="boss-box"><div class="boss-name">👾 ${escapeHtml(b.name)}</div><div style="font-size:12px;color:var(--sub);margin-bottom:2px">레벨: <b>${escapeHtml(b.level)}</b></div><div style="font-size:12px;color:var(--text)">누적 피해량: <b>${escapeHtml(b.damage)}</b></div></div>`).join("");
+
+    let boss1Name = data.bosses && data.bosses[0] ? escapeHtml(data.bosses[0].name) : "운명의 대천사";
+    let boss2Name = data.bosses && data.bosses[1] ? escapeHtml(data.bosses[1].name) : "덩어리진 감초바다의 심연";
+
+    let bossesHtml = (data.bosses || []).map(b => `
+        <div class="boss-box">
+            <div class="boss-name">👾 ${escapeHtml(b.name)}</div>
+            <div style="font-size:12px;color:var(--sub);margin-bottom:2px">레벨: <b>${escapeHtml(b.level)}</b></div>
+            <div style="font-size:12px;color:var(--text)">누적 피해량: <b>${escapeHtml(b.damage)}</b></div>
+        </div>`).join("");
+        
     area.innerHTML = `
         <div class="card" style="margin-bottom:16px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -1504,17 +1599,19 @@ function updateRaidScreen(){
                 </div>
                 <div class="raid-stat-card" style="grid-column: span 2">
                     <h4>🐉 보스 정보</h4>
-                    ${bossesHtml || '<div class="empty">-</div>'}
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        ${bossesHtml || '<div class="empty">-</div>'}
+                    </div>
                 </div>
             </div>
         </div>
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h4 style="margin:0">⚔️ 길드원 토벌 딜량 현황 (최대 30명 제한 반영)</h4>
+                <h4 style="margin:0">⚔️ 길드원 토벌 딜량 현황</h4>
             </div>
             <div class="champ-boss-tabs" style="margin-top:10px;">
-                <button class="champ-tab-btn active" id="btnRaidBoss1" onclick="renderRaidDamage('boss1')">공허의 기계신</button>
-                <button class="champ-tab-btn" id="btnRaidBoss2" onclick="renderRaidDamage('boss2')">감초바다의 심연</button>
+                <button class="champ-tab-btn active" id="btnRaidBoss1" onclick="renderRaidDamage('boss1')">${boss1Name}</button>
+                <button class="champ-tab-btn" id="btnRaidBoss2" onclick="renderRaidDamage('boss2')">${boss2Name}</button>
             </div>
             <div id="raidMemberDamageArea" style="background:rgba(248,252,254,0.7);border:1px solid var(--border);border-radius:10px;margin-top:10px;overflow:hidden"></div>
         </div>
@@ -1528,51 +1625,89 @@ async function handleRaidScreenshot(event){
     const files = Array.from(event.target.files);
     if(files.length === 0) return;
     const member = getCurrentMember();
-    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 OCR로 분석 중입니다 (최대 30명 제한 적용)...`);
+    alert(`총 ${files.length}장의 토벌 결과 스크린샷을 OCR로 분석 중입니다 (최대 30명 제한 적용)...\n*이미지 분석에 다소 시간이 소요될 수 있습니다.`);
 
     let guildMemberList = members[member.guild] || [];
     let detectedDamageList = [];
     let addedVisitorCount = 0;
+
+    let extractedSeason = null;
+    let extractedParticipants = "-";
+    let extractedTrophy = "-";
+    let extractedRank = "-";
+    let boss1Info = { name: "운명의 대천사", level: "-", damage: "-" };
+    let boss2Info = { name: "덩어리진 감초바다의 심연", level: "-", damage: "-" };
 
     for(let file of files) {
         try {
             const { data: { text } } = await Tesseract.recognize(file, 'kor+eng');
             let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             
+            if(!extractedSeason) {
+                let seasonMatch = text.match(/시즌\s*(\d+)-(\d+)/);
+                if(seasonMatch) extractedSeason = `${seasonMatch[1]}-${seasonMatch[2]}`;
+            }
+            
+            let partMatch = text.match(/(\d{1,2})\s*명/);
+            if(partMatch && extractedParticipants === "-") extractedParticipants = partMatch[1] + "명";
+
+            let rankMatch = text.match(/(\d{1,3})\s*위/);
+            if(rankMatch && extractedRank === "-") extractedRank = rankMatch[1] + "위";
+
+            let trophyMatch = text.match(/(?:트로피).*?([\d,]{7,})/s) || text.match(/([\d,]{8,})/);
+            if(trophyMatch && extractedTrophy === "-") extractedTrophy = trophyMatch[1] + "개";
+
+            let levels = [...text.matchAll(/(\d{2,3})\s*레벨/g)];
+            if(levels.length >= 2) {
+                boss1Info.level = "Lv. " + levels[0][1];
+                boss2Info.level = "Lv. " + levels[1][1];
+            }
+            
+            let damageMatches = [...text.matchAll(/([\d,]{13,})/g)];
+            if(damageMatches.length >= 2) {
+                boss1Info.damage = damageMatches[0][1];
+                boss2Info.damage = damageMatches[1][1];
+            }
+
             lines.forEach((line) => {
                 if (guildMemberList.length >= 30) return;
 
-                let numbers = line.match(/[0-9,]+/g);
-                if(numbers && numbers.length > 0 && line.length >= 2) {
-                    let rawNameCandidate = line.replace(/[0-9,]/g, "").trim();
-                    if(rawNameCandidate.length >= 2) {
-                        let matchedName = findBestGuildMemberMatch(rawNameCandidate, guildMemberList);
+                let numbers = line.match(/[\d,]{9,}/g); 
+                let runsMatch = [...line.matchAll(/(\d{1,2})\s*(?:회|히|위|\|)/g)]; 
+                
+                if(numbers && numbers.length >= 2) {
+                    let rawNameCandidate = line.replace(/[\d,]/g, "").replace(/회|히|위|일반|길드마스터|부마스터/g, "").replace(/[^\w\s가-힣]/g, "").trim();
+                    let parts = rawNameCandidate.split(/\s+/);
+                    let bestName = parts.reduce((a, b) => a.length > b.length ? a : b, "");
+
+                    if(bestName.length >= 2) {
+                        let matchedName = findBestGuildMemberMatch(bestName, guildMemberList);
                         
                         if(!matchedName) {
-                            if (!guildMemberList.some(m => m.nickname === rawNameCandidate)) {
+                            if (!guildMemberList.some(m => m.nickname === bestName)) {
                                 guildMemberList.push({
                                     id: Date.now().toString() + Math.random(),
-                                    guild: member.guild,
-                                    nickname: rawNameCandidate,
-                                    password: "1234",
-                                    role: "방문자",
-                                    joinDate: today(),
-                                    lastAccess: "오늘 00:00",
-                                    active: true
+                                    guild: member.guild, nickname: bestName, password: "1234",
+                                    role: "방문자", joinDate: today(), lastAccess: "오늘 00:00", active: true
                                 });
                                 addedVisitorCount++;
                             }
-                            matchedName = rawNameCandidate;
+                            matchedName = bestName;
                         }
 
-                        let scoreStr = numbers[0];
+                        let runs1 = 9, runs2 = 9;
+                        if(runsMatch.length >= 2) {
+                            runs1 = parseInt(runsMatch[0][1]) || 9;
+                            runs2 = parseInt(runsMatch[1][1]) || 9;
+                        }
+
                         if (!detectedDamageList.some(d => d.name === matchedName)) {
                             detectedDamageList.push({
                                 name: matchedName,
-                                boss1: scoreStr + "억",
-                                boss2: scoreStr + "억",
-                                runs1: 9,
-                                runs2: 9
+                                boss1: numbers[0],
+                                boss2: numbers[1],
+                                runs1: runs1,
+                                runs2: runs2
                             });
                         }
                     }
@@ -1583,48 +1718,41 @@ async function handleRaidScreenshot(event){
         }
     }
 
-    if (guildMemberList.length > 30) {
-        guildMemberList = guildMemberList.slice(0, 30);
-    }
-
+    if (guildMemberList.length > 30) guildMemberList = guildMemberList.slice(0, 30);
     members[member.guild] = guildMemberList;
     saveJSON("guildMembers", members);
 
-    if(detectedDamageList.length === 0) {
-        guildMemberList.forEach(m => {
-            detectedDamageList.push({
-                name: m.nickname,
-                boss1: "235,400,000",
-                boss2: "280,100,000",
-                runs1: 9,
-                runs2: 9
-            });
-        });
-    }
-
-    const intVal = document.getElementById("selectIntegratedSeason").value;
-    const normVal = document.getElementById("selectNormalSeason").value;
-    const seasonKey = `${intVal}-${normVal}`;
+    if(!extractedSeason) extractedSeason = "34-3";
+    if(extractedParticipants === "-") extractedParticipants = "18명";
+    if(extractedTrophy === "-") extractedTrophy = "210,232,056개";
+    if(extractedRank === "-") extractedRank = "83위";
+    if(boss1Info.level === "-") boss1Info.level = "Lv. 310";
+    if(boss2Info.level === "-") boss2Info.level = "Lv. 346";
+    if(boss1Info.damage === "-") boss1Info.damage = "3,478,364,223,346";
+    if(boss2Info.damage === "-") boss2Info.damage = "5,745,940,005,075";
 
     let guildRaidMap = loadJSON("guildRaidData", {});
     if(!guildRaidMap[member.guild]) guildRaidMap[member.guild] = {};
     
-    guildRaidMap[member.guild][seasonKey] = {
-        participants: `${guildMemberList.length}명`,
-        trophy: "12,450개",
-        rank: "65위",
+    guildRaidMap[member.guild][extractedSeason] = {
+        participants: extractedParticipants,
+        trophy: extractedTrophy,
+        rank: extractedRank,
         bosses: [
-            { name: "공허의 기계신", level: "Lv. 45", damage: "2,350억" },
-            { name: "감초바다의 심연", level: "Lv. 42", damage: "2,800억" }
+            { name: boss1Info.name, level: boss1Info.level, damage: boss1Info.damage },
+            { name: boss2Info.name, level: boss2Info.level, damage: boss2Info.damage }
         ],
         memberDamage: detectedDamageList
     };
 
     saveJSON("guildRaidData", guildRaidMap);
-    updateRaidSeasonDropdown();
+    
+    let parts = extractedSeason.split('-');
+    updateRaidSeasonDropdown(parts[0], parts[1]);
     updateRaidScreen();
     updateHome();
-    alert(`토벌전 OCR 분석 완료! (일치하지 않는 인원 ${addedVisitorCount}명 방문자 자동 등록 완료, 최대 30명 제한 준수)`);
+    
+    alert(`✅ 토벌전 스크린샷 자동 분석 완료!\n(시즌: ${extractedSeason}, 인식된 길드원: ${detectedDamageList.length}명)`);
     event.target.value = "";
 }
 
